@@ -56,8 +56,8 @@ export default function SignupScreen({ onLoginPress, onSignupSuccess }: SignupSc
           {/* Header Bar */}
           <View style={styles.headerBar}>
             <View style={styles.logoContainer}>
-              <Feather name="globe" size={24} color="#0056b3" style={styles.logoIcon} />
-              <Text style={styles.logoText}>LinguaLeap</Text>
+              <Feather name="book-open" size={24} color="#1D7DF0" style={styles.logoIcon} />
+              <Text style={styles.logoText}>Vocam</Text>
             </View>
             <TouchableOpacity style={styles.menuButton}>
               <Feather name="menu" size={24} color="#333" />
@@ -167,7 +167,7 @@ export default function SignupScreen({ onLoginPress, onSignupSuccess }: SignupSc
               <Text style={styles.checkboxLabel}>
                 Tôi đồng ý với{' '}
                 <Text style={styles.linkText}>Điều khoản sử dụng</Text> và{' '}
-                <Text style={styles.linkText}>Chính sách bảo mật</Text> của LinguaLeap.
+                <Text style={styles.linkText}>Chính sách bảo mật</Text> của Vocam.
               </Text>
             </TouchableOpacity>
 
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#0056b3',
+    color: '#1D7DF0',
   },
   menuButton: {
     padding: Spacing.one,
@@ -340,8 +340,8 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   checkboxChecked: {
-    backgroundColor: '#0056b3',
-    borderColor: '#0056b3',
+    backgroundColor: '#1D7DF0',
+    borderColor: '#1D7DF0',
   },
   checkboxLabel: {
     flex: 1,
@@ -350,18 +350,18 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   linkText: {
-    color: '#0056b3',
+    color: '#1D7DF0',
     fontWeight: '500',
   },
   submitButton: {
-    backgroundColor: '#0056b3',
+    backgroundColor: '#1D7DF0',
     borderRadius: 14,
     height: 52,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: Spacing.three,
-    shadowColor: '#0056b3',
+    shadowColor: '#1D7DF0',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   footerLink: {
-    color: '#0056b3',
+    color: '#1D7DF0',
     fontWeight: 'bold',
   },
 });

@@ -44,12 +44,12 @@ export default function LoginScreen({ onSignupPress, onLoginSuccess }: LoginScre
           {/* Logo Section */}
           <View style={styles.logoSection}>
             <View style={styles.logoRow}>
-              <Feather name="globe" size={32} color="#0056b3" style={styles.logoIcon} />
-              <Text style={styles.logoText}>LinguaLeap</Text>
+              <Feather name="book-open" size={32} color="#1D7DF0" style={styles.logoIcon} />
+              <Text style={styles.logoText}>Vocam</Text>
             </View>
             <Text style={styles.title}>Chào mừng trở lại!</Text>
             <Text style={styles.subtitle}>
-              Học tiếng Anh thật dễ dàng cùng LinguaLeap.
+              Học tiếng Anh thật dễ dàng cùng Vocam.
             </Text>
           </View>
 
@@ -185,7 +185,7 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 26,
     fontWeight: 'bold',
-    color: '#0056b3',
+    color: '#1D7DF0',
   },
   title: {
     fontSize: 28,
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   forgotPasswordText: {
     fontSize: 13,
-    color: '#0056b3',
+    color: '#1D7DF0',
     fontWeight: '500',
     marginBottom: Spacing.two,
   },
@@ -253,14 +253,14 @@ const styles = StyleSheet.create({
     padding: Spacing.one,
   },
   submitButton: {
-    backgroundColor: '#0056b3',
+    backgroundColor: '#1D7DF0',
     borderRadius: 14,
     height: 52,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: Spacing.three,
-    shadowColor: '#0056b3',
+    shadowColor: '#1D7DF0',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     color: '#64748B',
   },
   footerLink: {
-    color: '#0056b3',
+    color: '#1D7DF0',
     fontWeight: 'bold',
   },
 });
