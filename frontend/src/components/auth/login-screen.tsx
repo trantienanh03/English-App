@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     height: 52,
     flexDirection: 'row',
-    justify.content: 'center',
+    justifyContent: 'center',
     alignItems: 'center',
     marginTop: Spacing.three,
     shadowColor: Palette.primary[500],

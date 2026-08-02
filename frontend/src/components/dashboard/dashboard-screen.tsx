@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,11 +7,9 @@ import {
   TouchableOpacity,
   Image,
   SafeAreaView,
-  Dimensions,
-  Platform,
   ActivityIndicator,
 } from 'react-native';
-import { Feather, AntDesign, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 
 interface DashboardScreenProps {
@@ -73,7 +71,7 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
             {/* Greeting */}
             <View style={styles.greetingSection}>
               <Text style={styles.greetingTitle}>Chào buổi sáng!</Text>
-              <Text style={styles.greetingSubtitle}>Let's keep your streak alive today.</Text>
+              <Text style={styles.greetingSubtitle}>Let&apos;s keep your streak alive today.</Text>
             </View>
 
             {/* Daily Goal Card */}
