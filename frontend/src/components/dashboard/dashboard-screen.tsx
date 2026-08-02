@@ -12,7 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Feather, AntDesign, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
-import { Spacing } from '@/constants/theme';
+import { Palette, Fonts, Spacing } from '@/constants/theme';
 
 interface DashboardScreenProps {
   onLogout: () => void;
@@ -137,7 +137,7 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
             {/* Grammar Card */}
             <View style={styles.grammarCardRow}>
               <View style={styles.grammarIconBox}>
-                <Feather name="book-open" size={20} color="#1D7DF0" />
+                <Feather name="book-open" size={20} color={Palette.primary[500]} />
               </View>
               <View style={styles.grammarInfo}>
                 <View style={styles.grammarHeaderRow}>
@@ -164,8 +164,8 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
             </View>
 
             <View style={styles.courseItem}>
-              <View style={[styles.courseIcon, { backgroundColor: '#E0F2FE' }]}>
-                <Feather name="compass" size={24} color="#0284C7" />
+              <View style={[styles.courseIcon, { backgroundColor: Palette.primary[100] }]}>
+                <Feather name="compass" size={24} color={Palette.primary[500]} />
               </View>
               <View style={styles.courseDetails}>
                 <Text style={styles.courseTitle}>Giao tiếp cơ bản</Text>
@@ -174,12 +174,12 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
                   <View style={[styles.progressBarFill, { width: '80%' }]} />
                 </View>
               </View>
-              <Feather name="chevron-right" size={20} color="#94A3B8" />
+              <Feather name="chevron-right" size={20} color={Palette.text.muted} />
             </View>
 
             <View style={styles.courseItem}>
-              <View style={[styles.courseIcon, { backgroundColor: '#DCFCE7' }]}>
-                <Feather name="briefcase" size={24} color="#16A34A" />
+              <View style={[styles.courseIcon, { backgroundColor: Palette.secondary[100] }]}>
+                <Feather name="briefcase" size={24} color={Palette.secondary[500]} />
               </View>
               <View style={styles.courseDetails}>
                 <Text style={styles.courseTitle}>Tiếng Anh Công sở</Text>
@@ -188,12 +188,12 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
                   <View style={[styles.progressBarFill, { width: '40%' }]} />
                 </View>
               </View>
-              <Feather name="chevron-right" size={20} color="#94A3B8" />
+              <Feather name="chevron-right" size={20} color={Palette.text.muted} />
             </View>
 
             <View style={styles.courseItem}>
-              <View style={[styles.courseIcon, { backgroundColor: '#FEE2E2' }]}>
-                <Feather name="plane" size={24} color="#DC2626" />
+              <View style={[styles.courseIcon, { backgroundColor: Palette.error.bg }]}>
+                <Feather name="plane" size={24} color={Palette.error.text} />
               </View>
               <View style={styles.courseDetails}>
                 <Text style={styles.courseTitle}>Du lịch bụi</Text>
@@ -202,7 +202,7 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
                   <View style={[styles.progressBarFill, { width: '10%' }]} />
                 </View>
               </View>
-              <Feather name="chevron-right" size={20} color="#94A3B8" />
+              <Feather name="chevron-right" size={20} color={Palette.text.muted} />
             </View>
 
             <View style={{ height: 100 }} />
@@ -227,14 +227,14 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
 
               {scanState === 'scanning' && (
                 <View style={styles.scanningIndicatorContainer}>
-                  <ActivityIndicator size="large" color="#10B981" />
+                  <ActivityIndicator size="large" color={Palette.primary[300]} />
                   <Text style={styles.scanningText}>Đang nhận dạng vật thể bằng AI...</Text>
                 </View>
               )}
 
               {scanState === 'success' && scannedResult && (
                 <View style={styles.scanSuccessContainer}>
-                  <MaterialCommunityIcons name={scannedResult.icon as any} size={72} color="#1D7DF0" />
+                  <MaterialCommunityIcons name={scannedResult.icon as any} size={72} color={Palette.primary[500]} />
                   <Text style={styles.scanResultWord}>{scannedResult.word}</Text>
                   <Text style={styles.scanResultIpa}>{scannedResult.ipa}</Text>
                   <Text style={styles.scanResultDef}>{scannedResult.definition}</Text>
@@ -409,7 +409,7 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
             onPress={() => setActiveTab('home')}
           >
             <View style={[styles.tabIconWrapper, activeTab === 'home' && styles.tabIconWrapperActive]}>
-              <Feather name="home" size={20} color={activeTab === 'home' ? '#1D7DF0' : '#64748B'} />
+              <Feather name="home" size={20} color={activeTab === 'home' ? Palette.primary[500] : Palette.text.muted} />
               {activeTab === 'home' && <Text style={styles.tabLabelActive}>Home</Text>}
             </View>
             {activeTab !== 'home' && <Text style={styles.tabLabel}>Home</Text>}
@@ -421,7 +421,7 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
             onPress={() => setActiveTab('learn')}
           >
             <View style={[styles.tabIconWrapper, activeTab === 'learn' && styles.tabIconWrapperActive]}>
-              <Feather name="book" size={20} color={activeTab === 'learn' ? '#1D7DF0' : '#64748B'} />
+              <Feather name="book" size={20} color={activeTab === 'learn' ? Palette.primary[500] : Palette.text.muted} />
               {activeTab === 'learn' && <Text style={styles.tabLabelActive}>Learn</Text>}
             </View>
             {activeTab !== 'learn' && <Text style={styles.tabLabel}>Learn</Text>}
@@ -439,7 +439,7 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
               <MaterialCommunityIcons 
                 name="line-scan" 
                 size={28} 
-                color={activeTab === 'scan' ? '#1D7DF0' : '#10B981'} 
+                color={activeTab === 'scan' ? Palette.primary[500] : Palette.secondary[500]} 
               />
             </View>
             <Text style={[styles.scanLabel, activeTab === 'scan' && styles.scanLabelActive]}>SCAN</Text>
@@ -451,7 +451,7 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
             onPress={() => setActiveTab('cards')}
           >
             <View style={[styles.tabIconWrapper, activeTab === 'cards' && styles.tabIconWrapperActive]}>
-              <MaterialCommunityIcons name="card-multiple-outline" size={20} color={activeTab === 'cards' ? '#1D7DF0' : '#64748B'} />
+              <MaterialCommunityIcons name="card-multiple-outline" size={20} color={activeTab === 'cards' ? Palette.primary[500] : Palette.text.muted} />
               {activeTab === 'cards' && <Text style={styles.tabLabelActive}>Cards</Text>}
             </View>
             {activeTab !== 'cards' && <Text style={styles.tabLabel}>Cards</Text>}
@@ -463,7 +463,7 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
             onPress={() => setActiveTab('profile')}
           >
             <View style={[styles.tabIconWrapper, activeTab === 'profile' && styles.tabIconWrapperActive]}>
-              <Feather name="user" size={20} color={activeTab === 'profile' ? '#1D7DF0' : '#64748B'} />
+              <Feather name="user" size={20} color={activeTab === 'profile' ? Palette.primary[500] : Palette.text.muted} />
               {activeTab === 'profile' && <Text style={styles.tabLabelActive}>Profile</Text>}
             </View>
             {activeTab !== 'profile' && <Text style={styles.tabLabel}>Profile</Text>}
@@ -477,7 +477,7 @@ export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: Palette.canvas,
   },
   contentWrapper: {
     flex: 1,
@@ -505,38 +505,41 @@ const styles = StyleSheet.create({
     height: 42,
     borderRadius: 21,
     borderWidth: 1.5,
-    borderColor: '#E2E8F0',
+    borderColor: Palette.border,
     marginRight: Spacing.two,
   },
   appName: {
-    fontSize: 22,
+    fontFamily: Fonts.sans,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#1D7DF0',
+    color: Palette.primary[500],
   },
   xpStreakBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: Palette.surface,
     paddingHorizontal: Spacing.three,
     height: 36,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: Palette.border,
   },
   xpText: {
+    fontFamily: Fonts.sans,
     fontSize: 13,
     fontWeight: 'bold',
-    color: '#475569',
+    color: Palette.text.primary,
   },
   badgeDivider: {
     fontSize: 13,
-    color: '#94A3B8',
+    color: Palette.text.muted,
     marginHorizontal: Spacing.one,
   },
   streakText: {
+    fontFamily: Fonts.sans,
     fontSize: 13,
     fontWeight: 'bold',
-    color: '#475569',
+    color: Palette.text.primary,
     marginRight: 2,
   },
   fireIcon: {
@@ -546,22 +549,26 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.four,
   },
   greetingTitle: {
+    fontFamily: Fonts.sans,
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: Palette.text.primary,
     marginBottom: Spacing.one,
   },
   greetingSubtitle: {
+    fontFamily: Fonts.sans,
     fontSize: 15,
-    color: '#64748B',
+    color: Palette.text.secondary,
   },
   dailyGoalCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderRadius: 24,
     padding: Spacing.four,
-    shadowColor: '#0F172A',
+    borderWidth: 1,
+    borderColor: Palette.border,
+    shadowColor: Palette.text.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.04,
     shadowRadius: 16,
@@ -573,18 +580,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   goalTitle: {
+    fontFamily: Fonts.sans,
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: Palette.text.primary,
     marginBottom: Spacing.one,
   },
   goalSubtitle: {
+    fontFamily: Fonts.sans,
     fontSize: 13,
-    color: '#64748B',
+    color: Palette.text.secondary,
     marginBottom: Spacing.three,
   },
   continueButton: {
-    backgroundColor: '#1D7DF0',
+    backgroundColor: Palette.primary[500],
     borderRadius: 14,
     paddingHorizontal: Spacing.three,
     height: 38,
@@ -593,6 +602,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   continueButtonText: {
+    fontFamily: Fonts.sans,
     color: '#FFFFFF',
     fontSize: 13,
     fontWeight: 'bold',
@@ -607,31 +617,35 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 40,
     borderWidth: 8,
-    borderColor: '#E2E8F0',
-    borderTopColor: '#0F172A',
-    borderRightColor: '#0F172A',
-    borderLeftColor: '#0F172A',
+    borderColor: Palette.primary[100],
+    borderTopColor: Palette.primary[500],
+    borderRightColor: Palette.primary[500],
+    borderLeftColor: Palette.primary[500],
     justifyContent: 'center',
     alignItems: 'center',
   },
   progressPercentage: {
+    fontFamily: Fonts.sans,
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1D7DF0',
+    color: Palette.primary[500],
   },
   sectionHeader: {
     marginBottom: Spacing.three,
   },
   sectionTitle: {
+    fontFamily: Fonts.sans,
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: Palette.text.primary,
   },
   contentCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: '#0F172A',
+    borderWidth: 1,
+    borderColor: Palette.border,
+    shadowColor: Palette.text.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.04,
     shadowRadius: 16,
@@ -653,44 +667,50 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.one,
   },
   badgeEasy: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: Palette.success.bg,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   badgeTextEasy: {
-    color: '#15803D',
+    fontFamily: Fonts.sans,
+    color: Palette.success.text,
     fontSize: 11,
     fontWeight: 'bold',
   },
   badgeMedium: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Palette.warning.bg,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
   },
   badgeTextMedium: {
-    color: '#B45309',
+    fontFamily: Fonts.sans,
+    color: Palette.warning.text,
     fontSize: 11,
     fontWeight: 'bold',
   },
   cardTitle: {
+    fontFamily: Fonts.sans,
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: Palette.text.primary,
     marginBottom: 2,
   },
   cardSubtitle: {
+    fontFamily: Fonts.sans,
     fontSize: 13,
-    color: '#64748B',
+    color: Palette.text.secondary,
   },
   grammarCardRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderRadius: 20,
     padding: Spacing.three,
-    shadowColor: '#0F172A',
+    borderWidth: 1,
+    borderColor: Palette.border,
+    shadowColor: Palette.text.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.04,
     shadowRadius: 16,
@@ -701,7 +721,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 12,
-    backgroundColor: '#EFF6FF',
+    backgroundColor: Palette.primary[100],
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.three,
@@ -716,24 +736,27 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   grammarTitle: {
+    fontFamily: Fonts.sans,
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: Palette.text.primary,
   },
   badgeHard: {
-    backgroundColor: '#FEE2E2',
+    backgroundColor: Palette.error.bg,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 8,
   },
   badgeTextHard: {
-    color: '#B91C1C',
+    fontFamily: Fonts.sans,
+    color: Palette.error.text,
     fontSize: 10,
     fontWeight: 'bold',
   },
   grammarSubtitle: {
+    fontFamily: Fonts.sans,
     fontSize: 13,
-    color: '#64748B',
+    color: Palette.text.secondary,
   },
 
   // Floating Tab Bar Styling
@@ -746,19 +769,19 @@ const styles = StyleSheet.create({
   },
   tabBar: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderRadius: 24,
     height: 72,
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingHorizontal: Spacing.two,
-    shadowColor: '#0F172A',
+    shadowColor: Palette.text.primary,
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.08,
     shadowRadius: 20,
     elevation: 10,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: Palette.border,
   },
   tabItem: {
     flex: 1,
@@ -775,57 +798,60 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   tabIconWrapperActive: {
-    backgroundColor: '#EFF6FF',
+    backgroundColor: Palette.primary[100],
   },
   tabLabel: {
+    fontFamily: Fonts.sans,
     fontSize: 10,
-    color: '#64748B',
+    color: Palette.text.muted,
     fontWeight: '500',
     marginTop: 2,
   },
   tabLabelActive: {
+    fontFamily: Fonts.sans,
     fontSize: 12,
-    color: '#1D7DF0',
+    color: Palette.primary[500],
     fontWeight: 'bold',
     marginLeft: 6,
   },
   tabItemActive: {
-    flex: 1.3, // Give more room for the expanded pill style active item
+    flex: 1.3,
   },
   scanTabItem: {
     alignItems: 'center',
     justifyContent: 'center',
-    top: -12, // Rise above slightly
+    top: -12,
     width: 68,
   },
   scanFab: {
     width: 54,
     height: 54,
     borderRadius: 27,
-    backgroundColor: '#DCFCE7',
+    backgroundColor: Palette.primary[100],
     borderWidth: 2,
-    borderColor: '#10B981',
+    borderColor: Palette.primary[500],
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#10B981',
+    shadowColor: Palette.primary[500],
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.25,
     shadowRadius: 8,
     elevation: 4,
   },
   scanFabActive: {
-    backgroundColor: '#EFF6FF',
-    borderColor: '#1D7DF0',
-    shadowColor: '#1D7DF0',
+    backgroundColor: Palette.secondary[100],
+    borderColor: Palette.secondary[500],
+    shadowColor: Palette.secondary[500],
   },
   scanLabel: {
+    fontFamily: Fonts.sans,
     fontSize: 10,
-    color: '#10B981',
+    color: Palette.primary[500],
     fontWeight: 'bold',
     marginTop: 4,
   },
   scanLabelActive: {
-    color: '#1D7DF0',
+    color: Palette.secondary[500],
   },
 
   // Learn tab styling
@@ -834,23 +860,27 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.four,
   },
   placeholderTitle: {
+    fontFamily: Fonts.sans,
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: Palette.text.primary,
     marginBottom: 4,
   },
   placeholderSubtitle: {
+    fontFamily: Fonts.sans,
     fontSize: 14,
-    color: '#64748B',
+    color: Palette.text.secondary,
   },
   courseItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderRadius: 20,
     padding: Spacing.three,
     marginBottom: Spacing.three,
-    shadowColor: '#0F172A',
+    borderWidth: 1,
+    borderColor: Palette.border,
+    shadowColor: Palette.text.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.02,
     shadowRadius: 10,
@@ -868,25 +898,27 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   courseTitle: {
+    fontFamily: Fonts.sans,
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: Palette.text.primary,
     marginBottom: 2,
   },
   courseDesc: {
+    fontFamily: Fonts.sans,
     fontSize: 12,
-    color: '#64748B',
+    color: Palette.text.secondary,
     marginBottom: 6,
   },
   progressBarBg: {
     height: 6,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: Palette.surface,
     borderRadius: 3,
     width: '100%',
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#10B981',
+    backgroundColor: Palette.primary[500],
     borderRadius: 3,
   },
 
@@ -902,21 +934,23 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.three,
   },
   scannerTitle: {
+    fontFamily: Fonts.sans,
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: Palette.text.primary,
     marginBottom: 4,
   },
   scannerSubtitle: {
+    fontFamily: Fonts.sans,
     fontSize: 14,
-    color: '#64748B',
+    color: Palette.text.secondary,
   },
   viewfinderContainer: {
     flex: 1,
-    backgroundColor: '#1E293B',
+    backgroundColor: Palette.canvasDark,
     borderRadius: 24,
     borderWidth: 2,
-    borderColor: '#334155',
+    borderColor: Palette.primary[600],
     justifyContent: 'center',
     alignItems: 'center',
     position: 'relative',
@@ -927,7 +961,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: 24,
     height: 24,
-    borderColor: '#10B981',
+    borderColor: Palette.primary[300],
   },
   cornerTL: {
     top: 20,
@@ -958,6 +992,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scanTriggerText: {
+    fontFamily: Fonts.sans,
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: 'bold',
@@ -967,17 +1002,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   scanningText: {
-    color: '#FFFFFF',
+    fontFamily: Fonts.sans,
+    color: Palette.primary[100],
     fontSize: 14,
     marginTop: Spacing.three,
     fontWeight: '500',
   },
   scanSuccessContainer: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderRadius: 20,
     padding: Spacing.four,
     alignItems: 'center',
     width: '85%',
+    borderWidth: 1,
+    borderColor: Palette.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
@@ -985,20 +1023,23 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
   scanResultWord: {
+    fontFamily: Fonts.sans,
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: Palette.text.primary,
     marginTop: Spacing.two,
   },
   scanResultIpa: {
+    fontFamily: Fonts.sans,
     fontSize: 15,
-    color: '#1D7DF0',
+    color: Palette.text.ipa,
     fontWeight: '500',
     marginTop: 2,
   },
   scanResultDef: {
+    fontFamily: Fonts.sans,
     fontSize: 16,
-    color: '#475569',
+    color: Palette.text.secondary,
     marginTop: Spacing.one,
     textAlign: 'center',
   },
@@ -1008,7 +1049,7 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
   addToCardsBtn: {
-    backgroundColor: '#1D7DF0',
+    backgroundColor: Palette.primary[500],
     borderRadius: 12,
     paddingHorizontal: Spacing.three,
     height: 40,
@@ -1017,39 +1058,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   addToCardsBtnText: {
+    fontFamily: Fonts.sans,
     color: '#FFFFFF',
     fontSize: 13,
     fontWeight: 'bold',
   },
   scanAgainBtn: {
-    backgroundColor: '#F1F5F9',
+    backgroundColor: Palette.surface,
     borderRadius: 12,
     paddingHorizontal: Spacing.three,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: Palette.border,
   },
   scanAgainBtnText: {
-    color: '#475569',
+    fontFamily: Fonts.sans,
+    color: Palette.text.secondary,
     fontSize: 13,
     fontWeight: 'bold',
   },
   scanTipBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Palette.warning.bg,
     padding: Spacing.three,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: '#F3E5AB',
     marginTop: Spacing.three,
   },
   scanTipText: {
     flex: 1,
+    fontFamily: Fonts.sans,
     fontSize: 12,
-    color: '#B45309',
+    color: Palette.warning.text,
     marginLeft: 8,
     lineHeight: 16,
   },
@@ -1063,44 +1107,47 @@ const styles = StyleSheet.create({
   },
   statBox: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderRadius: 16,
     paddingVertical: Spacing.three,
     alignItems: 'center',
     borderWidth: 1.5,
-    borderColor: '#F59E0B',
-    shadowColor: '#0F172A',
+    borderColor: Palette.warning.text,
+    shadowColor: Palette.text.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.01,
     shadowRadius: 6,
     elevation: 1,
   },
   statNumber: {
+    fontFamily: Fonts.sans,
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#F59E0B',
+    color: Palette.warning.text,
     marginBottom: 2,
   },
   statLabel: {
+    fontFamily: Fonts.sans,
     fontSize: 11,
-    color: '#64748B',
+    color: Palette.text.secondary,
     fontWeight: '500',
   },
   practiceBtn: {
-    backgroundColor: '#1D7DF0',
+    backgroundColor: Palette.primary[500],
     borderRadius: 16,
     height: 52,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.five,
-    shadowColor: '#1D7DF0',
+    shadowColor: Palette.primary[500],
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 4,
   },
   practiceBtnText: {
+    fontFamily: Fonts.sans,
     color: '#FFFFFF',
     fontSize: 15,
     fontWeight: 'bold',
@@ -1109,57 +1156,64 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderRadius: 18,
     padding: Spacing.three,
     marginBottom: Spacing.two,
     borderWidth: 1,
-    borderColor: '#F1F5F9',
+    borderColor: Palette.border,
   },
   cardItemWord: {
+    fontFamily: Fonts.sans,
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: Palette.text.primary,
   },
   cardItemIpa: {
+    fontFamily: Fonts.sans,
     fontSize: 12,
-    color: '#1D7DF0',
+    color: Palette.text.ipa,
     marginVertical: 1,
   },
   cardItemDef: {
+    fontFamily: Fonts.sans,
     fontSize: 13,
-    color: '#64748B',
+    color: Palette.text.secondary,
   },
   cardItemBadgeGreen: {
-    backgroundColor: '#DCFCE7',
+    backgroundColor: Palette.success.bg,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
   },
   cardItemBadgeTextGreen: {
-    color: '#16A34A',
+    fontFamily: Fonts.sans,
+    color: Palette.success.text,
     fontSize: 11,
     fontWeight: 'bold',
   },
   cardItemBadgeOrange: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Palette.warning.bg,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
   },
   cardItemBadgeTextOrange: {
-    color: '#D97706',
+    fontFamily: Fonts.sans,
+    color: Palette.warning.text,
     fontSize: 11,
     fontWeight: 'bold',
   },
 
   // Profile screen styling
   profileHeaderCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderRadius: 24,
     padding: Spacing.four,
     alignItems: 'center',
-    shadowColor: '#0F172A',
+    borderWidth: 1,
+    borderColor: Palette.border,
+    shadowColor: Palette.text.primary,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.03,
     shadowRadius: 16,
@@ -1171,17 +1225,19 @@ const styles = StyleSheet.create({
     height: 90,
     borderRadius: 45,
     borderWidth: 3,
-    borderColor: '#EFF6FF',
+    borderColor: Palette.primary[100],
     marginBottom: Spacing.three,
   },
   profileName: {
+    fontFamily: Fonts.sans,
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#0F172A',
+    color: Palette.text.primary,
   },
   profileEmail: {
+    fontFamily: Fonts.sans,
     fontSize: 13,
-    color: '#64748B',
+    color: Palette.text.secondary,
     marginTop: 2,
   },
   profileStatsRow: {
@@ -1189,7 +1245,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
     borderTopWidth: 1,
-    borderTopColor: '#F1F5F9',
+    borderTopColor: Palette.border,
     marginTop: Spacing.four,
     paddingTop: Spacing.three,
   },
@@ -1198,20 +1254,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   profileStatVal: {
+    fontFamily: Fonts.sans,
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#1D7DF0',
+    color: Palette.primary[500],
   },
   profileStatLbl: {
+    fontFamily: Fonts.sans,
     fontSize: 11,
-    color: '#94A3B8',
+    color: Palette.text.muted,
     marginTop: 2,
   },
   settingsGroup: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderRadius: 20,
     paddingVertical: Spacing.one,
-    shadowColor: '#0F172A',
+    borderWidth: 1,
+    borderColor: Palette.border,
+    shadowColor: Palette.text.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.01,
     shadowRadius: 10,
@@ -1225,20 +1285,21 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
     paddingHorizontal: Spacing.three,
     borderBottomWidth: 1,
-    borderBottomColor: '#F8FAFC',
+    borderBottomColor: Palette.border,
   },
   settingLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   settingText: {
+    fontFamily: Fonts.sans,
     fontSize: 14,
     fontWeight: '500',
-    color: '#334155',
+    color: Palette.text.primary,
   },
   logoutBtn: {
     flexDirection: 'row',
-    backgroundColor: '#FEE2E2',
+    backgroundColor: Palette.error.bg,
     height: 52,
     borderRadius: 16,
     justifyContent: 'center',
@@ -1247,7 +1308,8 @@ const styles = StyleSheet.create({
     borderColor: '#FCA5A5',
   },
   logoutBtnText: {
-    color: '#EF4444',
+    fontFamily: Fonts.sans,
+    color: Palette.error.text,
     fontSize: 15,
     fontWeight: 'bold',
   },

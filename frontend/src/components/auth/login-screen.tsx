@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Spacing } from '@/constants/theme';
+import { Palette, Fonts, Spacing } from '@/constants/theme';
 
 interface LoginScreenProps {
   onSignupPress: () => void;
@@ -44,7 +44,7 @@ export default function LoginScreen({ onSignupPress, onLoginSuccess }: LoginScre
           {/* Logo Section */}
           <View style={styles.logoSection}>
             <View style={styles.logoRow}>
-              <Feather name="book-open" size={32} color="#1D7DF0" style={styles.logoIcon} />
+              <Feather name="book-open" size={32} color={Palette.primary[500]} style={styles.logoIcon} />
               <Text style={styles.logoText}>Vocam</Text>
             </View>
             <Text style={styles.title}>Chào mừng trở lại!</Text>
@@ -59,11 +59,11 @@ export default function LoginScreen({ onSignupPress, onLoginSuccess }: LoginScre
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Email</Text>
               <View style={styles.inputWrapper}>
-                <Feather name="mail" size={20} color="#999" style={styles.inputIcon} />
+                <Feather name="mail" size={20} color={Palette.text.muted} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   placeholder="email@vi-du.com"
-                  placeholderTextColor="#BBB"
+                  placeholderTextColor={Palette.text.muted}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   value={email}
@@ -81,11 +81,11 @@ export default function LoginScreen({ onSignupPress, onLoginSuccess }: LoginScre
                 </TouchableOpacity>
               </View>
               <View style={styles.inputWrapper}>
-                <Feather name="lock" size={20} color="#999" style={styles.inputIcon} />
+                <Feather name="lock" size={20} color={Palette.text.muted} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   placeholder="••••••••"
-                  placeholderTextColor="#BBB"
+                  placeholderTextColor={Palette.text.muted}
                   secureTextEntry={secureTextEntry}
                   autoCapitalize="none"
                   value={password}
@@ -95,7 +95,7 @@ export default function LoginScreen({ onSignupPress, onLoginSuccess }: LoginScre
                   onPress={() => setSecureTextEntry(!secureTextEntry)}
                   style={styles.eyeButton}
                 >
-                  <Feather name={secureTextEntry ? 'eye-off' : 'eye'} size={20} color="#999" />
+                  <Feather name={secureTextEntry ? 'eye-off' : 'eye'} size={20} color={Palette.text.muted} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -123,7 +123,7 @@ export default function LoginScreen({ onSignupPress, onLoginSuccess }: LoginScre
           <View style={styles.marketingContainer}>
             <View style={styles.badgeItemGreen}>
               <View style={styles.badgeIconBgGreen}>
-                <MaterialCommunityIcons name="lightning-bolt" size={20} color="#10B981" />
+                <MaterialCommunityIcons name="lightning-bolt" size={20} color={Palette.primary[500]} />
               </View>
               <View style={styles.badgeTextWrapper}>
                 <Text style={styles.badgeTitle}>Học nhanh hơn 2x</Text>
@@ -133,7 +133,7 @@ export default function LoginScreen({ onSignupPress, onLoginSuccess }: LoginScre
 
             <View style={styles.badgeItemGold}>
               <View style={styles.badgeIconBgGold}>
-                <MaterialCommunityIcons name="star" size={20} color="#F59E0B" />
+                <MaterialCommunityIcons name="star" size={20} color={Palette.warning.text} />
               </View>
               <View style={styles.badgeTextWrapper}>
                 <Text style={styles.badgeTitle}>1M+ Người dùng</Text>
@@ -160,7 +160,7 @@ export default function LoginScreen({ onSignupPress, onLoginSuccess }: LoginScre
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: Palette.canvas,
   },
   keyboardView: {
     flex: 1,
@@ -183,41 +183,47 @@ const styles = StyleSheet.create({
     marginRight: Spacing.two,
   },
   logoText: {
-    fontSize: 26,
-    fontWeight: 'bold',
-    color: '#1D7DF0',
-  },
-  title: {
+    fontFamily: Fonts.sans,
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1E293B',
+    color: Palette.primary[500],
+  },
+  title: {
+    fontFamily: Fonts.sans,
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: Palette.text.primary,
     textAlign: 'center',
     marginBottom: Spacing.two,
   },
   subtitle: {
+    fontFamily: Fonts.sans,
     fontSize: 14,
-    color: '#64748B',
+    color: Palette.text.secondary,
     textAlign: 'center',
     paddingHorizontal: Spacing.three,
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderRadius: 24,
     padding: Spacing.four,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.05,
-    shadowRadius: 20,
-    elevation: 5,
+    borderWidth: 1,
+    borderColor: Palette.border,
+    shadowColor: Palette.text.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
+    elevation: 4,
     marginBottom: Spacing.four,
   },
   inputGroup: {
     marginBottom: Spacing.three,
   },
   label: {
+    fontFamily: Fonts.sans,
     fontSize: 14,
-    fontWeight: '500',
-    color: '#475569',
+    fontWeight: '600',
+    color: Palette.text.secondary,
     marginBottom: Spacing.two,
   },
   passwordHeader: {
@@ -226,47 +232,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   forgotPasswordText: {
+    fontFamily: Fonts.sans,
     fontSize: 13,
-    color: '#1D7DF0',
-    fontWeight: '500',
+    color: Palette.primary[500],
+    fontWeight: '600',
     marginBottom: Spacing.two,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: Palette.surface,
     borderRadius: 14,
     paddingHorizontal: Spacing.three,
     height: 52,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: Palette.border,
   },
   inputIcon: {
     marginRight: Spacing.two,
   },
   input: {
     flex: 1,
+    fontFamily: Fonts.sans,
     fontSize: 15,
-    color: '#1E293B',
+    color: Palette.text.primary,
   },
   eyeButton: {
     padding: Spacing.one,
   },
   submitButton: {
-    backgroundColor: '#1D7DF0',
+    backgroundColor: Palette.primary[500],
     borderRadius: 14,
     height: 52,
     flexDirection: 'row',
-    justifyContent: 'center',
+    justify.content: 'center',
     alignItems: 'center',
     marginTop: Spacing.three,
-    shadowColor: '#1D7DF0',
+    shadowColor: Palette.primary[500],
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 4,
   },
   submitButtonText: {
+    fontFamily: Fonts.sans,
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
@@ -282,21 +291,22 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: Palette.border,
   },
   dividerText: {
+    fontFamily: Fonts.sans,
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#94A3B8',
+    color: Palette.text.muted,
     paddingHorizontal: Spacing.three,
   },
   googleButton: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: Palette.border,
     borderRadius: 14,
     height: 52,
   },
@@ -304,7 +314,8 @@ const styles = StyleSheet.create({
     marginRight: Spacing.three,
   },
   googleButtonText: {
-    color: '#334155',
+    fontFamily: Fonts.sans,
+    color: Palette.text.primary,
     fontSize: 15,
     fontWeight: '600',
   },
@@ -315,15 +326,17 @@ const styles = StyleSheet.create({
   badgeItemGreen: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E8F5E9',
+    backgroundColor: Palette.primary[100],
     borderRadius: 18,
     padding: Spacing.three,
+    borderWidth: 1,
+    borderColor: Palette.primary[200],
   },
   badgeIconBgGreen: {
     width: 40,
     height: 40,
     borderRadius: 12,
-    backgroundColor: '#C8E6C9',
+    backgroundColor: Palette.primary[200],
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.three,
@@ -331,9 +344,11 @@ const styles = StyleSheet.create({
   badgeItemGold: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFF8E1',
+    backgroundColor: Palette.warning.bg,
     borderRadius: 18,
     padding: Spacing.three,
+    borderWidth: 1,
+    borderColor: '#F3E5AB',
   },
   badgeIconBgGold: {
     width: 40,
@@ -348,13 +363,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   badgeTitle: {
+    fontFamily: Fonts.sans,
     fontSize: 15,
     fontWeight: 'bold',
-    color: '#1E293B',
+    color: Palette.text.primary,
   },
   badgeSubtitle: {
+    fontFamily: Fonts.sans,
     fontSize: 12,
-    color: '#64748B',
+    color: Palette.text.secondary,
     marginTop: 1,
   },
   footer: {
@@ -362,11 +379,13 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
   },
   footerText: {
+    fontFamily: Fonts.sans,
     fontSize: 14,
-    color: '#64748B',
+    color: Palette.text.secondary,
   },
   footerLink: {
-    color: '#1D7DF0',
+    fontFamily: Fonts.sans,
+    color: Palette.primary[500],
     fontWeight: 'bold',
   },
 });

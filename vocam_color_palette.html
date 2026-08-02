@@ -1,0 +1,207 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+.wrap{padding:1rem 0;display:flex;flex-direction:column;gap:1.5rem;font-family:var(--font-sans,'Inter',sans-serif)}
+.section-title{font-size:11px;font-weight:500;color:var(--text-muted,#9CA3AF);letter-spacing:.08em;text-transform:uppercase;margin-bottom:.6rem}
+.swatch-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.swatch{border-radius:12px;overflow:hidden;border:.5px solid rgba(0,0,0,.07)}
+.swatch-color{height:60px;display:flex;align-items:flex-end;padding:8px 10px}
+.swatch-hex{font-size:11px;font-weight:500;letter-spacing:.04em}
+.swatch-info{padding:8px 10px;background:#fff}
+.swatch-name{font-size:12px;font-weight:500;color:#1C1C1E}
+.swatch-role{font-size:10px;color:#6B7280;margin-top:1px;line-height:1.4}
+
+.ramp-label{font-size:11px;font-weight:500;color:var(--text-muted,#9CA3AF);margin-bottom:6px;letter-spacing:.04em}
+.ramp-row{display:flex;gap:3px;border-radius:10px;overflow:hidden}
+.ramp-cell{flex:1;height:28px;display:flex;align-items:center;justify-content:center}
+.ramp-hex-row{display:flex;gap:3px;margin-top:3px}
+.ramp-hex{flex:1;font-size:8px;color:#6B7280;text-align:center}
+
+.usage-card{background:#F9FAFB;border-radius:12px;padding:12px 14px;border:.5px solid #E5E7EB}
+.usage-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:.5px solid #F3F4F6}
+.usage-row:last-child{border-bottom:none}
+.dot{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500}
+.usage-text{flex:1}
+.usage-name{font-size:12px;font-weight:500;color:#1C1C1E}
+.usage-desc{font-size:10px;color:#6B7280;margin-top:1px}
+.usage-hex{font-size:10px;color:#9CA3AF;letter-spacing:.04em}
+
+.preview-mini{border-radius:12px;overflow:hidden;border:.5px solid #E5E7EB}
+.pm-header{background:#F4F6F3;padding:10px 12px;display:flex;align-items:center;gap:8px}
+.pm-title{font-size:12px;font-weight:500;color:#1A2B1A}
+.pm-body{background:#FAFBF9;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.pm-card{background:#fff;border-radius:8px;padding:8px 10px;border:.5px solid #E2E8E0}
+.pm-word{font-size:14px;font-weight:500;color:#1A2B1A}
+.pm-ipa{font-size:10px;color:#3D7A5E;margin:2px 0}
+.pm-vn{font-size:11px;color:#4B5B4B}
+.pm-badge-row{display:flex;gap:6px}
+.pm-badge{font-size:9px;padding:3px 8px;border-radius:20px;font-weight:500}
+.pm-btn{background:#2C6E49;color:#fff;border-radius:8px;padding:8px 12px;font-size:11px;font-weight:500;text-align:center}
+</style>
+
+<div class="wrap">
+
+<div>
+<div class="section-title">Màu nền & bề mặt</div>
+<div class="swatch-row">
+  <div class="swatch">
+    <div class="swatch-color" style="background:#F4F6F3"><span class="swatch-hex" style="color:#4B5B4B">#F4F6F3</span></div>
+    <div class="swatch-info"><div class="swatch-name">Canvas</div><div class="swatch-role">Nền app chính · xanh lá pha xám nhẹ, không gây mỏi mắt</div></div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-color" style="background:#FAFBF9"><span class="swatch-hex" style="color:#6B7280">#FAFBF9</span></div>
+    <div class="swatch-info"><div class="swatch-name">Surface</div><div class="swatch-role">Nền card & panel · trắng ngà, không chói</div></div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-color" style="background:#FFFFFF"><span class="swatch-hex" style="color:#9CA3AF">#FFFFFF</span></div>
+    <div class="swatch-info"><div class="swatch-name">White</div><div class="swatch-role">Nền Flashcard, modal, bottom sheet</div></div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-color" style="background:#1A2B1A"><span class="swatch-hex" style="color:#A3B8A3">#1A2B1A</span></div>
+    <div class="swatch-info"><div class="swatch-name">Dark canvas</div><div class="swatch-role">Camera view · tối hoàn toàn không xanh</div></div>
+  </div>
+</div>
+</div>
+
+<div>
+<div class="section-title">Primary — Xanh rừng (Forest Green)</div>
+<div class="ramp-label">Ramp đầy đủ 6 stops</div>
+<div class="ramp-row">
+  <div class="ramp-cell" style="background:#E8F2EC"></div>
+  <div class="ramp-cell" style="background:#B8D9C4"></div>
+  <div class="ramp-cell" style="background:#7DB89A"></div>
+  <div class="ramp-cell" style="background:#3D7A5E"></div>
+  <div class="ramp-cell" style="background:#2C6E49"></div>
+  <div class="ramp-cell" style="background:#1A4A30"></div>
+</div>
+<div class="ramp-hex-row">
+  <div class="ramp-hex">#E8F2EC</div>
+  <div class="ramp-hex">#B8D9C4</div>
+  <div class="ramp-hex">#7DB89A</div>
+  <div class="ramp-hex">#3D7A5E</div>
+  <div class="ramp-hex">#2C6E49</div>
+  <div class="ramp-hex">#1A4A30</div>
+</div>
+<div style="margin-top:8px">
+<div class="swatch-row">
+  <div class="swatch">
+    <div class="swatch-color" style="background:#2C6E49"><span class="swatch-hex" style="color:#B8D9C4">#2C6E49</span></div>
+    <div class="swatch-info"><div class="swatch-name">Primary action</div><div class="swatch-role">CTA button, nav active, accent chính</div></div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-color" style="background:#E8F2EC"><span class="swatch-hex" style="color:#2C6E49">#E8F2EC</span></div>
+    <div class="swatch-info"><div class="swatch-name">Primary tint</div><div class="swatch-role">Card highlight, badge nền, chip</div></div>
+  </div>
+</div>
+</div>
+<div style="margin-top:6px;padding:8px 10px;background:#E8F2EC;border-radius:8px;border-left:2px solid #2C6E49">
+  <div style="font-size:10px;color:#1A4A30;font-weight:500">Tại sao xanh lá (Forest Green)?</div>
+  <div style="font-size:10px;color:#3D7A5E;margin-top:3px;line-height:1.5">Nghiên cứu của Lichtenfeld et al. (2012) chứng minh màu xanh lá môi trường tự nhiên kích thích tư duy sáng tạo và tập trung. Wavelength 520–530nm ít kích thích retina hơn xanh dương thuần, giảm mỏi mắt khi dùng màn hình lâu.</div>
+</div>
+</div>
+
+<div>
+<div class="section-title">Secondary — Xanh teal mặn mà (Sage Teal)</div>
+<div class="ramp-row">
+  <div class="ramp-cell" style="background:#E3F0EE"></div>
+  <div class="ramp-cell" style="background:#B0D5D0"></div>
+  <div class="ramp-cell" style="background:#72B2AA"></div>
+  <div class="ramp-cell" style="background:#3D8B84"></div>
+  <div class="ramp-cell" style="background:#2A7069"></div>
+  <div class="ramp-cell" style="background:#184F4A"></div>
+</div>
+<div class="ramp-hex-row">
+  <div class="ramp-hex">#E3F0EE</div>
+  <div class="ramp-hex">#B0D5D0</div>
+  <div class="ramp-hex">#72B2AA</div>
+  <div class="ramp-hex">#3D8B84</div>
+  <div class="ramp-hex">#2A7069</div>
+  <div class="ramp-hex">#184F4A</div>
+</div>
+<div style="margin-top:6px;padding:8px 10px;background:#E3F0EE;border-radius:8px;border-left:2px solid #2A7069">
+  <div style="font-size:10px;color:#184F4A;font-weight:500">Dùng cho: IPA / phiên âm, icon camera, accent phụ</div>
+  <div style="font-size:10px;color:#3D8B84;margin-top:2px">Teal giữ được sự rõ ràng tốt trên nền trắng ngà, tạo cảm giác chuyên nghiệp &amp; học thuật mà không lạnh lẽo như navy.</div>
+</div>
+</div>
+
+<div>
+<div class="section-title">Semantic — Phản hồi &amp; trạng thái</div>
+<div class="swatch-row">
+  <div class="swatch">
+    <div class="swatch-color" style="background:#E8F5EC"><span class="swatch-hex" style="color:#1E6B3A">#1E6B3A · #E8F5EC</span></div>
+    <div class="swatch-info"><div class="swatch-name">Success / Correct</div><div class="swatch-role">Câu đúng, từ đã thuộc, streak active</div></div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-color" style="background:#FDF0F0"><span class="swatch-hex" style="color:#B03535">#B03535 · #FDF0F0</span></div>
+    <div class="swatch-info"><div class="swatch-name">Incorrect / Danger</div><div class="swatch-role">Câu sai, từ cần ôn gấp — đỏ muted, không chói</div></div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-color" style="background:#FBF5E8"><span class="swatch-hex" style="color:#8B6314">#8B6314 · #FBF5E8</span></div>
+    <div class="swatch-info"><div class="swatch-name">Warning / Review due</div><div class="swatch-role">Streak warning, cần ôn hôm nay — nâu mật ong</div></div>
+  </div>
+  <div class="swatch">
+    <div class="swatch-color" style="background:#EEF2F8"><span class="swatch-hex" style="color:#3A5A8C">#3A5A8C · #EEF2F8</span></div>
+    <div class="swatch-info"><div class="swatch-name">Info / Neutral</div><div class="swatch-role">Tooltip, badge thông tin, liên kết — xanh đậm dịu</div></div>
+  </div>
+</div>
+</div>
+
+<div>
+<div class="section-title">Typography</div>
+<div class="usage-card">
+  <div class="usage-row">
+    <div class="dot" style="background:#1A2B1A;color:#fff">Aa</div>
+    <div class="usage-text"><div class="usage-name">Heading / từ tiếng Anh</div><div class="usage-desc">Tiêu đề, từ flashcard, tên màn hình</div></div>
+    <div class="usage-hex">#1A2B1A</div>
+  </div>
+  <div class="usage-row">
+    <div class="dot" style="background:#4B5B4B;color:#fff">Aa</div>
+    <div class="usage-text"><div class="usage-name">Body / nghĩa tiếng Việt</div><div class="usage-desc">Nội dung chính, câu ví dụ</div></div>
+    <div class="usage-hex">#4B5B4B</div>
+  </div>
+  <div class="usage-row">
+    <div class="dot" style="background:#8B9B8B;color:#fff">Aa</div>
+    <div class="usage-text"><div class="usage-name">Muted / metadata</div><div class="usage-desc">Ngày scan, placeholder, caption</div></div>
+    <div class="usage-hex">#8B9B8B</div>
+  </div>
+  <div class="usage-row">
+    <div class="dot" style="background:#3D7A5E;color:#fff">Aa</div>
+    <div class="usage-text"><div class="usage-name">IPA / phiên âm</div><div class="usage-desc">/ kʌp / — màu teal phân biệt với nghĩa</div></div>
+    <div class="usage-hex">#3D7A5E</div>
+  </div>
+  <div class="usage-row">
+    <div class="dot" style="background:#E2E8E0;color:#8B9B8B">—</div>
+    <div class="usage-text"><div class="usage-name">Border / divider</div><div class="usage-desc">Viền card, dòng phân cách</div></div>
+    <div class="usage-hex">#E2E8E0</div>
+  </div>
+</div>
+</div>
+
+<div>
+<div class="section-title">Preview — Vocam với palette này</div>
+<div class="preview-mini">
+  <div class="pm-header">
+    <div style="width:32px;height:32px;border-radius:8px;background:#2C6E49;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff">V</div>
+    <div class="pm-title">Kết quả nhận diện</div>
+    <div style="margin-left:auto;font-size:10px;background:#E8F2EC;color:#1A4A30;padding:3px 8px;border-radius:20px;font-weight:500">94% chính xác</div>
+  </div>
+  <div class="pm-body">
+    <div class="pm-card">
+      <div class="pm-word">Cup</div>
+      <div class="pm-ipa">/ kʌp / <span style="font-size:10px">danh từ</span></div>
+      <div class="pm-vn">Cái cốc, tách uống nước</div>
+    </div>
+    <div style="background:#FAFBF9;border-radius:8px;padding:8px 10px;border-left:2px solid #3D7A5E;font-size:10px;color:#4B5B4B;line-height:1.5">
+      "She poured coffee into the <b style="color:#1A2B1A">cup</b> on her desk."
+    </div>
+    <div class="pm-badge-row">
+      <div class="pm-badge" style="background:#E8F5EC;color:#1E6B3A">Đã thuộc</div>
+      <div class="pm-badge" style="background:#E3F0EE;color:#184F4A">Đồ gia dụng</div>
+      <div class="pm-badge" style="background:#F4F6F3;color:#8B9B8B">2 ngày trước</div>
+    </div>
+    <div class="pm-btn">Lưu Flashcard</div>
+  </div>
+</div>
+</div>
+
+</div>

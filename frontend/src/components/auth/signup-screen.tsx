@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Spacing } from '@/constants/theme';
+import { Palette, Fonts, Spacing } from '@/constants/theme';
 
 interface SignupScreenProps {
   onLoginPress: () => void;
@@ -56,18 +56,18 @@ export default function SignupScreen({ onLoginPress, onSignupSuccess }: SignupSc
           {/* Header Bar */}
           <View style={styles.headerBar}>
             <View style={styles.logoContainer}>
-              <Feather name="book-open" size={24} color="#1D7DF0" style={styles.logoIcon} />
+              <Feather name="book-open" size={24} color={Palette.primary[500]} style={styles.logoIcon} />
               <Text style={styles.logoText}>Vocam</Text>
             </View>
             <TouchableOpacity style={styles.menuButton}>
-              <Feather name="menu" size={24} color="#333" />
+              <Feather name="menu" size={24} color={Palette.text.primary} />
             </TouchableOpacity>
           </View>
 
           {/* Intro Section */}
           <View style={styles.introSection}>
             <View style={styles.popperBadge}>
-              <MaterialCommunityIcons name="party-popper" size={32} color="#10B981" />
+              <MaterialCommunityIcons name="party-popper" size={32} color={Palette.primary[500]} />
             </View>
             <Text style={styles.title}>Bắt đầu hành trình</Text>
             <Text style={styles.titleBold}>ngay!</Text>
@@ -82,11 +82,11 @@ export default function SignupScreen({ onLoginPress, onSignupSuccess }: SignupSc
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Họ và tên</Text>
               <View style={styles.inputWrapper}>
-                <Feather name="user" size={20} color="#999" style={styles.inputIcon} />
+                <Feather name="user" size={20} color={Palette.text.muted} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   placeholder="Nguyễn Văn A"
-                  placeholderTextColor="#BBB"
+                  placeholderTextColor={Palette.text.muted}
                   value={fullName}
                   onChangeText={setFullName}
                 />
@@ -97,11 +97,11 @@ export default function SignupScreen({ onLoginPress, onSignupSuccess }: SignupSc
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Email</Text>
               <View style={styles.inputWrapper}>
-                <Feather name="mail" size={20} color="#999" style={styles.inputIcon} />
+                <Feather name="mail" size={20} color={Palette.text.muted} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   placeholder="email@example.com"
-                  placeholderTextColor="#BBB"
+                  placeholderTextColor={Palette.text.muted}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   value={email}
@@ -114,11 +114,11 @@ export default function SignupScreen({ onLoginPress, onSignupSuccess }: SignupSc
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Mật khẩu</Text>
               <View style={styles.inputWrapper}>
-                <Feather name="lock" size={20} color="#999" style={styles.inputIcon} />
+                <Feather name="lock" size={20} color={Palette.text.muted} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   placeholder="••••••••"
-                  placeholderTextColor="#BBB"
+                  placeholderTextColor={Palette.text.muted}
                   secureTextEntry={secureTextEntry}
                   autoCapitalize="none"
                   value={password}
@@ -128,7 +128,7 @@ export default function SignupScreen({ onLoginPress, onSignupSuccess }: SignupSc
                   onPress={() => setSecureTextEntry(!secureTextEntry)}
                   style={styles.eyeButton}
                 >
-                  <Feather name={secureTextEntry ? 'eye-off' : 'eye'} size={20} color="#999" />
+                  <Feather name={secureTextEntry ? 'eye-off' : 'eye'} size={20} color={Palette.text.muted} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -137,11 +137,11 @@ export default function SignupScreen({ onLoginPress, onSignupSuccess }: SignupSc
             <View style={styles.inputGroup}>
               <Text style={styles.label}>Xác nhận mật khẩu</Text>
               <View style={styles.inputWrapper}>
-                <Feather name="lock" size={20} color="#999" style={styles.inputIcon} />
+                <Feather name="lock" size={20} color={Palette.text.muted} style={styles.inputIcon} />
                 <TextInput
                   style={styles.input}
                   placeholder="••••••••"
-                  placeholderTextColor="#BBB"
+                  placeholderTextColor={Palette.text.muted}
                   secureTextEntry={secureConfirmTextEntry}
                   autoCapitalize="none"
                   value={confirmPassword}
@@ -151,7 +151,7 @@ export default function SignupScreen({ onLoginPress, onSignupSuccess }: SignupSc
                   onPress={() => setSecureConfirmTextEntry(!secureConfirmTextEntry)}
                   style={styles.eyeButton}
                 >
-                  <Feather name={secureConfirmTextEntry ? 'eye-off' : 'eye'} size={20} color="#999" />
+                  <Feather name={secureConfirmTextEntry ? 'eye-off' : 'eye'} size={20} color={Palette.text.muted} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -209,7 +209,7 @@ export default function SignupScreen({ onLoginPress, onSignupSuccess }: SignupSc
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F8FAFC',
+    backgroundColor: Palette.canvas,
   },
   keyboardView: {
     flex: 1,
@@ -233,9 +233,10 @@ const styles = StyleSheet.create({
     marginRight: Spacing.two,
   },
   logoText: {
-    fontSize: 20,
+    fontFamily: Fonts.sans,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: '#1D7DF0',
+    color: Palette.primary[500],
   },
   menuButton: {
     padding: Spacing.one,
@@ -245,79 +246,84 @@ const styles = StyleSheet.create({
     marginVertical: Spacing.three,
   },
   popperBadge: {
-    backgroundColor: '#D1FAE5',
+    backgroundColor: Palette.primary[100],
     width: 64,
     height: 64,
     borderRadius: 18,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: Spacing.three,
-    shadowColor: '#10B981',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: Palette.primary[200],
   },
   title: {
+    fontFamily: Fonts.sans,
     fontSize: 28,
     fontWeight: '400',
-    color: '#1E293B',
+    color: Palette.text.primary,
     textAlign: 'center',
   },
   titleBold: {
+    fontFamily: Fonts.sans,
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1E293B',
+    color: Palette.text.primary,
     textAlign: 'center',
     marginBottom: Spacing.two,
   },
   subtitle: {
+    fontFamily: Fonts.sans,
     fontSize: 14,
-    color: '#64748B',
+    color: Palette.text.secondary,
     textAlign: 'center',
     marginTop: Spacing.one,
   },
   highlightText: {
-    color: '#10B981',
+    fontFamily: Fonts.sans,
+    color: Palette.primary[500],
     fontWeight: 'bold',
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: Palette.surfaceWhite,
     borderRadius: 24,
     padding: Spacing.four,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.05,
-    shadowRadius: 20,
-    elevation: 5,
+    borderWidth: 1,
+    borderColor: Palette.border,
+    shadowColor: Palette.text.primary,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.04,
+    shadowRadius: 16,
+    elevation: 4,
     marginBottom: Spacing.four,
   },
   inputGroup: {
     marginBottom: Spacing.three,
   },
   label: {
+    fontFamily: Fonts.sans,
     fontSize: 14,
-    fontWeight: '500',
-    color: '#475569',
+    fontWeight: '600',
+    color: Palette.text.secondary,
     marginBottom: Spacing.two,
   },
   inputWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F1F5F9',
+    backgroundColor: Palette.surface,
     borderRadius: 14,
     paddingHorizontal: Spacing.three,
     height: 52,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: Palette.border,
   },
   inputIcon: {
     marginRight: Spacing.two,
   },
   input: {
     flex: 1,
+    fontFamily: Fonts.sans,
     fontSize: 15,
-    color: '#1E293B',
+    color: Palette.text.primary,
   },
   eyeButton: {
     padding: Spacing.one,
@@ -333,41 +339,44 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 6,
     borderWidth: 2,
-    borderColor: '#CBD5E1',
+    borderColor: Palette.border,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: Spacing.two,
     marginTop: 2,
   },
   checkboxChecked: {
-    backgroundColor: '#1D7DF0',
-    borderColor: '#1D7DF0',
+    backgroundColor: Palette.primary[500],
+    borderColor: Palette.primary[500],
   },
   checkboxLabel: {
     flex: 1,
+    fontFamily: Fonts.sans,
     fontSize: 13,
-    color: '#64748B',
+    color: Palette.text.secondary,
     lineHeight: 18,
   },
   linkText: {
-    color: '#1D7DF0',
-    fontWeight: '500',
+    fontFamily: Fonts.sans,
+    color: Palette.primary[500],
+    fontWeight: '600',
   },
   submitButton: {
-    backgroundColor: '#1D7DF0',
+    backgroundColor: Palette.primary[500],
     borderRadius: 14,
     height: 52,
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: Spacing.three,
-    shadowColor: '#1D7DF0',
+    shadowColor: Palette.primary[500],
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.25,
     shadowRadius: 10,
     elevation: 4,
   },
   submitButtonText: {
+    fontFamily: Fonts.sans,
     color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold',
@@ -383,21 +392,22 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E2E8F0',
+    backgroundColor: Palette.border,
   },
   dividerText: {
+    fontFamily: Fonts.sans,
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#94A3B8',
+    color: Palette.text.muted,
     paddingHorizontal: Spacing.three,
   },
   googleButton: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC',
+    backgroundColor: Palette.surfaceWhite,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: Palette.border,
     borderRadius: 14,
     height: 52,
   },
@@ -405,7 +415,8 @@ const styles = StyleSheet.create({
     marginRight: Spacing.three,
   },
   googleButtonText: {
-    color: '#334155',
+    fontFamily: Fonts.sans,
+    color: Palette.text.primary,
     fontSize: 15,
     fontWeight: '600',
   },
@@ -414,11 +425,13 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
   },
   footerText: {
+    fontFamily: Fonts.sans,
     fontSize: 14,
-    color: '#64748B',
+    color: Palette.text.secondary,
   },
   footerLink: {
-    color: '#1D7DF0',
+    fontFamily: Fonts.sans,
+    color: Palette.primary[500],
     fontWeight: 'bold',
   },
 });
