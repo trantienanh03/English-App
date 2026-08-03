@@ -1,27 +1,41 @@
 import React, { useState } from 'react';
+import OnboardingScreen, { OnboardingData } from '@/components/onboarding/onboarding-screen';
 import SignupScreen from '@/components/auth/signup-screen';
 import LoginScreen from '@/components/auth/login-screen';
 import DashboardScreen from '@/components/dashboard/dashboard-screen';
 
 export default function HomeScreen() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showSignup, setShowSignup] = useState(true);
+  const [currentScreen, setCurrentScreen] = useState<'onboarding' | 'login' | 'signup' | 'dashboard'>('onboarding');
+  const [userOnboardingData, setUserOnboardingData] = useState<OnboardingData | null>(null);
 
-  if (isLoggedIn) {
+  if (currentScreen === 'dashboard') {
     return (
       <DashboardScreen
-        onLogout={() => setIsLoggedIn(false)}
+        onLogout={() => setCurrentScreen('onboarding')}
       />
     );
   }
 
-  if (showSignup) {
+  if (currentScreen === 'onboarding') {
+    return (
+      <OnboardingScreen
+        onLoginPress={() => setCurrentScreen('login')}
+        onComplete={(data) => {
+          setUserOnboardingData(data);
+          setCurrentScreen('signup');
+        }}
+      />
+    );
+  }
+
+  if (currentScreen === 'signup') {
     return (
       <SignupScreen
-        onLoginPress={() => setShowSignup(false)}
+        onLoginPress={() => setCurrentScreen('login')}
         onSignupSuccess={() => {
-          alert('Đăng ký thành công!');
-          setIsLoggedIn(true);
+          const planInfo = userOnboardingData ? ` (${userOnboardingData.level} • ${userOnboardingData.dailyTime})` : '';
+          alert(`Đăng ký thành công! Lộ trình học của bạn${planInfo} đã được kích hoạt.`);
+          setCurrentScreen('dashboard');
         }}
       />
     );
@@ -29,9 +43,9 @@ export default function HomeScreen() {
 
   return (
     <LoginScreen
-      onSignupPress={() => setShowSignup(true)}
+      onSignupPress={() => setCurrentScreen('signup')}
       onLoginSuccess={() => {
-        setIsLoggedIn(true);
+        setCurrentScreen('dashboard');
       }}
     />
   );
