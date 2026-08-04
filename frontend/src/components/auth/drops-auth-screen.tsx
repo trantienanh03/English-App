@@ -405,6 +405,8 @@ const styles = StyleSheet.create({
 
   // Form Scroll & Header
   formScrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
     paddingTop: 12,
     paddingBottom: 40,
   },
