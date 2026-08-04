@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import OnboardingScreen, { OnboardingData } from '@/components/onboarding/onboarding-screen';
 import SignupScreen from '@/components/auth/signup-screen';
 import LoginScreen from '@/components/auth/login-screen';
-import DashboardScreen from '@/components/dashboard/dashboard-screen';
+import MainContainer from '@/components/main-container';
 
 export default function HomeScreen() {
   const [currentScreen, setCurrentScreen] = useState<'onboarding' | 'login' | 'signup' | 'dashboard'>('onboarding');
@@ -10,7 +10,7 @@ export default function HomeScreen() {
 
   if (currentScreen === 'dashboard') {
     return (
-      <DashboardScreen
+      <MainContainer
         onLogout={() => setCurrentScreen('onboarding')}
       />
     );

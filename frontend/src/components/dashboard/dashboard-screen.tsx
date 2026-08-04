@@ -6,1309 +6,836 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
-  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
+import { UserProgress, VocabularyWord, Lesson } from '@/types';
+import { playAudio } from '@/utils/audio';
 
 interface DashboardScreenProps {
+  progress: UserProgress;
+  lessons: Lesson[];
+  savedWords: VocabularyWord[];
+  onNavigate: (tab: string) => void;
+  onStartLesson: (lessonId: string) => void;
+  onStartQuiz: () => void;
   onLogout: () => void;
 }
 
-export default function DashboardScreen({ onLogout }: DashboardScreenProps) {
-  const [activeTab, setActiveTab] = useState<'home' | 'learn' | 'scan' | 'cards' | 'profile'>('home');
-  
-  // States for scanner simulation
-  const [scanState, setScanState] = useState<'idle' | 'scanning' | 'success'>('idle');
-  const [scannedResult, setScannedResult] = useState<{ word: string; ipa: string; definition: string; icon: string } | null>(null);
+export default function DashboardScreen({
+  progress,
+  lessons,
+  savedWords,
+  onNavigate,
+  onStartLesson,
+  onStartQuiz,
+  onLogout,
+}: DashboardScreenProps) {
+  const [wordOfTheDay] = useState<VocabularyWord>({
+    id: 'w8',
+    word: 'Punctual',
+    phonetic: '/ˈpʌŋktʃuəl/',
+    vn: 'Đúng giờ, không trễ hẹn',
+    pos: 'Adjective',
+    sentence: 'Please be punctual for the meeting tomorrow.',
+    sentenceVn: 'Xin vui lòng có mặt đúng giờ cho cuộc họp sáng mai.',
+    difficulty: 'medium',
+    imageUrl: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=400&auto=format&fit=crop&q=60'
+  });
 
-  // Simulate AI scanning
-  const startScanning = () => {
-    setScanState('scanning');
-    setScannedResult(null);
-    setTimeout(() => {
-      const items = [
-        { word: 'Laptop', ipa: '/ˈlæptɒp/', definition: 'Máy tính xách tay', icon: 'laptop' },
-        { word: 'Coffee Cup', ipa: '/ˈkɒfi kʌp/', definition: 'Tách cà phê', icon: 'cup-water' },
-        { word: 'Headphones', ipa: '/ˈhedfəʊnz/', definition: 'Tai nghe', icon: 'headphones' },
-        { word: 'Notebook', ipa: '/ˈnəʊtbʊk/', definition: 'Cuốn sổ tay', icon: 'book-open' },
-        { word: 'Smartphone', ipa: '/ˈsmɑːtfəʊn/', definition: 'Điện thoại thông minh', icon: 'cellphone' }
-      ];
-      const randomItem = items[Math.floor(Math.random() * items.length)];
-      setScannedResult(randomItem);
-      setScanState('success');
-    }, 2000);
-  };
+  const xpPercentage = Math.min(Math.round((progress.xp / progress.nextLevelXp) * 100), 100);
+  const activeLesson = lessons[0];
 
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'home':
-        return (
-          <ScrollView
-            style={styles.scrollContainer}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {/* Header Section */}
-            <View style={styles.headerRow}>
-              <View style={styles.profileSection}>
-                <Image
-                  source={{ uri: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256' }}
-                  style={styles.avatar}
-                />
-                <Text style={styles.appName}>Vocam</Text>
-              </View>
-              
-              <View style={styles.xpStreakBadge}>
-                <Text style={styles.xpText}>1,240 XP</Text>
-                <Text style={styles.badgeDivider}>•</Text>
-                <Text style={styles.streakText}>7</Text>
-                <MaterialCommunityIcons name="fire" size={16} color="#EF4444" style={styles.fireIcon} />
-              </View>
-            </View>
+  const dailyQuests = [
+    { id: 'q_scan', text: 'Quét 1 vật thể thực tế với Object Scanner', xp: 15, completed: savedWords.some(w => w.captured) },
+    { id: 'q_flash', text: 'Ôn tập 3 thẻ Flashcards trong sổ từ', xp: 10, completed: savedWords.length >= 3 },
+    { id: 'q_quiz', text: 'Làm bài Kiểm tra (Quiz) đạt điểm tối đa', xp: 25, completed: progress.xp >= 350 }
+  ];
 
-            {/* Greeting */}
-            <View style={styles.greetingSection}>
-              <Text style={styles.greetingTitle}>Chào buổi sáng!</Text>
-              <Text style={styles.greetingSubtitle}>Let&apos;s keep your streak alive today.</Text>
-            </View>
-
-            {/* Daily Goal Card */}
-            <View style={styles.dailyGoalCard}>
-              <View style={styles.goalInfo}>
-                <Text style={styles.goalTitle}>Daily Goal</Text>
-                <Text style={styles.goalSubtitle}>Complete 2 more lessons</Text>
-                <TouchableOpacity style={styles.continueButton} onPress={() => setActiveTab('learn')}>
-                  <Text style={styles.continueButtonText}>Continue Learning</Text>
-                </TouchableOpacity>
-              </View>
-              
-              <View style={styles.progressContainer}>
-                <View style={styles.progressRingOuter}>
-                  <Text style={styles.progressPercentage}>75%</Text>
-                </View>
-              </View>
-            </View>
-
-            {/* Up Next Section */}
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Up Next</Text>
-            </View>
-
-            {/* Vocabulary Card */}
-            <View style={styles.contentCard}>
-              <Image
-                source={{ uri: 'https://images.unsplash.com/photo-1583085204743-af79e5c3e14b?q=80&w=500' }}
-                style={styles.cardImage}
-              />
-              <View style={styles.cardInfo}>
-                <View style={styles.cardHeaderRow}>
-                  <View style={styles.badgeEasy}>
-                    <Text style={styles.badgeTextEasy}>Easy</Text>
-                  </View>
-                  <Feather name="coffee" size={16} color="#64748B" />
-                </View>
-                <Text style={styles.cardTitle}>Vocabulary</Text>
-                <Text style={styles.cardSubtitle}>Food & Dining</Text>
-              </View>
-            </View>
-
-            {/* Listening Card */}
-            <View style={styles.contentCard}>
-              <Image
-                source={{ uri: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=500' }}
-                style={styles.cardImage}
-              />
-              <View style={styles.cardInfo}>
-                <View style={styles.cardHeaderRow}>
-                  <View style={styles.badgeMedium}>
-                    <Text style={styles.badgeTextMedium}>Medium</Text>
-                  </View>
-                  <MaterialCommunityIcons name="airplane" size={16} color="#64748B" />
-                </View>
-                <Text style={styles.cardTitle}>Listening</Text>
-                <Text style={styles.cardSubtitle}>At the Airport</Text>
-              </View>
-            </View>
-
-            {/* Grammar Card */}
-            <View style={styles.grammarCardRow}>
-              <View style={styles.grammarIconBox}>
-                <Feather name="book-open" size={20} color={Palette.primary[500]} />
-              </View>
-              <View style={styles.grammarInfo}>
-                <View style={styles.grammarHeaderRow}>
-                  <Text style={styles.grammarTitle}>Grammar</Text>
-                  <View style={styles.badgeHard}>
-                    <Text style={styles.badgeTextHard}>Hard</Text>
-                  </View>
-                </View>
-                <Text style={styles.grammarSubtitle}>Simple Past Tense</Text>
-              </View>
-            </View>
-
-            {/* Extra padding at the bottom to avoid tab overlap */}
-            <View style={{ height: 100 }} />
-          </ScrollView>
-        );
-
-      case 'learn':
-        return (
-          <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
-            <View style={styles.placeholderHeader}>
-              <Text style={styles.placeholderTitle}>Khoá học của bạn</Text>
-              <Text style={styles.placeholderSubtitle}>Học tiếng Anh theo lộ trình bài bản cùng Vocam</Text>
-            </View>
-
-            <View style={styles.courseItem}>
-              <View style={[styles.courseIcon, { backgroundColor: Palette.primary[100] }]}>
-                <Feather name="compass" size={24} color={Palette.primary[500]} />
-              </View>
-              <View style={styles.courseDetails}>
-                <Text style={styles.courseTitle}>Giao tiếp cơ bản</Text>
-                <Text style={styles.courseDesc}>15 bài học • 35 từ vựng</Text>
-                <View style={styles.progressBarBg}>
-                  <View style={[styles.progressBarFill, { width: '80%' }]} />
-                </View>
-              </View>
-              <Feather name="chevron-right" size={20} color={Palette.text.muted} />
-            </View>
-
-            <View style={styles.courseItem}>
-              <View style={[styles.courseIcon, { backgroundColor: Palette.secondary[100] }]}>
-                <Feather name="briefcase" size={24} color={Palette.secondary[500]} />
-              </View>
-              <View style={styles.courseDetails}>
-                <Text style={styles.courseTitle}>Tiếng Anh Công sở</Text>
-                <Text style={styles.courseDesc}>24 bài học • 80 từ vựng</Text>
-                <View style={styles.progressBarBg}>
-                  <View style={[styles.progressBarFill, { width: '40%' }]} />
-                </View>
-              </View>
-              <Feather name="chevron-right" size={20} color={Palette.text.muted} />
-            </View>
-
-            <View style={styles.courseItem}>
-              <View style={[styles.courseIcon, { backgroundColor: Palette.error.bg }]}>
-                <Feather name="plane" size={24} color={Palette.error.text} />
-              </View>
-              <View style={styles.courseDetails}>
-                <Text style={styles.courseTitle}>Du lịch bụi</Text>
-                <Text style={styles.courseDesc}>10 bài học • 25 từ vựng</Text>
-                <View style={styles.progressBarBg}>
-                  <View style={[styles.progressBarFill, { width: '10%' }]} />
-                </View>
-              </View>
-              <Feather name="chevron-right" size={20} color={Palette.text.muted} />
-            </View>
-
-            <View style={{ height: 100 }} />
-          </ScrollView>
-        );
-
-      case 'scan':
-        return (
-          <View style={styles.scannerContainer}>
-            <View style={styles.scannerHeader}>
-              <Text style={styles.scannerTitle}>Nhận diện vật thể</Text>
-              <Text style={styles.scannerSubtitle}>Hướng camera vào vật thể để học từ vựng</Text>
-            </View>
-
-            <View style={styles.viewfinderContainer}>
-              {scanState === 'idle' && (
-                <TouchableOpacity style={styles.scanTriggerButton} onPress={startScanning}>
-                  <Feather name="camera" size={48} color="#FFFFFF" />
-                  <Text style={styles.scanTriggerText}>Bấm để bắt đầu quét</Text>
-                </TouchableOpacity>
-              )}
-
-              {scanState === 'scanning' && (
-                <View style={styles.scanningIndicatorContainer}>
-                  <ActivityIndicator size="large" color={Palette.primary[300]} />
-                  <Text style={styles.scanningText}>Đang nhận dạng vật thể bằng AI...</Text>
-                </View>
-              )}
-
-              {scanState === 'success' && scannedResult && (
-                <View style={styles.scanSuccessContainer}>
-                  <MaterialCommunityIcons name={scannedResult.icon as any} size={72} color={Palette.primary[500]} />
-                  <Text style={styles.scanResultWord}>{scannedResult.word}</Text>
-                  <Text style={styles.scanResultIpa}>{scannedResult.ipa}</Text>
-                  <Text style={styles.scanResultDef}>{scannedResult.definition}</Text>
-                  
-                  <View style={styles.scanActionsRow}>
-                    <TouchableOpacity style={styles.addToCardsBtn} onPress={() => {
-                      alert('Đã thêm từ vựng vào kho Flashcard ôn tập!');
-                      setScanState('idle');
-                    }}>
-                      <Feather name="plus" size={16} color="#FFF" style={{ marginRight: 6 }} />
-                      <Text style={styles.addToCardsBtnText}>Lưu Flashcard</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity style={styles.scanAgainBtn} onPress={() => setScanState('idle')}>
-                      <Text style={styles.scanAgainBtnText}>Quét lại</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
-
-              {/* Decorative borders for viewfinder */}
-              <View style={[styles.viewfinderCorner, styles.cornerTL]} />
-              <View style={[styles.viewfinderCorner, styles.cornerTR]} />
-              <View style={[styles.viewfinderCorner, styles.cornerBL]} />
-              <View style={[styles.viewfinderCorner, styles.cornerBR]} />
-            </View>
-
-            <View style={styles.scanTipBox}>
-              <MaterialCommunityIcons name="lightbulb-on" size={20} color="#F59E0B" />
-              <Text style={styles.scanTipText}>
-                Hệ thống nhận diện offline (Edge AI) tức thời dưới 50ms chạy trực tiếp trên thiết bị của bạn.
-              </Text>
-            </View>
-          </View>
-        );
-
-      case 'cards':
-        return (
-          <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
-            <View style={styles.placeholderHeader}>
-              <Text style={styles.placeholderTitle}>Thẻ ghi nhớ (Flashcards)</Text>
-              <Text style={styles.placeholderSubtitle}>Luyện tập ghi nhớ ngắt quãng bằng thuật toán SM-2</Text>
-            </View>
-
-            <View style={styles.statsSummaryRow}>
-              <View style={styles.statBox}>
-                <Text style={styles.statNumber}>12</Text>
-                <Text style={styles.statLabel}>Cần ôn tập</Text>
-              </View>
-              <View style={[styles.statBox, { borderColor: '#10B981' }]}>
-                <Text style={[styles.statNumber, { color: '#10B981' }]}>84</Text>
-                <Text style={styles.statLabel}>Đã thuộc</Text>
-              </View>
-              <View style={[styles.statBox, { borderColor: '#1D7DF0' }]}>
-                <Text style={[styles.statNumber, { color: '#1D7DF0' }]}>96</Text>
-                <Text style={styles.statLabel}>Tổng số thẻ</Text>
-              </View>
-            </View>
-
-            <TouchableOpacity style={styles.practiceBtn} onPress={() => alert('Bắt đầu ôn tập 12 từ vựng hôm nay!')}>
-              <Text style={styles.practiceBtnText}>Luyện tập ngay hôm nay</Text>
-              <Feather name="play" size={16} color="#FFF" style={{ marginLeft: 8 }} />
-            </TouchableOpacity>
-
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Từ vựng gần đây</Text>
-            </View>
-
-            <View style={styles.cardItem}>
-              <View>
-                <Text style={styles.cardItemWord}>Banh mi</Text>
-                <Text style={styles.cardItemIpa}>/ˈbɑːn miː/</Text>
-                <Text style={styles.cardItemDef}>Bánh mì Việt Nam</Text>
-              </View>
-              <View style={styles.cardItemBadgeGreen}>
-                <Text style={styles.cardItemBadgeTextGreen}>Đã nhớ</Text>
-              </View>
-            </View>
-
-            <View style={styles.cardItem}>
-              <View>
-                <Text style={styles.cardItemWord}>Airport</Text>
-                <Text style={styles.cardItemIpa}>/ˈeəpɔːt/</Text>
-                <Text style={styles.cardItemDef}>Sân bay</Text>
-              </View>
-              <View style={styles.cardItemBadgeOrange}>
-                <Text style={styles.cardItemBadgeTextOrange}>Đang học</Text>
-              </View>
-            </View>
-
-            <View style={{ height: 100 }} />
-          </ScrollView>
-        );
-
-      case 'profile':
-        return (
-          <ScrollView style={styles.scrollContainer} contentContainerStyle={styles.scrollContent}>
-            <View style={styles.profileHeaderCard}>
-              <Image
-                source={{ uri: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256' }}
-                style={styles.profileAvatarLarge}
-              />
-              <Text style={styles.profileName}>Nguyễn Anh Thư</Text>
-              <Text style={styles.profileEmail}>thu.nguyen@example.com</Text>
-
-              <View style={styles.profileStatsRow}>
-                <View style={styles.profileStatItem}>
-                  <Text style={styles.profileStatVal}>Level 5</Text>
-                  <Text style={styles.profileStatLbl}>Cấp độ học</Text>
-                </View>
-                <View style={styles.profileStatItem}>
-                  <Text style={styles.profileStatVal}>1,240</Text>
-                  <Text style={styles.profileStatLbl}>Tổng XP</Text>
-                </View>
-                <View style={styles.profileStatItem}>
-                  <Text style={styles.profileStatVal}>7 Ngày</Text>
-                  <Text style={styles.profileStatLbl}>Chuỗi học</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.settingsGroup}>
-              <TouchableOpacity style={styles.settingItem} onPress={() => alert('Tính năng hồ sơ cá nhân')}>
-                <View style={styles.settingLeft}>
-                  <Feather name="user" size={18} color="#475569" style={{ marginRight: 12 }} />
-                  <Text style={styles.settingText}>Thông tin cá nhân</Text>
-                </View>
-                <Feather name="chevron-right" size={18} color="#94A3B8" />
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.settingItem} onPress={() => alert('Cài đặt nhắc nhở học tập')}>
-                <View style={styles.settingLeft}>
-                  <Feather name="bell" size={18} color="#475569" style={{ marginRight: 12 }} />
-                  <Text style={styles.settingText}>Nhắc nhở học tập</Text>
-                </View>
-                <Feather name="chevron-right" size={18} color="#94A3B8" />
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.settingItem} onPress={() => alert('Cài đặt ngôn ngữ hiển thị')}>
-                <View style={styles.settingLeft}>
-                  <Feather name="globe" size={18} color="#475569" style={{ marginRight: 12 }} />
-                  <Text style={styles.settingText}>Ngôn ngữ (Tiếng Việt)</Text>
-                </View>
-                <Feather name="chevron-right" size={18} color="#94A3B8" />
-              </TouchableOpacity>
-            </View>
-
-            <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
-              <Feather name="log-out" size={18} color="#EF4444" style={{ marginRight: 8 }} />
-              <Text style={styles.logoutBtnText}>Đăng xuất tài khoản</Text>
-            </TouchableOpacity>
-
-            <View style={{ height: 100 }} />
-          </ScrollView>
-        );
-    }
-  };
+  const completedQuestsCount = dailyQuests.filter(q => q.completed).length;
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Content wrapper */}
-      <View style={styles.contentWrapper}>
-        {renderContent()}
-      </View>
-
-      {/* Floating Bottom Tab Bar */}
-      <View style={styles.tabBarContainer}>
-        <View style={styles.tabBar}>
-          {/* Tab: Home */}
-          <TouchableOpacity
-            style={[styles.tabItem, activeTab === 'home' && styles.tabItemActive]}
-            onPress={() => setActiveTab('home')}
-          >
-            <View style={[styles.tabIconWrapper, activeTab === 'home' && styles.tabIconWrapperActive]}>
-              <Feather name="home" size={20} color={activeTab === 'home' ? Palette.primary[500] : Palette.text.muted} />
-              {activeTab === 'home' && <Text style={styles.tabLabelActive}>Home</Text>}
-            </View>
-            {activeTab !== 'home' && <Text style={styles.tabLabel}>Home</Text>}
-          </TouchableOpacity>
-
-          {/* Tab: Learn */}
-          <TouchableOpacity
-            style={[styles.tabItem, activeTab === 'learn' && styles.tabItemActive]}
-            onPress={() => setActiveTab('learn')}
-          >
-            <View style={[styles.tabIconWrapper, activeTab === 'learn' && styles.tabIconWrapperActive]}>
-              <Feather name="book" size={20} color={activeTab === 'learn' ? Palette.primary[500] : Palette.text.muted} />
-              {activeTab === 'learn' && <Text style={styles.tabLabelActive}>Learn</Text>}
-            </View>
-            {activeTab !== 'learn' && <Text style={styles.tabLabel}>Learn</Text>}
-          </TouchableOpacity>
-
-          {/* Prominent Tab: SCAN */}
-          <TouchableOpacity
-            style={styles.scanTabItem}
-            onPress={() => setActiveTab('scan')}
-          >
-            <View style={[
-              styles.scanFab,
-              activeTab === 'scan' && styles.scanFabActive
-            ]}>
-              <MaterialCommunityIcons 
-                name="line-scan" 
-                size={28} 
-                color={activeTab === 'scan' ? Palette.primary[500] : Palette.secondary[500]} 
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+        style={styles.scrollContainer}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* HEADER BAR: STREAK & LEVEL */}
+        <View style={styles.topHeaderRow}>
+          <View style={styles.profileBadge}>
+            <View style={styles.avatarWrapper}>
+              <Image
+                source={{ uri: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256' }}
+                style={styles.avatar}
               />
+              <View style={styles.proTag}>
+                <Text style={styles.proTagText}>PRO</Text>
+              </View>
             </View>
-            <Text style={[styles.scanLabel, activeTab === 'scan' && styles.scanLabelActive]}>SCAN</Text>
-          </TouchableOpacity>
+            <View>
+              <Text style={styles.appName}>Vocam</Text>
+              <View style={styles.xpRow}>
+                <MaterialCommunityIcons name="lightning-bolt" size={14} color="#EAB308" />
+                <Text style={styles.xpText}>{progress.xp} XP • Lv.{progress.level}</Text>
+              </View>
+            </View>
+          </View>
 
-          {/* Tab: Cards */}
-          <TouchableOpacity
-            style={[styles.tabItem, activeTab === 'cards' && styles.tabItemActive]}
-            onPress={() => setActiveTab('cards')}
-          >
-            <View style={[styles.tabIconWrapper, activeTab === 'cards' && styles.tabIconWrapperActive]}>
-              <MaterialCommunityIcons name="card-multiple-outline" size={20} color={activeTab === 'cards' ? Palette.primary[500] : Palette.text.muted} />
-              {activeTab === 'cards' && <Text style={styles.tabLabelActive}>Cards</Text>}
-            </View>
-            {activeTab !== 'cards' && <Text style={styles.tabLabel}>Cards</Text>}
-          </TouchableOpacity>
-
-          {/* Tab: Profile */}
-          <TouchableOpacity
-            style={[styles.tabItem, activeTab === 'profile' && styles.tabItemActive]}
-            onPress={() => setActiveTab('profile')}
-          >
-            <View style={[styles.tabIconWrapper, activeTab === 'profile' && styles.tabIconWrapperActive]}>
-              <Feather name="user" size={20} color={activeTab === 'profile' ? Palette.primary[500] : Palette.text.muted} />
-              {activeTab === 'profile' && <Text style={styles.tabLabelActive}>Profile</Text>}
-            </View>
-            {activeTab !== 'profile' && <Text style={styles.tabLabel}>Profile</Text>}
-          </TouchableOpacity>
+          <View style={styles.streakBadge}>
+            <MaterialCommunityIcons name="fire" size={18} color="#EF4444" />
+            <Text style={styles.streakText}>{progress.streak} ngày</Text>
+          </View>
         </View>
-      </View>
+
+        {/* XP LEVEL PROGRESS CARD */}
+        <View style={styles.levelCard}>
+          <View style={styles.levelCardHeader}>
+            <View>
+              <Text style={styles.levelCardCategory}>Tiến trình Cấp độ</Text>
+              <Text style={styles.levelCardTitle}>Sắp thăng hạng rồi! 🚀</Text>
+            </View>
+            <TouchableOpacity style={styles.quizQuickBtn} onPress={onStartQuiz}>
+              <MaterialCommunityIcons name="target" size={14} color="#FFFFFF" />
+              <Text style={styles.quizQuickBtnText}>LÀM QUIZ</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.progressRowText}>
+            <Text style={styles.progressLabel}>Cấp độ {progress.level}</Text>
+            <Text style={styles.progressValue}>{progress.xp} / {progress.nextLevelXp} XP</Text>
+          </View>
+          <View style={styles.progressBarTrack}>
+            <View style={[styles.progressBarFill, { width: `${xpPercentage}%` }]} />
+          </View>
+          <Text style={styles.progressFootnote}>
+            Cần thêm <Text style={styles.progressFootnoteBold}>{progress.nextLevelXp - progress.xp} XP</Text> để lên Level {progress.level + 1}!
+          </Text>
+        </View>
+
+        {/* QUICK START LESSON */}
+        {activeLesson && (
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionTitleRow}>
+                <View style={styles.iconCircleGreen}>
+                  <Feather name="book-open" size={16} color={Palette.primary[500]} />
+                </View>
+                <View>
+                  <Text style={styles.sectionTitle}>Bài học hôm nay</Text>
+                  <Text style={styles.sectionSubtitle}>Bắt đầu ngay để duy trì chuỗi học</Text>
+                </View>
+              </View>
+              <View style={styles.difficultyChip}>
+                <Text style={styles.difficultyText}>{activeLesson.difficulty}</Text>
+              </View>
+            </View>
+
+            <View style={styles.lessonBox}>
+              <Text style={styles.lessonIcon}>{activeLesson.icon}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.lessonName}>{activeLesson.name}</Text>
+                <Text style={styles.lessonDesc} numberOfLines={1}>{activeLesson.description}</Text>
+                <View style={styles.lessonProgressRow}>
+                  <View style={styles.miniProgressTrack}>
+                    <View style={[styles.miniProgressFill, { width: `${activeLesson.progress}%` }]} />
+                  </View>
+                  <Text style={styles.miniProgressText}>{activeLesson.progress}% hoàn thành</Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.continueButton}
+                onPress={() => onStartLesson(activeLesson.id)}
+              >
+                <Text style={styles.continueButtonText}>HỌC TIẾP</Text>
+                <Feather name="chevron-right" size={14} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* WORD OF THE DAY */}
+        <View style={styles.sectionCard}>
+          <View style={styles.wotdHeader}>
+            <Feather name="sparkles" size={16} color={Palette.primary[500]} />
+            <Text style={styles.wotdBadgeText}>TỪ VỰNG HÔM NAY</Text>
+          </View>
+
+          <View style={styles.wotdContent}>
+            <Image source={{ uri: wordOfTheDay.imageUrl }} style={styles.wotdImage} />
+            <View style={{ flex: 1 }}>
+              <View style={styles.wordTitleRow}>
+                <Text style={styles.wordTitle}>{wordOfTheDay.word}</Text>
+                <View style={styles.posBadge}>
+                  <Text style={styles.posText}>{wordOfTheDay.pos}</Text>
+                </View>
+              </View>
+              <View style={styles.phoneticRow}>
+                <Text style={styles.phoneticText}>{wordOfTheDay.phonetic}</Text>
+                <TouchableOpacity onPress={() => playAudio(wordOfTheDay.word)} style={styles.audioBtn}>
+                  <Feather name="volume-2" size={16} color={Palette.primary[500]} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.vnDefBox}>
+            <Text style={styles.vnDefLabel}>Nghĩa tiếng Việt</Text>
+            <Text style={styles.vnDefText}>🇻🇳 {wordOfTheDay.vn}</Text>
+            <Text style={styles.sentenceText}>“{wordOfTheDay.sentence}”</Text>
+          </View>
+        </View>
+
+        {/* RECENT CAPTURED WORDS SHORTCUT */}
+        {savedWords.filter(w => w.captured).length > 0 && (
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Vật thể vừa quét ({savedWords.filter(w => w.captured).length})</Text>
+              <TouchableOpacity onPress={() => onNavigate('cards')}>
+                <Text style={styles.linkText}>Xem tất cả <Feather name="chevron-right" size={12} /></Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.capturedGrid}>
+              {savedWords.filter(w => w.captured).slice(-2).map((word) => (
+                <View key={word.id} style={styles.capturedItemCard}>
+                  <Image source={{ uri: word.imageUrl }} style={styles.capturedThumb} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.capturedWord} numberOfLines={1}>{word.word}</Text>
+                    <Text style={styles.capturedPhonetic} numberOfLines={1}>{word.phonetic}</Text>
+                    <Text style={styles.capturedVn} numberOfLines={1}>🇻🇳 {word.vn}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* WEEKLY XP CHART */}
+        <View style={styles.sectionCard}>
+          <Text style={styles.sectionTitle}>Hoạt động tuần này</Text>
+          <Text style={styles.sectionSubtitle}>Duy trì việc tích lũy XP hàng ngày</Text>
+
+          <View style={styles.chartRow}>
+            {progress.weeklyXp.map((day, idx) => {
+              const maxVal = Math.max(...progress.weeklyXp.map(d => d.xp)) || 1;
+              const barHeightPercent = Math.max(Math.round((day.xp / maxVal) * 100), 10);
+              const isToday = idx === 5;
+
+              return (
+                <View key={day.day} style={styles.chartCol}>
+                  <Text style={styles.chartXpVal}>{day.xp > 0 ? day.xp : ''}</Text>
+                  <View style={styles.chartBarTrack}>
+                    <View
+                      style={[
+                        styles.chartBarFill,
+                        { height: `${barHeightPercent}%` },
+                        day.active ? styles.barActive : styles.barInactive,
+                        isToday && styles.barToday,
+                      ]}
+                    />
+                  </View>
+                  <Text style={[styles.chartDayLabel, isToday && styles.chartDayToday]}>{day.day}</Text>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* DAILY QUESTS */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={styles.sectionTitle}>Nhiệm vụ hàng ngày</Text>
+              <Text style={styles.sectionSubtitle}>Hoàn thành để nhận thêm nhiều XP</Text>
+            </View>
+            <Text style={styles.questStatusText}>{completedQuestsCount}/{dailyQuests.length} xong</Text>
+          </View>
+
+          <View style={styles.questsList}>
+            {dailyQuests.map((quest) => (
+              <View
+                key={quest.id}
+                style={[
+                  styles.questItem,
+                  quest.completed ? styles.questCompleted : styles.questPending,
+                ]}
+              >
+                <View style={styles.questLeft}>
+                  <MaterialCommunityIcons
+                    name={quest.completed ? "check-circle" : "checkbox-blank-circle-outline"}
+                    size={20}
+                    color={quest.completed ? Palette.primary[500] : Palette.text.muted}
+                  />
+                  <Text
+                    style={[
+                      styles.questText,
+                      quest.completed && styles.questTextCompleted,
+                    ]}
+                  >
+                    {quest.text}
+                  </Text>
+                </View>
+                <View style={styles.xpRewardTag}>
+                  <Text style={styles.xpRewardText}>+{quest.xp} XP</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* LOGOUT BUTTON */}
+        <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
+          <Feather name="log-out" size={16} color={Palette.error.text} />
+          <Text style={styles.logoutBtnText}>Đăng xuất</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
     backgroundColor: Palette.canvas,
-  },
-  contentWrapper: {
-    flex: 1,
   },
   scrollContainer: {
     flex: 1,
   },
   scrollContent: {
     paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-    paddingBottom: Spacing.six,
+    paddingBottom: 110,
+    paddingTop: Spacing.two,
   },
-  headerRow: {
+
+  // Header Row
+  topHeaderRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.four,
-  },
-  profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  avatar: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    borderWidth: 1.5,
-    borderColor: Palette.border,
-    marginRight: Spacing.two,
-  },
-  appName: {
-    fontFamily: Fonts.sans,
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Palette.primary[500],
-  },
-  xpStreakBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Palette.surface,
-    paddingHorizontal: Spacing.three,
-    height: 36,
-    borderRadius: 18,
+    backgroundColor: Palette.surfaceWhite,
+    borderRadius: 20,
+    padding: Spacing.three,
+    marginBottom: Spacing.three,
     borderWidth: 1,
     borderColor: Palette.border,
   },
-  xpText: {
+  profileBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  avatarWrapper: {
+    position: 'relative',
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+  },
+  proTag: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    backgroundColor: Palette.primary[500],
+    borderRadius: 8,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+  },
+  proTagText: {
     fontFamily: Fonts.sans,
-    fontSize: 13,
-    fontWeight: 'bold',
+    fontSize: 8,
+    fontWeight: '900',
+    color: '#FFFFFF',
+  },
+  appName: {
+    fontFamily: Fonts.sans,
+    fontSize: 16,
+    fontWeight: '800',
     color: Palette.text.primary,
   },
-  badgeDivider: {
-    fontSize: 13,
-    color: Palette.text.muted,
-    marginHorizontal: Spacing.one,
+  xpRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  xpText: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    color: Palette.text.secondary,
+    fontWeight: '600',
+  },
+  streakBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#FDE68A',
   },
   streakText: {
     fontFamily: Fonts.sans,
     fontSize: 13,
-    fontWeight: 'bold',
-    color: Palette.text.primary,
-    marginRight: 2,
+    fontWeight: '800',
+    color: '#B45309',
   },
-  fireIcon: {
-    marginTop: -2,
-  },
-  greetingSection: {
-    marginBottom: Spacing.four,
-  },
-  greetingTitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: Palette.text.primary,
-    marginBottom: Spacing.one,
-  },
-  greetingSubtitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 15,
-    color: Palette.text.secondary,
-  },
-  dailyGoalCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    backgroundColor: Palette.surfaceWhite,
+
+  // Level Card
+  levelCard: {
+    backgroundColor: Palette.primary[500],
     borderRadius: 24,
     padding: Spacing.four,
-    borderWidth: 1,
-    borderColor: Palette.border,
-    shadowColor: Palette.text.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.04,
-    shadowRadius: 16,
-    elevation: 3,
-    marginBottom: Spacing.five,
-  },
-  goalInfo: {
-    flex: 1.2,
-    justifyContent: 'center',
-  },
-  goalTitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Palette.text.primary,
-    marginBottom: Spacing.one,
-  },
-  goalSubtitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    color: Palette.text.secondary,
     marginBottom: Spacing.three,
   },
-  continueButton: {
-    backgroundColor: Palette.primary[500],
-    borderRadius: 14,
-    paddingHorizontal: Spacing.three,
-    height: 38,
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-  },
-  continueButtonText: {
-    fontFamily: Fonts.sans,
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: 'bold',
-  },
-  progressContainer: {
-    flex: 0.8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  progressRingOuter: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 8,
-    borderColor: Palette.primary[100],
-    borderTopColor: Palette.primary[500],
-    borderRightColor: Palette.primary[500],
-    borderLeftColor: Palette.primary[500],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  progressPercentage: {
-    fontFamily: Fonts.sans,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Palette.primary[500],
-  },
-  sectionHeader: {
+  levelCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: Spacing.three,
   },
-  sectionTitle: {
+  levelCardCategory: {
+    fontFamily: Fonts.sans,
+    fontSize: 11,
+    color: Palette.primary[100],
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  levelCardTitle: {
     fontFamily: Fonts.sans,
     fontSize: 20,
-    fontWeight: 'bold',
-    color: Palette.text.primary,
-  },
-  contentCard: {
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 24,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: Palette.border,
-    shadowColor: Palette.text.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.04,
-    shadowRadius: 16,
-    elevation: 3,
-    marginBottom: Spacing.four,
-  },
-  cardImage: {
-    width: '100%',
-    height: 160,
-    resizeMode: 'cover',
-  },
-  cardInfo: {
-    padding: Spacing.three,
-  },
-  cardHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.one,
-  },
-  badgeEasy: {
-    backgroundColor: Palette.success.bg,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  badgeTextEasy: {
-    fontFamily: Fonts.sans,
-    color: Palette.success.text,
-    fontSize: 11,
-    fontWeight: 'bold',
-  },
-  badgeMedium: {
-    backgroundColor: Palette.warning.bg,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  badgeTextMedium: {
-    fontFamily: Fonts.sans,
-    color: Palette.warning.text,
-    fontSize: 11,
-    fontWeight: 'bold',
-  },
-  cardTitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Palette.text.primary,
-    marginBottom: 2,
-  },
-  cardSubtitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    color: Palette.text.secondary,
-  },
-  grammarCardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 20,
-    padding: Spacing.three,
-    borderWidth: 1,
-    borderColor: Palette.border,
-    shadowColor: Palette.text.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.04,
-    shadowRadius: 16,
-    elevation: 3,
-    marginBottom: Spacing.four,
-  },
-  grammarIconBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: Palette.primary[100],
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: Spacing.three,
-  },
-  grammarInfo: {
-    flex: 1,
-  },
-  grammarHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 2,
-  },
-  grammarTitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Palette.text.primary,
-  },
-  badgeHard: {
-    backgroundColor: Palette.error.bg,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  badgeTextHard: {
-    fontFamily: Fonts.sans,
-    color: Palette.error.text,
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  grammarSubtitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    color: Palette.text.secondary,
-  },
-
-  // Floating Tab Bar Styling
-  tabBarContainer: {
-    position: 'absolute',
-    bottom: Spacing.four,
-    left: Spacing.three,
-    right: Spacing.three,
-    backgroundColor: 'transparent',
-  },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 24,
-    height: 72,
-    alignItems: 'center',
-    justifyContent: 'space-around',
-    paddingHorizontal: Spacing.two,
-    shadowColor: Palette.text.primary,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.08,
-    shadowRadius: 20,
-    elevation: 10,
-    borderWidth: 1,
-    borderColor: Palette.border,
-  },
-  tabItem: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: '100%',
-  },
-  tabIconWrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 38,
-    paddingHorizontal: Spacing.two,
-    borderRadius: 18,
-    flexDirection: 'row',
-  },
-  tabIconWrapperActive: {
-    backgroundColor: Palette.primary[100],
-  },
-  tabLabel: {
-    fontFamily: Fonts.sans,
-    fontSize: 10,
-    color: Palette.text.muted,
-    fontWeight: '500',
+    fontWeight: '800',
+    color: '#FFFFFF',
     marginTop: 2,
   },
-  tabLabelActive: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: Palette.primary[500],
-    fontWeight: 'bold',
-    marginLeft: 6,
-  },
-  tabItemActive: {
-    flex: 1.3,
-  },
-  scanTabItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    top: -12,
-    width: 68,
-  },
-  scanFab: {
-    width: 54,
-    height: 54,
-    borderRadius: 27,
-    backgroundColor: Palette.primary[100],
-    borderWidth: 2,
-    borderColor: Palette.primary[500],
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: Palette.primary[500],
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  scanFabActive: {
-    backgroundColor: Palette.secondary[100],
-    borderColor: Palette.secondary[500],
-    shadowColor: Palette.secondary[500],
-  },
-  scanLabel: {
-    fontFamily: Fonts.sans,
-    fontSize: 10,
-    color: Palette.primary[500],
-    fontWeight: 'bold',
-    marginTop: 4,
-  },
-  scanLabelActive: {
-    color: Palette.secondary[500],
-  },
-
-  // Learn tab styling
-  placeholderHeader: {
-    marginTop: Spacing.two,
-    marginBottom: Spacing.four,
-  },
-  placeholderTitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Palette.text.primary,
-    marginBottom: 4,
-  },
-  placeholderSubtitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    color: Palette.text.secondary,
-  },
-  courseItem: {
+  quizQuickBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 20,
-    padding: Spacing.three,
-    marginBottom: Spacing.three,
-    borderWidth: 1,
-    borderColor: Palette.border,
-    shadowColor: Palette.text.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.02,
-    shadowRadius: 10,
-    elevation: 2,
-  },
-  courseIcon: {
-    width: 48,
-    height: 48,
+    gap: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: Spacing.three,
   },
-  courseDetails: {
-    flex: 1,
-  },
-  courseTitle: {
+  quizQuickBtnText: {
     fontFamily: Fonts.sans,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Palette.text.primary,
-    marginBottom: 2,
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
-  courseDesc: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: Palette.text.secondary,
+  progressRowText: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 6,
   },
-  progressBarBg: {
-    height: 6,
-    backgroundColor: Palette.surface,
-    borderRadius: 3,
-    width: '100%',
+  progressLabel: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    color: Palette.primary[100],
+    fontWeight: '600',
+  },
+  progressValue: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    color: '#FFFFFF',
+    fontWeight: '800',
+  },
+  progressBarTrack: {
+    height: 10,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginBottom: Spacing.two,
   },
   progressBarFill: {
     height: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 5,
+  },
+  progressFootnote: {
+    fontFamily: Fonts.sans,
+    fontSize: 11,
+    color: Palette.primary[100],
+  },
+  progressFootnoteBold: {
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+
+  // Section Card Container
+  sectionCard: {
+    backgroundColor: Palette.surfaceWhite,
+    borderRadius: 24,
+    padding: Spacing.three,
+    marginBottom: Spacing.three,
+    borderWidth: 1,
+    borderColor: Palette.border,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.two,
+  },
+  sectionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  iconCircleGreen: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: Palette.primary[100],
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sectionTitle: {
+    fontFamily: Fonts.sans,
+    fontSize: 15,
+    fontWeight: '800',
+    color: Palette.text.primary,
+  },
+  sectionSubtitle: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    color: Palette.text.muted,
+  },
+  difficultyChip: {
+    backgroundColor: Palette.secondary[100],
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  difficultyText: {
+    fontFamily: Fonts.sans,
+    fontSize: 11,
+    fontWeight: '700',
+    color: Palette.secondary[600],
+  },
+  linkText: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    fontWeight: '700',
+    color: Palette.primary[500],
+  },
+
+  // Lesson Box
+  lessonBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Palette.canvas,
+    borderRadius: 16,
+    padding: Spacing.three,
+    gap: Spacing.two,
+  },
+  lessonIcon: {
+    fontSize: 28,
+  },
+  lessonName: {
+    fontFamily: Fonts.sans,
+    fontSize: 14,
+    fontWeight: '800',
+    color: Palette.text.primary,
+  },
+  lessonDesc: {
+    fontFamily: Fonts.sans,
+    fontSize: 11,
+    color: Palette.text.secondary,
+    marginTop: 2,
+  },
+  lessonProgressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
+  },
+  miniProgressTrack: {
+    width: 80,
+    height: 6,
+    backgroundColor: Palette.border,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  miniProgressFill: {
+    height: '100%',
     backgroundColor: Palette.primary[500],
     borderRadius: 3,
   },
-
-  // Scanner Simulator Styling
-  scannerContainer: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-    justifyContent: 'space-between',
-    paddingBottom: 110,
-  },
-  scannerHeader: {
-    marginBottom: Spacing.three,
-  },
-  scannerTitle: {
+  miniProgressText: {
     fontFamily: Fonts.sans,
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Palette.text.primary,
-    marginBottom: 4,
+    fontSize: 10,
+    color: Palette.text.muted,
+    fontWeight: '600',
   },
-  scannerSubtitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    color: Palette.text.secondary,
-  },
-  viewfinderContainer: {
-    flex: 1,
-    backgroundColor: Palette.canvasDark,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: Palette.primary[600],
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-    overflow: 'hidden',
-    minHeight: 280,
-  },
-  viewfinderCorner: {
-    position: 'absolute',
-    width: 24,
-    height: 24,
-    borderColor: Palette.primary[300],
-  },
-  cornerTL: {
-    top: 20,
-    left: 20,
-    borderTopWidth: 4,
-    borderLeftWidth: 4,
-  },
-  cornerTR: {
-    top: 20,
-    right: 20,
-    borderTopWidth: 4,
-    borderRightWidth: 4,
-  },
-  cornerBL: {
-    bottom: 20,
-    left: 20,
-    borderBottomWidth: 4,
-    borderLeftWidth: 4,
-  },
-  cornerBR: {
-    bottom: 20,
-    right: 20,
-    borderBottomWidth: 4,
-    borderRightWidth: 4,
-  },
-  scanTriggerButton: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  scanTriggerText: {
-    fontFamily: Fonts.sans,
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: 'bold',
-    marginTop: Spacing.two,
-  },
-  scanningIndicatorContainer: {
-    alignItems: 'center',
-  },
-  scanningText: {
-    fontFamily: Fonts.sans,
-    color: Palette.primary[100],
-    fontSize: 14,
-    marginTop: Spacing.three,
-    fontWeight: '500',
-  },
-  scanSuccessContainer: {
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 20,
-    padding: Spacing.four,
-    alignItems: 'center',
-    width: '85%',
-    borderWidth: 1,
-    borderColor: Palette.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  scanResultWord: {
-    fontFamily: Fonts.sans,
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: Palette.text.primary,
-    marginTop: Spacing.two,
-  },
-  scanResultIpa: {
-    fontFamily: Fonts.sans,
-    fontSize: 15,
-    color: Palette.text.ipa,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  scanResultDef: {
-    fontFamily: Fonts.sans,
-    fontSize: 16,
-    color: Palette.text.secondary,
-    marginTop: Spacing.one,
-    textAlign: 'center',
-  },
-  scanActionsRow: {
-    flexDirection: 'row',
-    marginTop: Spacing.four,
-    gap: Spacing.two,
-  },
-  addToCardsBtn: {
+  continueButton: {
     backgroundColor: Palette.primary[500],
     borderRadius: 12,
-    paddingHorizontal: Spacing.three,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  addToCardsBtnText: {
-    fontFamily: Fonts.sans,
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: 'bold',
-  },
-  scanAgainBtn: {
-    backgroundColor: Palette.surface,
-    borderRadius: 12,
-    paddingHorizontal: Spacing.three,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Palette.border,
-  },
-  scanAgainBtnText: {
-    fontFamily: Fonts.sans,
-    color: Palette.text.secondary,
-    fontSize: 13,
-    fontWeight: 'bold',
-  },
-  scanTipBox: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Palette.warning.bg,
-    padding: Spacing.three,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#F3E5AB',
-    marginTop: Spacing.three,
+    gap: 2,
   },
-  scanTipText: {
-    flex: 1,
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: Palette.warning.text,
-    marginLeft: 8,
-    lineHeight: 16,
-  },
-
-  // Cards tab styling
-  statsSummaryRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: Spacing.two,
-    marginBottom: Spacing.four,
-  },
-  statBox: {
-    flex: 1,
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 16,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: Palette.warning.text,
-    shadowColor: Palette.text.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.01,
-    shadowRadius: 6,
-    elevation: 1,
-  },
-  statNumber: {
-    fontFamily: Fonts.sans,
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Palette.warning.text,
-    marginBottom: 2,
-  },
-  statLabel: {
+  continueButtonText: {
     fontFamily: Fonts.sans,
     fontSize: 11,
-    color: Palette.text.secondary,
-    fontWeight: '500',
-  },
-  practiceBtn: {
-    backgroundColor: Palette.primary[500],
-    borderRadius: 16,
-    height: 52,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.five,
-    shadowColor: Palette.primary[500],
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  practiceBtnText: {
-    fontFamily: Fonts.sans,
+    fontWeight: '800',
     color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: 'bold',
   },
-  cardItem: {
+
+  // Word of the Day
+  wotdHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 18,
-    padding: Spacing.three,
+    gap: 4,
     marginBottom: Spacing.two,
-    borderWidth: 1,
-    borderColor: Palette.border,
   },
-  cardItemWord: {
+  wotdBadgeText: {
     fontFamily: Fonts.sans,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Palette.text.primary,
-  },
-  cardItemIpa: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: Palette.text.ipa,
-    marginVertical: 1,
-  },
-  cardItemDef: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    color: Palette.text.secondary,
-  },
-  cardItemBadgeGreen: {
-    backgroundColor: Palette.success.bg,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  cardItemBadgeTextGreen: {
-    fontFamily: Fonts.sans,
-    color: Palette.success.text,
     fontSize: 11,
-    fontWeight: 'bold',
+    fontWeight: '900',
+    color: Palette.primary[500],
+    letterSpacing: 0.5,
   },
-  cardItemBadgeOrange: {
-    backgroundColor: Palette.warning.bg,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  cardItemBadgeTextOrange: {
-    fontFamily: Fonts.sans,
-    color: Palette.warning.text,
-    fontSize: 11,
-    fontWeight: 'bold',
-  },
-
-  // Profile screen styling
-  profileHeaderCard: {
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 24,
-    padding: Spacing.four,
+  wotdContent: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Palette.border,
-    shadowColor: Palette.text.primary,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.03,
-    shadowRadius: 16,
-    elevation: 2,
-    marginBottom: Spacing.four,
+    gap: Spacing.three,
+    marginBottom: Spacing.two,
   },
-  profileAvatarLarge: {
-    width: 90,
-    height: 90,
-    borderRadius: 45,
-    borderWidth: 3,
-    borderColor: Palette.primary[100],
-    marginBottom: Spacing.three,
+  wotdImage: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
   },
-  profileName: {
+  wordTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  wordTitle: {
     fontFamily: Fonts.sans,
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 18,
+    fontWeight: '800',
     color: Palette.text.primary,
   },
-  profileEmail: {
+  posBadge: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  posText: {
     fontFamily: Fonts.sans,
-    fontSize: 13,
-    color: Palette.text.secondary,
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#D97706',
+  },
+  phoneticRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     marginTop: 2,
   },
-  profileStatsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    borderTopWidth: 1,
-    borderTopColor: Palette.border,
-    marginTop: Spacing.four,
-    paddingTop: Spacing.three,
-  },
-  profileStatItem: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  profileStatVal: {
+  phoneticText: {
     fontFamily: Fonts.sans,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: Palette.primary[500],
+    fontSize: 13,
+    color: Palette.text.ipa,
   },
-  profileStatLbl: {
+  audioBtn: {
+    padding: 2,
+  },
+  vnDefBox: {
+    backgroundColor: Palette.canvas,
+    borderRadius: 14,
+    padding: Spacing.three,
+  },
+  vnDefLabel: {
     fontFamily: Fonts.sans,
     fontSize: 11,
     color: Palette.text.muted,
-    marginTop: 2,
   },
-  settingsGroup: {
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 20,
-    paddingVertical: Spacing.one,
-    borderWidth: 1,
-    borderColor: Palette.border,
-    shadowColor: Palette.text.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.01,
-    shadowRadius: 10,
-    elevation: 1,
-    marginBottom: Spacing.four,
-  },
-  settingItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.three,
-    borderBottomWidth: 1,
-    borderBottomColor: Palette.border,
-  },
-  settingLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  settingText: {
+  vnDefText: {
     fontFamily: Fonts.sans,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '700',
+    color: Palette.text.primary,
+    marginTop: 2,
+  },
+  sentenceText: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    fontStyle: 'italic',
+    color: Palette.text.secondary,
+    marginTop: 4,
+  },
+
+  // Captured items
+  capturedGrid: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+    marginTop: Spacing.two,
+  },
+  capturedItemCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: Palette.canvas,
+    padding: 8,
+    borderRadius: 14,
+  },
+  capturedThumb: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+  },
+  capturedWord: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    fontWeight: '800',
     color: Palette.text.primary,
   },
+  capturedPhonetic: {
+    fontFamily: Fonts.sans,
+    fontSize: 10,
+    color: Palette.text.muted,
+  },
+  capturedVn: {
+    fontFamily: Fonts.sans,
+    fontSize: 10,
+    color: Palette.primary[500],
+    fontWeight: '600',
+  },
+
+  // Chart
+  chartRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    height: 100,
+    marginTop: Spacing.three,
+    paddingHorizontal: 4,
+  },
+  chartCol: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 4,
+  },
+  chartXpVal: {
+    fontFamily: Fonts.sans,
+    fontSize: 9,
+    fontWeight: 'bold',
+    color: Palette.text.muted,
+  },
+  chartBarTrack: {
+    width: 20,
+    height: 60,
+    backgroundColor: Palette.canvas,
+    borderRadius: 10,
+    justifyContent: 'flex-end',
+    overflow: 'hidden',
+  },
+  chartBarFill: {
+    width: '100%',
+    borderRadius: 10,
+  },
+  barActive: {
+    backgroundColor: Palette.primary[500],
+  },
+  barInactive: {
+    backgroundColor: Palette.border,
+  },
+  barToday: {
+    backgroundColor: Palette.secondary[500],
+  },
+  chartDayLabel: {
+    fontFamily: Fonts.sans,
+    fontSize: 11,
+    fontWeight: '600',
+    color: Palette.text.muted,
+  },
+  chartDayToday: {
+    fontWeight: '800',
+    color: Palette.primary[500],
+  },
+
+  // Quests
+  questsList: {
+    gap: Spacing.two,
+    marginTop: Spacing.two,
+  },
+  questStatusText: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    fontWeight: '800',
+    color: Palette.primary[500],
+  },
+  questItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.three,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  questPending: {
+    backgroundColor: Palette.canvas,
+    borderColor: Palette.border,
+  },
+  questCompleted: {
+    backgroundColor: Palette.primary[100],
+    borderColor: Palette.primary[200],
+  },
+  questLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+    flex: 1,
+    paddingRight: 8,
+  },
+  questText: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    fontWeight: '600',
+    color: Palette.text.primary,
+  },
+  questTextCompleted: {
+    textDecorationLine: 'line-through',
+    color: Palette.text.muted,
+  },
+  xpRewardTag: {
+    backgroundColor: '#FEF3C7',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  xpRewardText: {
+    fontFamily: Fonts.sans,
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#D97706',
+  },
+
+  // Logout
   logoutBtn: {
     flexDirection: 'row',
-    backgroundColor: Palette.error.bg,
-    height: 52,
-    borderRadius: 16,
-    justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#FCA5A5',
+    justifyContent: 'center',
+    gap: Spacing.two,
+    paddingVertical: Spacing.three,
+    backgroundColor: Palette.error.bg,
+    borderRadius: 16,
+    marginTop: Spacing.two,
   },
   logoutBtnText: {
     fontFamily: Fonts.sans,
+    fontSize: 14,
+    fontWeight: '700',
     color: Palette.error.text,
-    fontSize: 15,
-    fontWeight: 'bold',
   },
 });
