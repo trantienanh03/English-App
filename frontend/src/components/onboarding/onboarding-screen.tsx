@@ -164,37 +164,42 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
 
       {/* STEP 1: How is your English? */}
       {step === 1 && (
-        <ScrollView contentContainerStyle={styles.scrollStepContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.questionSection}>
-            <Text style={styles.questionTitle}>How is your English?</Text>
-            <Text style={styles.questionSubtitle}>Trình độ tiếng Anh hiện tại của bạn thế nào?</Text>
-          </View>
+        <View style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={styles.scrollStepContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.questionSection}>
+              <Text style={styles.questionTitle}>How is your English?</Text>
+              <Text style={styles.questionSubtitle}>Trình độ tiếng Anh hiện tại của bạn thế nào?</Text>
+            </View>
 
-          <View style={styles.optionsList}>
-            {levelsList.map((item) => {
-              const isSelected = selectedLevel === item.key;
-              return (
-                <TouchableOpacity
-                  key={item.key}
-                  style={[styles.pillOption, isSelected && styles.pillOptionSelected]}
-                  onPress={() => {
-                    setSelectedLevel(item.key);
-                    setStep(2);
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.pillTextContainer}>
-                    <Text style={styles.pillLabel}>{item.label}</Text>
-                    <Text style={styles.pillSub}>{item.sub}</Text>
-                  </View>
-                  {isSelected && (
-                    <Ionicons name="checkmark-circle" size={24} color={DropsPalette.accentLime} />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
+            <View style={styles.optionsList}>
+              {levelsList.map((item) => {
+                const isSelected = selectedLevel === item.key;
+                return (
+                  <TouchableOpacity
+                    key={item.key}
+                    style={[styles.pillOption, isSelected && styles.pillOptionSelected]}
+                    onPress={() => setSelectedLevel(item.key)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.pillTextContainer}>
+                      <Text style={styles.pillLabel}>{item.label}</Text>
+                      <Text style={styles.pillSub}>{item.sub}</Text>
+                    </View>
+                    {isSelected && (
+                      <Ionicons name="checkmark-circle" size={24} color={DropsPalette.accentLime} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+
+          <View style={styles.stickyFooter}>
+            <TouchableOpacity style={styles.limeButton} onPress={() => setStep(2)}>
+              <Text style={styles.limeButtonText}>CONTINUE</Text>
+            </TouchableOpacity>
           </View>
-        </ScrollView>
+        </View>
       )}
 
       {/* STEP 2: What are your goals? */}
@@ -229,54 +234,60 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
             </View>
           </ScrollView>
 
-          {/* Sticky CONTINUE button when goals selected */}
-          {selectedGoals.length > 0 && (
-            <View style={styles.stickyFooter}>
-              <TouchableOpacity style={styles.limeButton} onPress={() => setStep(3)}>
-                <Text style={styles.limeButtonText}>CONTINUE</Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          <View style={styles.stickyFooter}>
+            <TouchableOpacity
+              style={[styles.limeButton, selectedGoals.length === 0 && { opacity: 0.5 }]}
+              onPress={() => setStep(3)}
+              disabled={selectedGoals.length === 0}
+            >
+              <Text style={styles.limeButtonText}>CONTINUE</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
       {/* STEP 3: How much time will you devote to learning? */}
       {step === 3 && (
-        <ScrollView contentContainerStyle={styles.scrollStepContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.questionSection}>
-            <Text style={styles.questionTitle}>
-              How much time will you devote to learning?
-            </Text>
-            <Text style={styles.questionSubtitle}>
-              Bạn muốn dành bao nhiêu thời gian học mỗi ngày?
-            </Text>
-          </View>
+        <View style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={styles.scrollStepContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.questionSection}>
+              <Text style={styles.questionTitle}>
+                How much time will you devote to learning?
+              </Text>
+              <Text style={styles.questionSubtitle}>
+                Bạn muốn dành bao nhiêu thời gian học mỗi ngày?
+              </Text>
+            </View>
 
-          <View style={styles.optionsList}>
-            {timeList.map((item) => {
-              const isSelected = selectedTime === item.key;
-              return (
-                <TouchableOpacity
-                  key={item.key}
-                  style={[styles.pillOption, isSelected && styles.pillOptionSelected]}
-                  onPress={() => {
-                    setSelectedTime(item.key);
-                    setStep(4);
-                  }}
-                  activeOpacity={0.8}
-                >
-                  <View style={styles.pillTextContainer}>
-                    <Text style={styles.pillLabel}>{item.label}</Text>
-                    <Text style={styles.pillSub}>{item.sub}</Text>
-                  </View>
-                  {isSelected && (
-                    <Ionicons name="checkmark-circle" size={24} color={DropsPalette.accentLime} />
-                  )}
-                </TouchableOpacity>
-              );
-            })}
+            <View style={styles.optionsList}>
+              {timeList.map((item) => {
+                const isSelected = selectedTime === item.key;
+                return (
+                  <TouchableOpacity
+                    key={item.key}
+                    style={[styles.pillOption, isSelected && styles.pillOptionSelected]}
+                    onPress={() => setSelectedTime(item.key)}
+                    activeOpacity={0.8}
+                  >
+                    <View style={styles.pillTextContainer}>
+                      <Text style={styles.pillLabel}>{item.label}</Text>
+                      <Text style={styles.pillSub}>{item.sub}</Text>
+                    </View>
+                    {isSelected && (
+                      <Ionicons name="checkmark-circle" size={24} color={DropsPalette.accentLime} />
+                    )}
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+
+          <View style={styles.stickyFooter}>
+            <TouchableOpacity style={styles.limeButton} onPress={() => setStep(4)}>
+              <Text style={styles.limeButtonText}>CONTINUE</Text>
+            </TouchableOpacity>
           </View>
-        </ScrollView>
+        </View>
       )}
 
       {/* STEP 4: Ready Summary & Start */}
