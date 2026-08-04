@@ -1,18 +1,18 @@
 import React from 'react';
-import AuthGateScreen from './auth-gate-screen';
+import DropsAuthScreen from './drops-auth-screen';
 
 interface SignupScreenProps {
-  onLoginPress: () => void;
+  onLoginPress?: () => void;
   onSignupSuccess: () => void;
-  onBypassGuest?: () => void;
+  onClose?: () => void;
 }
 
-export default function SignupScreen({ onSignupSuccess, onBypassGuest }: SignupScreenProps) {
+export default function SignupScreen({ onSignupSuccess, onClose }: SignupScreenProps) {
   return (
-    <AuthGateScreen
+    <DropsAuthScreen
       initialMode="signup"
-      onLoginSuccess={() => onSignupSuccess()}
-      onBypassGuest={onBypassGuest || onSignupSuccess}
+      onAuthSuccess={() => onSignupSuccess()}
+      onClose={onClose}
     />
   );
 }
