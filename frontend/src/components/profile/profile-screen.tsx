@@ -21,9 +21,9 @@ export default function ProfileScreen({ progress, onLogout }: ProfileScreenProps
   const [dailyGoal, setDailyGoal] = useState<string>('10 mins daily');
 
   const stats = [
-    { icon: 'fire', color: '#EF4444', label: 'Streak hiện tại', value: `${progress.streak} ngày` },
-    { icon: 'lightning-bolt', color: '#EAB308', label: 'Tổng số XP', value: `${progress.xp} XP` },
-    { icon: 'target', color: '#3B82F6', label: 'Cấp độ học tập', value: `Lv.${progress.level}` },
+    { icon: 'fire', color: Palette.error.text, label: 'Streak hiện tại', value: `${progress.streak} ngày` },
+    { icon: 'lightning-bolt', color: Palette.warning.text, label: 'Tổng số XP', value: `${progress.xp} XP` },
+    { icon: 'target', color: Palette.info.text, label: 'Cấp độ học tập', value: `Lv.${progress.level}` },
     { icon: 'cards-outline', color: Palette.primary[500], label: 'Huy hiệu mở khóa', value: `${progress.badges.filter(b => b.unlocked).length}/${progress.badges.length}` },
   ];
 
@@ -135,7 +135,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Palette.warning.bg,
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 10,
     fontWeight: '900',
-    color: '#D97706',
+    color: Palette.warning.text,
     letterSpacing: 0.5,
   },
 

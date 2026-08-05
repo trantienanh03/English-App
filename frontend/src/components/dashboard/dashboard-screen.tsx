@@ -77,14 +77,14 @@ export default function DashboardScreen({
             <View>
               <Text style={styles.appName}>Vocam</Text>
               <View style={styles.xpRow}>
-                <MaterialCommunityIcons name="lightning-bolt" size={14} color="#EAB308" />
+                <MaterialCommunityIcons name="lightning-bolt" size={14} color={Palette.warning.text} />
                 <Text style={styles.xpText}>{progress.xp} XP • Lv.{progress.level}</Text>
               </View>
             </View>
           </View>
 
           <View style={styles.streakBadge}>
-            <MaterialCommunityIcons name="fire" size={18} color="#EF4444" />
+            <MaterialCommunityIcons name="fire" size={18} color={Palette.error.text} />
             <Text style={styles.streakText}>{progress.streak} ngày</Text>
           </View>
         </View>
@@ -370,18 +370,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Palette.warning.bg,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#FDE68A',
+    borderColor: Palette.border,
   },
   streakText: {
     fontFamily: Fonts.sans,
     fontSize: 13,
     fontWeight: '800',
-    color: '#B45309',
+    color: Palette.warning.text,
   },
 
   // Level Card
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
     color: Palette.text.primary,
   },
   posBadge: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Palette.warning.bg,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -633,7 +633,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 10,
     fontWeight: '800',
-    color: '#D97706',
+    color: Palette.warning.text,
   },
   phoneticRow: {
     flexDirection: 'row',
