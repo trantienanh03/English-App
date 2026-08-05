@@ -4,15 +4,15 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Image,
-  ActivityIndicator,
-  Modal,
   ScrollView,
+  Image,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { VocabularyWord, Lesson } from '@/types';
+import DotsLoader from '@/components/ui/dots-loader';
 import { mockScannerPresets } from '@/data/mock-data';
 import { playAudio, playSoundEffect } from '@/utils/audio';
 
@@ -119,7 +119,7 @@ export default function ObjectScannerScreen({
 
             {isScanning ? (
               <View style={styles.scanningIndicator}>
-                <ActivityIndicator size="large" color={Palette.primary[300]} />
+                <DotsLoader color={Palette.primary[300]} size={14} gap={10} />
                 <Text style={styles.scanningText}>Đang nhận diện vật thể AI...</Text>
               </View>
             ) : (

@@ -6,12 +6,12 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Variables } from '@/constants/variables';
+import DotsLoader from '@/components/ui/dots-loader';
 
 interface DropsAuthScreenProps {
   initialMode?: 'login' | 'signup';
@@ -145,7 +145,7 @@ export default function DropsAuthScreen({
 
               {googleLoading ? (
                 <View style={styles.loadingBox}>
-                  <ActivityIndicator size="large" color={Variables.primary[500]} />
+                  <DotsLoader color={Variables.primary[500]} size={12} gap={10} />
                   <Text style={styles.loadingText}>Authenticating with Google...</Text>
                 </View>
               ) : (
@@ -283,7 +283,7 @@ export default function DropsAuthScreen({
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <DotsLoader color="#FFFFFF" size={10} gap={8} />
             ) : (
               <Text style={[styles.submitPillText, isFormValid && styles.submitPillTextActive]}>
                 {authMode === 'signup' ? 'SIGN UP' : 'LOG IN'}

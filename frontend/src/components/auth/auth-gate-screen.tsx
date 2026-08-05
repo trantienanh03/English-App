@@ -6,12 +6,12 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
+import DotsLoader from '@/components/ui/dots-loader';
 
 interface AuthGateScreenProps {
   initialMode?: 'login' | 'signup';
@@ -211,7 +211,7 @@ export default function AuthGateScreen({
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <DotsLoader color="#FFFFFF" size={10} gap={8} />
             ) : (
               <>
                 <Text style={styles.submitButtonText}>
@@ -262,7 +262,7 @@ export default function AuthGateScreen({
 
             {googleLoading ? (
               <View style={styles.loadingBox}>
-                <ActivityIndicator size="large" color={Palette.primary[500]} />
+                <DotsLoader color={Palette.primary[500]} size={12} gap={10} />
                 <Text style={styles.loadingText}>Đang xác thực tài khoản Google...</Text>
               </View>
             ) : (
