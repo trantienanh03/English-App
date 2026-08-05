@@ -15,9 +15,10 @@ import { UserProgress } from '@/types';
 interface ProfileScreenProps {
   progress: UserProgress;
   onLogout: () => void;
+  onOpenSettings?: () => void;
 }
 
-export default function ProfileScreen({ progress, onLogout }: ProfileScreenProps) {
+export default function ProfileScreen({ progress, onLogout, onOpenSettings }: ProfileScreenProps) {
   const [dailyGoal, setDailyGoal] = useState<string>('10 mins daily');
 
   const stats = [
@@ -40,10 +41,17 @@ export default function ProfileScreen({ progress, onLogout }: ProfileScreenProps
           <Text style={styles.userEmail}>thanhtran.dev@example.com</Text>
 
           <View style={styles.proBadge}>
-            <MaterialCommunityIcons name="crown" size={14} color="#D97706" />
+            <MaterialCommunityIcons name="crown" size={14} color={Palette.warning.text} />
             <Text style={styles.proBadgeText}>THÀNH VIÊN PRO</Text>
           </View>
         </View>
+
+        {onOpenSettings && (
+          <TouchableOpacity style={styles.settingsBtn} onPress={onOpenSettings}>
+            <Feather name="settings" size={18} color={Palette.text.muted} />
+            <Text style={styles.settingsBtnText}>Cài đặt</Text>
+          </TouchableOpacity>
+        )}
 
         {/* OVERVIEW STATS GRID */}
         <View style={styles.statsGrid}>
@@ -273,5 +281,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     color: Palette.error.text,
+  },
+  settingsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    backgroundColor: Palette.canvas,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Palette.border,
+    marginBottom: Spacing.two,
+  },
+  settingsBtnText: {
+    fontFamily: Fonts.sans,
+    fontSize: 13,
+    fontWeight: '600',
+    color: Palette.text.muted,
   },
 });

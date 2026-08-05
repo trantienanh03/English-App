@@ -16,8 +16,12 @@ import DashboardScreen from './dashboard/dashboard-screen';
 import FlashcardDeckScreen from './flashcards/flashcard-deck-screen';
 import ObjectScannerScreen from './scanner/object-scanner-screen';
 import LessonGridScreen from './lessons/lesson-grid-screen';
+import LessonDetailScreen from './lessons/lesson-detail-screen';
 import PracticeQuizScreen from './quiz/practice-quiz-screen';
 import ProfileScreen from './profile/profile-screen';
+import SettingsScreen from './profile/settings-screen';
+import SearchScreen from './ui/search-screen';
+import StreakCelebrationModal from './ui/streak-celebration-modal';
 
 interface MainContainerProps {
   onLogout: () => void;
@@ -26,6 +30,10 @@ interface MainContainerProps {
 export default function MainContainer({ onLogout }: MainContainerProps) {
   const [activeTab, setActiveTab] = useState<'home' | 'learn' | 'scan' | 'cards' | 'profile'>('home');
   const [showQuizModal, setShowQuizModal] = useState<boolean>(false);
+  const [showSearch, setShowSearch] = useState<boolean>(false);
+  const [showSettings, setShowSettings] = useState<boolean>(false);
+  const [showStreak, setShowStreak] = useState<boolean>(false);
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
   // App State Data
   const [userProgress, setUserProgress] = useState<UserProgress>(mockUserProgress);
@@ -89,9 +97,19 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
     setSavedWords(prev => prev.filter(w => w.id !== id));
   };
 
-  // Start Lesson
+  // Start Lesson — opens Lesson Detail instead of jumping to cards tab directly
   const handleStartLesson = (lessonId: string) => {
-    setActiveTab('cards');
+    const lesson = lessons.find((l) => l.id === lessonId) ?? null;
+    setSelectedLesson(lesson);
+  };
+
+  const handleAddXpWithStreakCheck = (amount: number) => {
+    handleAddXp(amount);
+    // Show streak modal after earning XP if streak is a milestone
+    const milestones = [3, 7, 14, 30];
+    if (milestones.includes(userProgress.streak)) {
+      setShowStreak(true);
+    }
   };
 
   const renderActiveScreen = () => {
@@ -139,6 +157,7 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
           <ProfileScreen
             progress={userProgress}
             onLogout={onLogout}
+            onOpenSettings={() => setShowSettings(true)}
           />
         );
       default:
@@ -153,6 +172,12 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
 
       {/* FLOATING BOTTOM TAB BAR */}
       <View style={styles.bottomTabContainer}>
+        {/* Search pill button above the tab bar */}
+        <TouchableOpacity style={styles.searchPill} onPress={() => setShowSearch(true)}>
+          <Feather name="search" size={15} color={Palette.text.muted} />
+          <Text style={styles.searchPillText}>Tìm từ vựng, bài học...</Text>
+        </TouchableOpacity>
+
         <View style={styles.floatingTabBar}>
           {[
             { key: 'home', icon: 'home', label: 'Trang chủ' },
@@ -198,9 +223,54 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
       <Modal visible={showQuizModal} animationType="slide">
         <PracticeQuizScreen
           onClose={() => setShowQuizModal(false)}
-          onAddXp={handleAddXp}
+          onAddXp={handleAddXpWithStreakCheck}
         />
       </Modal>
+
+      {/* LESSON DETAIL MODAL */}
+      <Modal visible={!!selectedLesson} animationType="slide">
+        {selectedLesson && (
+          <LessonDetailScreen
+            lesson={selectedLesson}
+            onClose={() => setSelectedLesson(null)}
+            onStartLesson={(id) => {
+              setSelectedLesson(null);
+              setActiveTab('cards');
+            }}
+            onSaveWord={handleAddWordToFlashcards}
+          />
+        )}
+      </Modal>
+
+      {/* SEARCH MODAL */}
+      <Modal visible={showSearch} animationType="slide">
+        <SearchScreen
+          words={savedWords}
+          lessons={lessons}
+          onClose={() => setShowSearch(false)}
+          onStartLesson={handleStartLesson}
+          onSaveWord={handleAddWordToFlashcards}
+        />
+      </Modal>
+
+      {/* SETTINGS MODAL */}
+      <Modal visible={showSettings} animationType="slide">
+        <SettingsScreen
+          onClose={() => setShowSettings(false)}
+          onLogout={() => {
+            setShowSettings(false);
+            onLogout();
+          }}
+        />
+      </Modal>
+
+      {/* STREAK CELEBRATION */}
+      <StreakCelebrationModal
+        visible={showStreak}
+        streakDays={userProgress.streak}
+        xpEarned={50}
+        onClose={() => setShowStreak(false)}
+      />
     </View>
   );
 }
@@ -268,5 +338,29 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 6,
     marginHorizontal: 4,
+  },
+  searchPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: Palette.surfaceWhite,
+    borderRadius: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: Palette.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.07,
+    shadowRadius: 8,
+    elevation: 4,
+    width: 220,
+  },
+  searchPillText: {
+    fontFamily: Fonts.sans,
+    fontSize: 13,
+    color: Palette.text.muted,
+    flex: 1,
   },
 });
