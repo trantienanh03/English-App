@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -11,6 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { UserProgress } from '@/types';
+import { api, LeaderboardEntry } from '@/services/api';
+import { getOrCreateDeviceUuid } from '@/db/database';
 
 interface ProfileScreenProps {
   progress: UserProgress;
@@ -20,6 +22,23 @@ interface ProfileScreenProps {
 
 export default function ProfileScreen({ progress, onLogout, onOpenSettings }: ProfileScreenProps) {
   const [dailyGoal, setDailyGoal] = useState<string>('10 mins daily');
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [currentUuid, setCurrentUuid] = useState<string>('');
+
+  useEffect(() => {
+    try {
+      const uuid = getOrCreateDeviceUuid();
+      setCurrentUuid(uuid);
+
+      api.getLeaderboard().then((entries) => {
+        if (entries.length > 0) {
+          setLeaderboard(entries);
+        }
+      });
+    } catch (err) {
+      console.warn('Leaderboard fetch warning:', err);
+    }
+  }, []);
 
   const stats = [
     { icon: 'fire', color: Palette.error.text, label: 'Streak hiện tại', value: `${progress.streak} ngày` },
@@ -78,6 +97,42 @@ export default function ProfileScreen({ progress, onLogout, onOpenSettings }: Pr
               </View>
             ))}
           </View>
+        </View>
+
+        {/* GLOBAL LEADERBOARD */}
+        <View style={styles.sectionCard}>
+          <View style={styles.leaderboardTitleRow}>
+            <MaterialCommunityIcons name="trophy" size={20} color={Palette.warning.text} />
+            <Text style={styles.sectionTitle}>Bảng xếp hạng toàn cầu 🏆</Text>
+          </View>
+
+          {leaderboard.length === 0 ? (
+            <View style={styles.emptyLeaderboard}>
+              <Text style={styles.emptyLeaderboardText}>Chưa có kết nối server hoặc chưa có xếp hạng</Text>
+            </View>
+          ) : (
+            <View style={styles.leaderboardList}>
+              {leaderboard.slice(0, 10).map((item) => {
+                const isMe = item.deviceUuid === currentUuid;
+                const medalColor = item.rank === 1 ? '#FFD700' : item.rank === 2 ? '#C0C0C0' : item.rank === 3 ? '#CD7F32' : Palette.text.muted;
+                return (
+                  <View key={item.rank + item.deviceUuid} style={[styles.leaderboardRow, isMe && styles.leaderboardRowMe]}>
+                    <View style={styles.rankBadge}>
+                      {item.rank <= 3 ? (
+                        <MaterialCommunityIcons name="crown" size={16} color={medalColor} />
+                      ) : (
+                        <Text style={styles.rankNumber}>#{item.rank}</Text>
+                      )}
+                    </View>
+                    <Text style={[styles.leaderboardName, isMe && styles.leaderboardNameMe]} numberOfLines={1}>
+                      {item.displayName} {isMe ? '(Tôi)' : ''}
+                    </Text>
+                    <Text style={styles.leaderboardXp}>{item.totalXp} XP</Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
         </View>
 
         {/* DAILY GOAL SETTINGS */}
@@ -299,5 +354,66 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
     color: Palette.text.muted,
+  },
+  // Leaderboard styles
+  leaderboardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: Spacing.two,
+  },
+  emptyLeaderboard: {
+    paddingVertical: Spacing.two,
+    alignItems: 'center',
+  },
+  emptyLeaderboardText: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    color: Palette.text.muted,
+  },
+  leaderboardList: {
+    gap: Spacing.one,
+  },
+  leaderboardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 10,
+    backgroundColor: Palette.canvas,
+    borderRadius: 12,
+    gap: Spacing.two,
+  },
+  leaderboardRowMe: {
+    backgroundColor: Palette.primary[100],
+    borderWidth: 1,
+    borderColor: Palette.primary[300],
+  },
+  rankBadge: {
+    width: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rankNumber: {
+    fontFamily: Fonts.sans,
+    fontSize: 13,
+    fontWeight: '800',
+    color: Palette.text.muted,
+  },
+  leaderboardName: {
+    flex: 1,
+    fontFamily: Fonts.sans,
+    fontSize: 13,
+    fontWeight: '600',
+    color: Palette.text.primary,
+  },
+  leaderboardNameMe: {
+    fontWeight: '800',
+    color: Palette.primary[500],
+  },
+  leaderboardXp: {
+    fontFamily: Fonts.sans,
+    fontSize: 13,
+    fontWeight: '800',
+    color: Palette.warning.text,
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,6 +11,16 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { UserProgress, VocabularyWord, Lesson } from '@/types';
 import { mockWords, mockLessons, mockUserProgress } from '@/data/mock-data';
+import {
+  initDatabase,
+  getOrCreateDeviceUuid,
+  getLocalFlashcards,
+  saveLocalFlashcard,
+  deleteLocalFlashcard,
+  updateFlashcardSM2,
+  LocalFlashcard,
+} from '@/db/database';
+import { syncWithBackend } from '@/services/sync-service';
 
 import DashboardScreen from './dashboard/dashboard-screen';
 import FlashcardDeckScreen from './flashcards/flashcard-deck-screen';
@@ -40,6 +50,34 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
   const [savedWords, setSavedWords] = useState<VocabularyWord[]>(mockWords);
   const [lessons, setLessons] = useState<Lesson[]>(mockLessons);
 
+  // Initialize SQLite database and sync on mount
+  useEffect(() => {
+    try {
+      initDatabase();
+      getOrCreateDeviceUuid();
+
+      const localCards = getLocalFlashcards();
+      if (localCards.length > 0) {
+        const mapped: VocabularyWord[] = localCards.map((c: LocalFlashcard) => ({
+          id: c.id,
+          word: c.en_word,
+          phonetic: c.phonetic || '',
+          vn: c.translation,
+          pos: c.pos || 'Noun',
+          sentence: c.example_en || '',
+          sentenceVn: c.example_vn || '',
+          difficulty: c.ease_factor < 2.0 ? 'hard' : c.ease_factor < 2.6 ? 'medium' : 'easy',
+        }));
+        setSavedWords(mapped);
+      }
+
+      // Sync with backend asynchronously
+      syncWithBackend(mockUserProgress).catch(() => {});
+    } catch (err) {
+      console.warn('Database initialization warning:', err);
+    }
+  }, []);
+
   // XP Handler
   const handleAddXp = (amount: number) => {
     setUserProgress(prev => {
@@ -50,23 +88,27 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
         newLevel += 1;
         newNextXp += 300;
       }
-      return {
+      const updated = {
         ...prev,
         xp: newXp,
         level: newLevel,
         nextLevelXp: newNextXp,
       };
+      syncWithBackend(updated).catch(() => {});
+      return updated;
     });
   };
 
   // Add Word to Flashcards
   const handleAddWordToFlashcards = (newWord: VocabularyWord) => {
+    saveLocalFlashcard(newWord);
     setSavedWords(prev => {
       if (prev.some(w => w.word.toLowerCase() === newWord.word.toLowerCase())) {
         return prev;
       }
       return [newWord, ...prev];
     });
+    syncWithBackend(userProgress).catch(() => {});
   };
 
   // Add Word to Lesson
@@ -87,6 +129,7 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
 
   // Difficulty Update
   const handleUpdateWordDifficulty = (id: string, difficulty: 'easy' | 'medium' | 'hard') => {
+    updateFlashcardSM2(id, difficulty);
     setSavedWords(prev =>
       prev.map(w => (w.id === id ? { ...w, difficulty } : w))
     );
@@ -94,6 +137,7 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
 
   // Remove Word
   const handleRemoveWord = (id: string) => {
+    deleteLocalFlashcard(id);
     setSavedWords(prev => prev.filter(w => w.id !== id));
   };
 
