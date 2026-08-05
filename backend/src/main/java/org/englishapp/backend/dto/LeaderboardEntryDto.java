@@ -1,9 +1,5 @@
 package org.englishapp.backend.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
-@Getter @AllArgsConstructor
 public class LeaderboardEntryDto {
     private int rank;
     private String deviceUuid;
@@ -11,4 +7,33 @@ public class LeaderboardEntryDto {
     private int totalXp;
     private int currentStreak;
     private int wordsLearned;
+
+    public LeaderboardEntryDto() {}
+
+    public LeaderboardEntryDto(int rank, String deviceUuid, String displayName, int totalXp, int currentStreak, int wordsLearned) {
+        this.rank = rank;
+        this.deviceUuid = deviceUuid;
+        this.displayName = displayName;
+        this.totalXp = totalXp;
+        this.currentStreak = currentStreak;
+        this.wordsLearned = wordsLearned;
+    }
+
+    public int getRank() { return rank; }
+    public void setRank(int rank) { this.rank = rank; }
+
+    public String getDeviceUuid() { return deviceUuid; }
+    public void setDeviceUuid(String deviceUuid) { this.deviceUuid = deviceUuid; }
+
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+
+    public int getTotalXp() { return totalXp; }
+    public void setTotalXp(int totalXp) { this.totalXp = totalXp; }
+
+    public int getCurrentStreak() { return currentStreak; }
+    public void setCurrentStreak(int currentStreak) { this.currentStreak = currentStreak; }
+
+    public int getWordsLearned() { return wordsLearned; }
+    public void setWordsLearned(int wordsLearned) { this.wordsLearned = wordsLearned; }
 }

@@ -1,15 +1,10 @@
 package org.englishapp.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.Instant;
 
 @Entity
 @Table(name = "words")
-@Getter @Setter @NoArgsConstructor
 public class Word {
 
     @Id
@@ -43,4 +38,36 @@ public class Word {
 
     @Column(name = "created_at")
     private Instant createdAt = Instant.now();
+
+    public Word() {}
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getCocoClass() { return cocoClass; }
+    public void setCocoClass(String cocoClass) { this.cocoClass = cocoClass; }
+
+    public String getEnWord() { return enWord; }
+    public void setEnWord(String enWord) { this.enWord = enWord; }
+
+    public String getPhonetic() { return phonetic; }
+    public void setPhonetic(String phonetic) { this.phonetic = phonetic; }
+
+    public String getPos() { return pos; }
+    public void setPos(String pos) { this.pos = pos; }
+
+    public String getDefinition() { return definition; }
+    public void setDefinition(String definition) { this.definition = definition; }
+
+    public String getTranslation() { return translation; }
+    public void setTranslation(String translation) { this.translation = translation; }
+
+    public String getExampleEn() { return exampleEn; }
+    public void setExampleEn(String exampleEn) { this.exampleEn = exampleEn; }
+
+    public String getExampleVn() { return exampleVn; }
+    public void setExampleVn(String exampleVn) { this.exampleVn = exampleVn; }
+
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
 }

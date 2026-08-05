@@ -1,22 +1,16 @@
 package org.englishapp.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.Instant;
 
 @Entity
 @Table(name = "user_progress")
-@Getter @Setter @NoArgsConstructor
 public class UserProgress {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // UUID generated on first app launch, stored in AsyncStorage on the device
     @Column(name = "device_uuid", nullable = false, unique = true, length = 36)
     private String deviceUuid;
 
@@ -44,8 +38,40 @@ public class UserProgress {
     @Column(name = "updated_at")
     private Instant updatedAt = Instant.now();
 
+    public UserProgress() {}
+
     @PreUpdate
     public void onUpdate() {
         this.updatedAt = Instant.now();
     }
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+
+    public String getDeviceUuid() { return deviceUuid; }
+    public void setDeviceUuid(String deviceUuid) { this.deviceUuid = deviceUuid; }
+
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+
+    public Integer getTotalXp() { return totalXp; }
+    public void setTotalXp(Integer totalXp) { this.totalXp = totalXp; }
+
+    public Integer getCurrentStreak() { return currentStreak; }
+    public void setCurrentStreak(Integer currentStreak) { this.currentStreak = currentStreak; }
+
+    public Integer getLongestStreak() { return longestStreak; }
+    public void setLongestStreak(Integer longestStreak) { this.longestStreak = longestStreak; }
+
+    public Integer getWordsLearned() { return wordsLearned; }
+    public void setWordsLearned(Integer wordsLearned) { this.wordsLearned = wordsLearned; }
+
+    public Instant getLastSyncAt() { return lastSyncAt; }
+    public void setLastSyncAt(Instant lastSyncAt) { this.lastSyncAt = lastSyncAt; }
+
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }
