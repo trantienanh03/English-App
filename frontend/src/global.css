@@ -22,41 +22,53 @@ html, body {
   height: 100%;
 }
 
+/* ============================================================
+   VOCAM COLOR PALETTE — Single source of truth
+   Synced from vocam_color_palette.html
+   ============================================================ */
 :root {
-  --canvas: #F4F6F3;
-  --surface: #FAFBF9;
-  --surface-white: #FFFFFF;
-  --canvas-dark: #1A2B1A;
+  /* --- Backgrounds & Surfaces --- */
+  --canvas: #F4F6F3;           /* Nền app chính · xanh lá pha xám nhẹ */
+  --surface: #FAFBF9;          /* Nền card & panel · trắng ngà */
+  --surface-white: #FFFFFF;    /* Nền flashcard, modal, bottom sheet */
+  --canvas-dark: #1A2B1A;      /* Camera view · tối hoàn toàn */
 
-  --primary-100: #E8F2EC;
+  /* --- Primary — Forest Green (Xanh rừng) --- */
+  --primary-100: #E8F2EC;      /* Card highlight, badge nền, chip */
   --primary-200: #B8D9C4;
   --primary-300: #7DB89A;
-  --primary-400: #3D7A5E;
-  --primary-500: #2C6E49;
+  --primary-400: #3D7A5E;      /* IPA / Accent */
+  --primary-500: #2C6E49;      /* CTA button, nav active — màu chính */
   --primary-600: #1A4A30;
 
+  /* --- Secondary — Sage Teal (Xanh teal mặn mà) --- */
   --secondary-100: #E3F0EE;
   --secondary-200: #B0D5D0;
   --secondary-300: #72B2AA;
   --secondary-400: #3D8B84;
-  --secondary-500: #2A7069;
+  --secondary-500: #2A7069;    /* IPA, camera icon, accent phụ */
   --secondary-600: #184F4A;
 
-  --text-primary: #1A2B1A;
-  --text-secondary: #4B5B4B;
-  --text-muted: #8B9B8B;
-  --text-ipa: #3D7A5E;
-  --border: #E2E8E0;
-
-  --success-text: #1E6B3A;
+  /* --- Semantic — Phản hồi & trạng thái --- */
+  --success-text: #1E6B3A;     /* Câu đúng, từ đã thuộc, streak active */
   --success-bg: #E8F5EC;
-  --error-text: #B03535;
+  --error-text: #B03535;       /* Câu sai, từ cần ôn gấp — đỏ muted */
   --error-bg: #FDF0F0;
-  --warning-text: #8B6314;
+  --warning-text: #8B6314;     /* Streak warning — nâu mật ong */
   --warning-bg: #FBF5E8;
-  --info-text: #3A5A8C;
+  --info-text: #3A5A8C;        /* Tooltip, badge thông tin — xanh đậm dịu */
   --info-bg: #EEF2F8;
 
+  /* --- Typography --- */
+  --text-primary: #1A2B1A;     /* Heading, từ tiếng Anh */
+  --text-secondary: #4B5B4B;   /* Body, nghĩa tiếng Việt */
+  --text-muted: #8B9B8B;       /* Metadata, caption, placeholder */
+  --text-ipa: #3D7A5E;         /* / kʌp / — phiên âm IPA */
+
+  /* --- Border --- */
+  --border: #E2E8E0;           /* Viền card, dòng phân cách */
+
+  /* --- Typography / Fonts --- */
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --font-display: var(--font-sans);
