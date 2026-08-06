@@ -1,102 +1,110 @@
 # 📊 Vocam — Báo cáo Tiến độ & Phân chia Sprint
 
-> **Sinh viên:** Trần Tiến Anh — MSSV: 22130016  
-> **Đề tài:** *Nghiên cứu và ứng dụng mô hình YOLO trong nhận diện vật thể hỗ trợ học từ vựng tiếng Anh trên thiết bị di động*  
-> **Cập nhật lần cuối:** 05/08/2026  
+> **Sinh viên:** Trần Tiến Anh — MSSV: 22130016
+> **Đề tài:** *Nghiên cứu và ứng dụng mô hình YOLO trong nhận diện vật thể hỗ trợ học từ vựng tiếng Anh trên thiết bị di động*
+> **Cập nhật lần cuối:** 06/08/2026
 
 ---
 
-## 🏗️ Tổng quan Kiến trúc Đã Thống nhất
+## 📈 Bảng Tổng hợp Tiến độ
 
-- **UI / Design System:** Đồng bộ 100% với hệ màu chuẩn `vocam_color_palette.html` (Primary: Forest Green `#2C6E49`, Secondary: Sage Teal `#2A7069`).
-- **Frontend (Mobile):** React Native (Expo) theo kiến trúc **Offline-First** với `expo-sqlite`.
-- **Backend:** Spring Boot 3.3.4 (Java 21) kết nối PostgreSQL (Supabase / Local) và Flyway Migration.
-- **AI Model:** YOLOv8 (On-Device Inference với ONNX Runtime).
-
----
-
-## 📈 Bảng Tổng hợp Tiến độ Các Sprint
-
-| Sprint | Tên Sprint | Trạng thái | Tỷ lệ |
+| Sprint | Nội dung | Trạng thái | Git |
 |---|---|---|---|
-| **Phase 0** | UI Design System & Chỉnh sửa Giao diện | ✅ **Hoàn thành** | 100% |
-| **Sprint 1** | Monolith Spring Boot Backend & Database | ✅ **Hoàn thành** | 100% |
-| **Sprint 2** | Frontend SQLite (Offline Storage) & Sync Engine | ✅ **Hoàn thành** | 100% |
-| **Sprint 3** | ONNX Runtime & Tích hợp YOLOv8 On-Device | ⏳ **Chưa làm (Chờ test model)** | 0% |
-| **Sprint 4** | Kiểm thử End-to-End & Hoàn thiện Demo | ⏳ **Chưa làm** | 0% |
+| **Phase 0** | UI Design System & Giao diện | ✅ Hoàn thành | ✅ Pushed |
+| **Sprint 1** | Spring Boot Backend + PostgreSQL | ✅ Hoàn thành | ✅ Pushed |
+| **Sprint 2** | Frontend SQLite Offline + Sync Client | ✅ Hoàn thành | ✅ Pushed |
+| **Sprint 3A** | YOLO Detector Groundwork & Scanner Refactor | ✅ Hoàn thành | ✅ Pushed |
+| **Sprint 3B** | ONNX Runtime On-Device Integration | ⏳ Chờ test model | — |
+| **Sprint 4** | End-to-End Testing & Demo Polish | ⏳ Chưa làm | — |
 
 ---
 
-## 📋 Chi tiết Danh mục Công việc theo Sprint
+## 📋 Chi tiết Công việc theo Sprint
 
-### 🔹 Phase 0: Design System & Giao diện ứng dụng (✅ 100% Hoàn thành)
-- [x] Audit & Đồng bộ toàn bộ palette màu giữa `vocam_color_palette.html`, `global.css`, `variables.ts` và `theme.ts`.
-- [x] Thay thế tất cả các hex code hardcode trong `Dashboard` và `Profile` bằng semantic tokens (`Palette.*`).
-- [x] Tạo component `DotsLoader` (hiệu ứng 2 chấm nảy bounce mịn màng bằng Animated API).
-- [x] Tích hợp `DotsLoader` thay thế `ActivityIndicator` mặc định ở tất cả các màn hình (Auth, Google Modal, Object Scanner) & Boot Splash Screen.
-- [x] Thêm 5 màn hình mới hoàn chỉnh:
-  1. **Word Detail Screen:** Chi tiết từ vựng, phiên âm IPA, câu ví dụ, mẹo ghi nhớ, self-rating độ khó.
-  2. **Lesson Detail Screen:** Chi tiết bài học, tiến độ %, danh sách từ vựng.
-  3. **Streak Celebration Modal:** Hiệu ứng ăn mừng chuỗi học tập với hiệu ứng nảy tim/lửa & thưởng XP.
-  4. **Settings Screen:** Màn hình Cài đặt phân nhóm (Học tập, Thông báo, Âm thanh, Tài khoản).
-  5. **Search Screen:** Tìm kiếm thời thực từ vựng & bài học, bộ lọc danh mục và highlight từ khóa.
+### 🔹 Phase 0: Design System & Giao diện ✅ (100%)
+- [x] Đồng bộ toàn bộ palette màu với `vocam_color_palette.html` (Primary: `#2C6E49`, Secondary: `#2A7069`)
+- [x] Thay thế hex hardcode trong Dashboard & Profile bằng `Palette.*` semantic tokens
+- [x] Tạo component `DotsLoader` (bounce animation thay `ActivityIndicator`)
+- [x] Tích hợp `DotsLoader` vào Auth, Boot Splash, Scanner, Google Modal
+- [x] 5 màn hình/modal mới: Word Detail, Lesson Detail, Streak Celebration, Settings, Search
 
 ---
 
-### 🔹 Sprint 1: Spring Boot Backend & Database Migration (✅ 100% Hoàn thành)
-- [x] Cấu hình project Spring Boot 3.3.4 (Java 21) với Maven `pom.xml` (JPA, PostgreSQL, Flyway, Validation).
-- [x] Cấu hình `application.properties` hỗ trợ fallback environment variables cho local dev & Supabase Cloud.
-- [x] Tạo Flyway Migration `V1__create_tables.sql`: Bảng `words` (80 lớp từ vựng COCO) và `user_progress` (tiến độ theo UUID thiết bị).
-- [x] Tạo Flyway Migration `V2__seed_coco_words.sql`: Nạp sẵn 80 lớp từ vựng COCO kèm nghĩa tiếng Việt, IPA, định nghĩa và câu ví dụ song ngữ.
-- [x] Xây dựng Entities (`Word`, `UserProgress`) và Repositories (`WordRepository`, `UserProgressRepository`).
-- [x] Xây dựng các REST API Controllers:
-  - `GET /api/words`: Tải toàn bộ 80 từ vựng để app cache offline.
-  - `GET /api/words/{cocoClass}`: Tra từ vựng theo tên nhận diện của YOLO.
-  - `POST /api/sync/progress`: Gửi tiến độ học tập tích lũy từ thiết bị lên server.
-  - `GET /api/leaderboard`: Lấy danh sách Top 50 người dùng trên Bảng xếp hạng toàn cầu.
-- [x] Cấu hình `WebConfig` (CORS Filter cho phép mobile app kết nối từ mọi IP dev).
-- [x] Đã commit & push code backend lên Git (`origin/main`).
+### 🔹 Sprint 1: Spring Boot Backend ✅ (100% · Pushed)
+- [x] `pom.xml` — Spring Boot 3.3.4 + JPA + PostgreSQL + Flyway + Validation
+- [x] `application.properties` — Cấu hình với env fallback cho local dev & Supabase
+- [x] `V1__create_tables.sql` — Bảng `words` và `user_progress`
+- [x] `V2__seed_coco_words.sql` — 80 lớp COCO + IPA + nghĩa Việt + câu ví dụ song ngữ
+- [x] Entity: `Word.java`, `UserProgress.java` (explicit getters, không Lombok)
+- [x] Repository: `WordRepository`, `UserProgressRepository` (custom JPQL queries)
+- [x] DTO: `WordDto`, `SyncRequest`, `SyncResponse`, `LeaderboardEntryDto`
+- [x] Service: `WordService`, `LeaderboardService` (upsert + tính rank)
+- [x] Controller: `GET /api/words`, `GET /api/words/{class}`, `POST /api/sync/progress`, `GET /api/leaderboard`
+- [x] `WebConfig.java` — CORS filter cho phép mobile dev
 
 ---
 
-### 🔹 Sprint 2: Frontend SQLite (Offline Local Storage) & Sync Client (✅ 100% Hoàn thành)
-- [x] Cài đặt `expo-sqlite` và `expo-crypto` cho Expo React Native app.
-- [x] Xây dựng module SQLite [`database.ts`](file:///d:/HocTap/English-App/frontend/src/db/database.ts):
-  - Bảng `flashcards`: Lưu từ vựng kèm chỉ số thuật toán Spaced Repetition (SM-2: `ease_factor`, `interval_days`, `repetitions`, `next_review_at`).
-  - Bảng `cached_words`: Cache 80 từ COCO để tra cứu 0ms khi không có mạng.
-  - Bảng `learning_events`: Lưu hàng chờ sự kiện học khi offline.
-  - Bảng `app_config`: Sinh và lưu `device_uuid` cố định cho thiết bị.
-- [x] Xây dựng API Client Service [`api.ts`](file:///d:/HocTap/English-App/frontend/src/services/api.ts) kết nối Spring Boot Backend.
-- [x] Xây dựng Sync Manager [`sync-service.ts`](file:///d:/HocTap/English-App/frontend/src/services/sync-service.ts) tự động nạp từ vựng và đẩy điểm XP/streak khi có mạng.
-- [x] Tích hợp dữ liệu SQLite & Backend Sync vào [`main-container.tsx`](file:///d:/HocTap/English-App/frontend/src/components/main-container.tsx).
-- [x] Thêm UI **Bảng xếp hạng toàn cầu (Global Leaderboard)** thời thực vào [`profile-screen.tsx`](file:///d:/HocTap/English-App/frontend/src/components/profile/profile-screen.tsx) với huy hiệu Top 1/2/3 và vị trí người dùng.
-- [x] Đã commit code Sprint 2 vào Git local.
+### 🔹 Sprint 2: Frontend SQLite & Sync ✅ (100% · Pushed)
+- [x] Cài `expo-sqlite`, `expo-crypto`, `@react-native-community/netinfo`
+- [x] `db/database.ts` — 4 bảng SQLite:
+  - `flashcards` (SM-2: `ease_factor`, `interval_days`, `repetitions`, `next_review_at`)
+  - `cached_words` (80 từ COCO, offline 0ms)
+  - `learning_events` (hàng chờ sync khi offline)
+  - `app_config` (`device_uuid` duy nhất cho thiết bị)
+- [x] `services/api.ts` — Kết nối Spring Boot Backend
+- [x] `services/sync-service.ts` — NetInfo check + `triggerBackgroundSync` fire-and-forget
+- [x] Wire SQLite vào `main-container.tsx`:
+  - Load flashcards từ SQLite khi mount
+  - `wordsLearned` thật phản ánh số từ trong SQLite
+  - `saveLocalFlashcard()`, `deleteLocalFlashcard()`, `updateFlashcardSM2()` đầy đủ
+- [x] Global Leaderboard thời thực trong `profile-screen.tsx` (Top 10 + vị trí người dùng)
 
 ---
 
-### ⏳ Sprint 3: ONNX Runtime & Tích hợp YOLOv8 On-Device (⏳ Chưa làm - Đang tạm dừng)
-- [ ] Test & Kiểm tra độ chính xác của mô hình YOLO đã train (`.pt`).
-- [ ] Export mô hình YOLOv8 sang định dạng `.onnx` (`model.export(format='onnx')`).
-- [ ] Cài đặt `onnxruntime-react-native` vào frontend.
-- [ ] Tạo `frontend/src/services/yolo-detector.ts` (Preprocess frame, ONNX inference, Postprocess NMS).
-- [ ] Kết nối camera thật trong `object-scanner-screen.tsx` với mô hình YOLO.
+### 🔹 Sprint 3A: YOLO Groundwork ✅ (100% · Pushed)
+- [x] Tạo `services/yolo-detector.ts`:
+  - `COCO_CLASSES[80]` đúng thứ tự index YOLOv8
+  - `detect()` hiện chạy **mock mode** từ SQLite cache để demo
+  - `realDetect()` với ONNX Runtime đã viết sẵn, comment — chỉ cần uncomment khi có model
+- [x] Refactor `object-scanner-screen.tsx`:
+  - Kết nối `yolo-detector.ts`
+  - **Confidence bar** hiển thị % tin cậy model
+  - **Pulse animation** viewfinder khi scanning
+  - Badge **"YOLOv8 nano · On-Device"**
+  - Xoá toàn bộ hardcoded hex → `Palette.*`
+- [x] Thêm `VocabularyWord.cocoClass` và `UserProgress.wordsLearned` vào types
 
 ---
 
-### ⏳ Sprint 4: Kiểm thử End-to-End & Perfect Demo (⏳ Chưa làm)
-- [ ] Kiểm thử luồng offline: Quét vật thể → Hiện từ → Lưu Flashcard → Ôn tập quẹt thẻ SM-2.
-- [ ] Kiểm thử luồng online: Bật mạng → Tự động Sync XP/Streak → Cập nhật Leaderboard.
-- [ ] Kiểm thử nạp dữ liệu từ Spring Boot / Supabase PostgreSQL.
-- [ ] Hoàn thiện báo cáo & chuẩn bị kịch bản demo cho Hội đồng.
+### ⏳ Sprint 3B: ONNX Runtime On-Device (Chờ test model)
+
+**Điều kiện bắt đầu:** Bạn test xong `best.pt` và confirm accuracy ổn.
+
+- [ ] Test mô hình YOLO đã train (`best.pt`) — kiểm tra accuracy/mAP
+- [ ] Export: `model.export(format='onnx', imgsz=640, simplify=True)` → `best.onnx`
+- [ ] Cài `onnxruntime-react-native`
+- [ ] Chạy `npx expo prebuild` (bắt buộc cho native module)
+- [ ] Copy `best.onnx` vào `frontend/assets/models/yolov8n.onnx`
+- [ ] Uncomment `realDetect()` trong `yolo-detector.ts`, thay `mockDetect()`
+- [ ] Build & test trên iPhone thật: `npx expo run:ios`
 
 ---
 
-## 🎯 Các bước tiếp theo (Next Actions)
+### ⏳ Sprint 4: End-to-End Testing & Demo Polish (Chưa làm)
+- [ ] Kết nối Supabase PostgreSQL (set `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` trong `application.properties`)
+- [ ] Kiểm thử luồng **offline**: Quét → Hiện từ → Lưu Flashcard → Quẹt SM-2
+- [ ] Kiểm thử luồng **online**: Bật mạng → Auto sync XP/streak → Leaderboard cập nhật
+- [ ] Kiểm thử nạp từ vựng lần đầu: `/api/words` → cache SQLite → offline lookup
+- [ ] Hoàn thiện báo cáo & kịch bản demo cho Hội đồng
 
-1. **Người dùng (Sinh viên):** 
-   - Tiến hành chạy thử mô hình YOLO đã train trên máy tính hoặc Colab.
-   - Kiểm tra xem mô hình nhận diện tốt những lớp vật thể nào.
-   - Export file trọng số sang định dạng `best.onnx`.
+---
 
-2. **Khi sẵn sàng sang Sprint 3:**
-   - Đưa file `best.onnx` vào app và bắt đầu tích hợp ONNX Runtime cho camera quét thời gian thực offline!
+## 🎯 Next Actions
+
+| # | Việc cần làm | Người thực hiện |
+|---|---|---|
+| 1 | Chạy thử `best.pt` — kiểm tra mô hình nhận diện có tốt không | Bạn |
+| 2 | Export `best.onnx` | Bạn |
+| 3 | Kết nối Supabase | Bạn (lấy connection string trên supabase.com) |
+| 4 | Tích hợp ONNX vào app | Mình làm khi bạn có `best.onnx` |
+| 5 | End-to-End test & demo | Cùng làm |
