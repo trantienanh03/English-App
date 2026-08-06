@@ -20,7 +20,7 @@ import {
   updateFlashcardSM2,
   LocalFlashcard,
 } from '@/db/database';
-import { syncWithBackend } from '@/services/sync-service';
+import { triggerBackgroundSync } from '@/services/sync-service';
 
 import DashboardScreen from './dashboard/dashboard-screen';
 import FlashcardDeckScreen from './flashcards/flashcard-deck-screen';
@@ -50,7 +50,7 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
   const [savedWords, setSavedWords] = useState<VocabularyWord[]>(mockWords);
   const [lessons, setLessons] = useState<Lesson[]>(mockLessons);
 
-  // Initialize SQLite database and sync on mount
+  // Initialize SQLite database and load persisted data on app mount
   useEffect(() => {
     try {
       initDatabase();
@@ -67,12 +67,16 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
           sentence: c.example_en || '',
           sentenceVn: c.example_vn || '',
           difficulty: c.ease_factor < 2.0 ? 'hard' : c.ease_factor < 2.6 ? 'medium' : 'easy',
+          cocoClass: c.coco_class,
         }));
         setSavedWords(mapped);
       }
 
-      // Sync with backend asynchronously
-      syncWithBackend(mockUserProgress).catch(() => {});
+      // Update wordsLearned in progress state to reflect real SQLite count
+      setUserProgress(prev => ({ ...prev, wordsLearned: localCards.length }));
+
+      // Best-effort background sync — skips silently when offline
+      triggerBackgroundSync(mockUserProgress);
     } catch (err) {
       console.warn('Database initialization warning:', err);
     }
@@ -88,13 +92,8 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
         newLevel += 1;
         newNextXp += 300;
       }
-      const updated = {
-        ...prev,
-        xp: newXp,
-        level: newLevel,
-        nextLevelXp: newNextXp,
-      };
-      syncWithBackend(updated).catch(() => {});
+      const updated = { ...prev, xp: newXp, level: newLevel, nextLevelXp: newNextXp };
+      triggerBackgroundSync(updated);
       return updated;
     });
   };
@@ -106,9 +105,15 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
       if (prev.some(w => w.word.toLowerCase() === newWord.word.toLowerCase())) {
         return prev;
       }
-      return [newWord, ...prev];
+      const updated = [newWord, ...prev];
+      // Keep wordsLearned in sync with actual SQLite count
+      setUserProgress(p => {
+        const next = { ...p, wordsLearned: updated.length };
+        triggerBackgroundSync(next);
+        return next;
+      });
+      return updated;
     });
-    syncWithBackend(userProgress).catch(() => {});
   };
 
   // Add Word to Lesson

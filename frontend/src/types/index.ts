@@ -9,6 +9,7 @@ export interface VocabularyWord {
   difficulty: 'easy' | 'medium' | 'hard';
   imageUrl?: string;
   captured?: boolean; // scanned via object scanner
+  cocoClass?: string; // YOLO detection class name
 }
 
 export interface Lesson {
@@ -28,6 +29,7 @@ export interface UserProgress {
   xp: number;
   level: number;
   nextLevelXp: number;
+  wordsLearned: number;     // total flashcards saved to local SQLite
   weeklyXp: { day: string; xp: number; active: boolean }[];
   badges: Badge[];
 }
