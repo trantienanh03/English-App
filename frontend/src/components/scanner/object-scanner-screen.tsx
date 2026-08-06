@@ -1,20 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   ScrollView,
-  Image,
   Modal,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { VocabularyWord, Lesson } from '@/types';
 import DotsLoader from '@/components/ui/dots-loader';
-import { mockScannerPresets } from '@/data/mock-data';
 import { playAudio, playSoundEffect } from '@/utils/audio';
+import { detect, DetectionResult } from '@/services/yolo-detector';
+import { api } from '@/services/api';
+import { getCachedWordByClass } from '@/db/database';
 
 interface ObjectScannerScreenProps {
   lessons: Lesson[];
@@ -33,34 +35,83 @@ export default function ObjectScannerScreen({
 }: ObjectScannerScreenProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedResult, setScannedResult] = useState<VocabularyWord | null>(null);
+  const [confidence, setConfidence] = useState<number>(0);
   const [showResultSheet, setShowResultSheet] = useState(false);
   const [showLessonPicker, setShowLessonPicker] = useState(false);
   const [addedToast, setAddedToast] = useState<string | null>(null);
 
-  const [scanIndex, setScanIndex] = useState(0);
+  // Pulse animation on viewfinder when scanning
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  const handleScan = (presetIndex?: number) => {
+  const startPulse = () => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 1.08, duration: 600, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
+      ])
+    ).start();
+  };
+
+  const stopPulse = () => {
+    pulseAnim.stopAnimation();
+    Animated.timing(pulseAnim, { toValue: 1, duration: 200, useNativeDriver: true }).start();
+  };
+
+  /**
+   * Main scan handler:
+   * 1. Call YOLO detector (mock or real)
+   * 2. If word not in local cache, fetch from Spring Boot API
+   * 3. Show result bottom sheet
+   */
+  const handleScan = async () => {
     if (isScanning) return;
+
     setIsScanning(true);
     setScannedResult(null);
     setShowResultSheet(false);
+    startPulse();
 
-    let targetIdx = 0;
-    if (presetIndex !== undefined) {
-      targetIdx = presetIndex;
-    } else {
-      targetIdx = scanIndex % mockScannerPresets.length;
-      setScanIndex(prev => prev + 1);
-    }
-    const chosen = { ...mockScannerPresets[targetIdx], captured: true };
+    try {
+      // Run YOLO inference (mock in demo, real ONNX in Sprint 3)
+      const result: DetectionResult | null = await detect();
 
-    setTimeout(() => {
-      setIsScanning(false);
-      setScannedResult(chosen);
+      if (!result) {
+        // Nothing detected — try fetch a random cached word for demo
+        setIsScanning(false);
+        stopPulse();
+        return;
+      }
+
+      let vocabulary = result.word;
+
+      // If word not in local cache, fetch from Spring Boot backend
+      if (!vocabulary) {
+        const cached = getCachedWordByClass(result.cocoClass);
+        if (cached) {
+          vocabulary = cached;
+        } else {
+          const remote = await api.getWordByClass(result.cocoClass);
+          if (remote) vocabulary = remote;
+        }
+      }
+
+      if (!vocabulary) {
+        setIsScanning(false);
+        stopPulse();
+        return;
+      }
+
+      setScannedResult(vocabulary);
+      setConfidence(result.confidence);
       setShowResultSheet(true);
       playSoundEffect('correct');
-      playAudio(chosen.word);
-    }, 1500);
+      playAudio(vocabulary.word);
+    } catch (err) {
+      console.warn('Scan error:', err);
+    } finally {
+      setIsScanning(false);
+      stopPulse();
+    }
   };
 
   const handleSaveToDeck = () => {
@@ -68,9 +119,7 @@ export default function ObjectScannerScreen({
     onAddWordToFlashcards(scannedResult);
     onAddXp(15);
     playSoundEffect('success');
-
-    setAddedToast(`Đã thêm "${scannedResult.word}" (+15 XP)`);
-    setTimeout(() => setAddedToast(null), 3000);
+    showToast(`Đã thêm "${scannedResult.word}" vào sổ từ (+15 XP)`);
     setShowResultSheet(false);
   };
 
@@ -79,23 +128,32 @@ export default function ObjectScannerScreen({
     onAddWordToLesson(lessonId, scannedResult);
     setShowLessonPicker(false);
     setShowResultSheet(false);
-    setAddedToast(`Đã thêm vào bài học!`);
+    showToast('Đã thêm vào bài học!');
+  };
+
+  const showToast = (msg: string) => {
+    setAddedToast(msg);
     setTimeout(() => setAddedToast(null), 3000);
   };
+
+  const confidencePct = Math.round(confidence * 100);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        {/* CAMERA VIEWFINDER HEADER */}
+
+        {/* HEADER */}
         <View style={styles.topHeader}>
           <View style={styles.headerTitleRow}>
             <MaterialCommunityIcons name="camera-iris" size={24} color={Palette.primary[300]} />
             <Text style={styles.headerTitle}>AI Object Scanner</Text>
           </View>
-          <Text style={styles.headerSubtitle}>Hướng ống kính vào vật thể xung quanh để học từ vựng</Text>
+          <Text style={styles.headerSubtitle}>
+            Hướng camera vào vật thể để nhận diện từ vựng ngay lập tức
+          </Text>
         </View>
 
-        {/* TOAST NOTIFICATION */}
+        {/* TOAST */}
         {addedToast && (
           <View style={styles.toastBox}>
             <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" />
@@ -103,14 +161,13 @@ export default function ObjectScannerScreen({
           </View>
         )}
 
-        {/* VIEWFINDER FRAME */}
-        <View style={styles.viewfinder}>
-          {/* Simulated Camera Feed Image or Dark Space */}
+        {/* VIEWFINDER */}
+        <Animated.View style={[styles.viewfinder, { transform: [{ scale: pulseAnim }] }]}>
           <View style={styles.cameraBackground}>
-            <MaterialCommunityIcons name="cube-scan" size={80} color="rgba(255, 255, 255, 0.15)" />
+            <MaterialCommunityIcons name="cube-scan" size={80} color="rgba(255, 255, 255, 0.12)" />
           </View>
 
-          {/* Scanner Target Frame */}
+          {/* Corner brackets */}
           <View style={styles.targetFrame}>
             <View style={[styles.corner, styles.topLeft]} />
             <View style={[styles.corner, styles.topRight]} />
@@ -120,40 +177,40 @@ export default function ObjectScannerScreen({
             {isScanning ? (
               <View style={styles.scanningIndicator}>
                 <DotsLoader color={Palette.primary[300]} size={14} gap={10} />
-                <Text style={styles.scanningText}>Đang nhận diện vật thể AI...</Text>
+                <Text style={styles.scanningText}>Đang nhận diện...</Text>
               </View>
             ) : (
               <View style={styles.targetCenter}>
-                <Feather name="aperture" size={32} color="rgba(255,255,255,0.6)" />
-                <Text style={styles.targetHint}>Đặt vật thể vào trung tâm khung hình</Text>
+                <Feather name="aperture" size={32} color="rgba(255,255,255,0.5)" />
+                <Text style={styles.targetHint}>Đặt vật thể vào khung hình</Text>
               </View>
             )}
           </View>
-        </View>
 
-        {/* PRESET OBJECT CHIPS BAR */}
-        <View style={styles.presetBar}>
-          <Text style={styles.presetTitle}>Vật thể quét nhanh thử nghiệm:</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.presetScroll}>
-            {mockScannerPresets.map((item, idx) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.presetChip}
-                onPress={() => handleScan(idx)}
-              >
-                <Text style={styles.presetChipText}>📷 {item.word}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
+          {/* Model info badge */}
+          <View style={styles.modelBadge}>
+            <MaterialCommunityIcons name="chip" size={12} color={Palette.primary[300]} />
+            <Text style={styles.modelBadgeText}>YOLOv8 nano · On-Device</Text>
+          </View>
+        </Animated.View>
 
         {/* SCAN BUTTON */}
-        <TouchableOpacity style={styles.scanButton} onPress={() => handleScan()} disabled={isScanning}>
-          <MaterialCommunityIcons name="camera" size={24} color="#FFFFFF" />
-          <Text style={styles.scanButtonText}>{isScanning ? 'ĐANG QUÉT...' : 'QUÉT VẬT THỂ'}</Text>
+        <TouchableOpacity
+          style={[styles.scanButton, isScanning && styles.scanButtonActive]}
+          onPress={handleScan}
+          disabled={isScanning}
+        >
+          <MaterialCommunityIcons
+            name={isScanning ? 'progress-clock' : 'camera'}
+            size={22}
+            color="#FFFFFF"
+          />
+          <Text style={styles.scanButtonText}>
+            {isScanning ? 'ĐANG NHẬN DIỆN...' : 'QUÉT VẬT THỂ'}
+          </Text>
         </TouchableOpacity>
 
-        {/* RESULT MODAL SHEET */}
+        {/* RESULT BOTTOM SHEET */}
         <Modal visible={showResultSheet} transparent animationType="slide">
           <View style={styles.modalOverlay}>
             <View style={styles.modalSheet}>
@@ -161,9 +218,19 @@ export default function ObjectScannerScreen({
 
               {scannedResult && (
                 <View style={styles.sheetContent}>
+                  {/* Confidence bar */}
+                  <View style={styles.confidenceRow}>
+                    <MaterialCommunityIcons name="brain" size={14} color={Palette.text.muted} />
+                    <Text style={styles.confidenceLabel}>Độ tin cậy mô hình:</Text>
+                    <View style={styles.confidenceBar}>
+                      <View style={[styles.confidenceFill, { width: `${confidencePct}%` as any }]} />
+                    </View>
+                    <Text style={styles.confidencePct}>{confidencePct}%</Text>
+                  </View>
+
+                  {/* Word info */}
                   <View style={styles.resultHeader}>
-                    <Image source={{ uri: scannedResult.imageUrl }} style={styles.resultImage} />
-                    <View style={{ flex: 1 }}>
+                    <View style={{ flex: 1, gap: 4 }}>
                       <View style={styles.wordRow}>
                         <Text style={styles.resultWord}>{scannedResult.word}</Text>
                         <View style={styles.posChip}>
@@ -177,6 +244,7 @@ export default function ObjectScannerScreen({
                           <Feather name="volume-2" size={18} color={Palette.primary[500]} />
                         </TouchableOpacity>
                       </View>
+
                       <Text style={styles.resultVn}>🇻🇳 {scannedResult.vn}</Text>
                     </View>
 
@@ -185,19 +253,25 @@ export default function ObjectScannerScreen({
                     </TouchableOpacity>
                   </View>
 
-                  <View style={styles.sentenceBox}>
-                    <Text style={styles.sentenceLabel}>Ví dụ sử dụng câu:</Text>
-                    <Text style={styles.sentenceEn}>“{scannedResult.sentence}”</Text>
-                  </View>
+                  {/* Example sentence */}
+                  {scannedResult.sentence ? (
+                    <View style={styles.sentenceBox}>
+                      <Text style={styles.sentenceLabel}>Ví dụ:</Text>
+                      <Text style={styles.sentenceEn}>"{scannedResult.sentence}"</Text>
+                    </View>
+                  ) : null}
 
-                  {/* ACTION BUTTONS */}
+                  {/* Action buttons */}
                   <View style={styles.actionRow}>
                     <TouchableOpacity style={styles.saveDeckBtn} onPress={handleSaveToDeck}>
                       <Ionicons name="add-circle" size={20} color="#FFFFFF" />
                       <Text style={styles.saveDeckBtnText}>LƯU VÀO SỔ TỪ (+15 XP)</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.lessonPickerBtn} onPress={() => setShowLessonPicker(true)}>
+                    <TouchableOpacity
+                      style={styles.lessonPickerBtn}
+                      onPress={() => setShowLessonPicker(true)}
+                    >
                       <Feather name="folder-plus" size={18} color={Palette.primary[500]} />
                     </TouchableOpacity>
                   </View>
@@ -214,17 +288,19 @@ export default function ObjectScannerScreen({
               <Text style={styles.pickerTitle}>Thêm vào bài học</Text>
               <Text style={styles.pickerSub}>Chọn chủ đề bài học để đưa từ này vào:</Text>
 
-              {lessons.map(lesson => (
-                <TouchableOpacity
-                  key={lesson.id}
-                  style={styles.lessonItem}
-                  onPress={() => handleAddToLesson(lesson.id)}
-                >
-                  <Text style={styles.lessonItemIcon}>{lesson.icon}</Text>
-                  <Text style={styles.lessonItemName}>{lesson.name}</Text>
-                  <Feather name="plus" size={16} color={Palette.primary[500]} />
-                </TouchableOpacity>
-              ))}
+              <ScrollView>
+                {lessons.map(lesson => (
+                  <TouchableOpacity
+                    key={lesson.id}
+                    style={styles.lessonItem}
+                    onPress={() => handleAddToLesson(lesson.id)}
+                  >
+                    <Text style={styles.lessonItemIcon}>{lesson.icon}</Text>
+                    <Text style={styles.lessonItemName}>{lesson.name}</Text>
+                    <Feather name="plus" size={16} color={Palette.primary[500]} />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
 
               <TouchableOpacity style={styles.closePickerBtn} onPress={() => setShowLessonPicker(false)}>
                 <Text style={styles.closePickerBtnText}>Đóng</Text>
@@ -246,13 +322,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: Spacing.four,
     paddingTop: Spacing.two,
-    paddingBottom: 100,
+    paddingBottom: 110,
+    gap: Spacing.three,
   },
 
-  // Header
-  topHeader: {
-    marginBottom: Spacing.three,
-  },
+  topHeader: {},
   headerTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -268,10 +342,9 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 12,
     color: '#A3B8A3',
-    marginTop: 2,
+    marginTop: 3,
   },
 
-  // Toast
   toastBox: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -280,16 +353,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 14,
-    marginBottom: Spacing.two,
   },
   toastText: {
     fontFamily: Fonts.sans,
     fontSize: 13,
     fontWeight: '700',
     color: '#FFFFFF',
+    flex: 1,
   },
 
-  // Viewfinder
   viewfinder: {
     flex: 1,
     backgroundColor: '#0F1A0F',
@@ -297,9 +369,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: 'rgba(255, 255, 255, 0.08)',
   },
   cameraBackground: {
     position: 'absolute',
@@ -309,7 +380,6 @@ const styles = StyleSheet.create({
   targetFrame: {
     width: 220,
     height: 220,
-    position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -319,30 +389,10 @@ const styles = StyleSheet.create({
     height: 28,
     borderColor: Palette.primary[300],
   },
-  topLeft: {
-    top: 0,
-    left: 0,
-    borderTopWidth: 3,
-    borderLeftWidth: 3,
-  },
-  topRight: {
-    top: 0,
-    right: 0,
-    borderTopWidth: 3,
-    borderRightWidth: 3,
-  },
-  bottomLeft: {
-    bottom: 0,
-    left: 0,
-    borderBottomWidth: 3,
-    borderLeftWidth: 3,
-  },
-  bottomRight: {
-    bottom: 0,
-    right: 0,
-    borderBottomWidth: 3,
-    borderRightWidth: 3,
-  },
+  topLeft: { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3 },
+  topRight: { top: 0, right: 0, borderTopWidth: 3, borderRightWidth: 3 },
+  bottomLeft: { bottom: 0, left: 0, borderBottomWidth: 3, borderLeftWidth: 3 },
+  bottomRight: { bottom: 0, right: 0, borderBottomWidth: 3, borderRightWidth: 3 },
   scanningIndicator: {
     alignItems: 'center',
     gap: Spacing.two,
@@ -360,45 +410,45 @@ const styles = StyleSheet.create({
   targetHint: {
     fontFamily: Fonts.sans,
     fontSize: 11,
-    color: 'rgba(255, 255, 255, 0.6)',
+    color: 'rgba(255, 255, 255, 0.5)',
     textAlign: 'center',
   },
-
-  // Preset Bar
-  presetBar: {
-    marginVertical: Spacing.three,
+  modelBadge: {
+    position: 'absolute',
+    bottom: Spacing.two,
+    right: Spacing.three,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
   },
-  presetTitle: {
+  modelBadgeText: {
     fontFamily: Fonts.sans,
-    fontSize: 11,
-    color: '#A3B8A3',
-    marginBottom: 6,
-  },
-  presetScroll: {
-    gap: 8,
-  },
-  presetChip: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
-  },
-  presetChipText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: '#FFFFFF',
+    fontSize: 10,
+    color: Palette.primary[300],
     fontWeight: '600',
   },
 
-  // Scan Button
   scanButton: {
     backgroundColor: Palette.primary[500],
-    height: 52,
-    borderRadius: 16,
+    height: 54,
+    borderRadius: 18,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
+    shadowColor: Palette.primary[500],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  scanButtonActive: {
+    backgroundColor: Palette.primary[600],
+    shadowOpacity: 0.1,
   },
   scanButtonText: {
     fontFamily: Fonts.sans,
@@ -408,7 +458,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
 
-  // Modal Sheet
+  // Result sheet
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.6)',
@@ -419,6 +469,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     padding: Spacing.four,
+    paddingBottom: 36,
   },
   sheetHandle: {
     width: 40,
@@ -431,14 +482,40 @@ const styles = StyleSheet.create({
   sheetContent: {
     gap: Spacing.three,
   },
+  confidenceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  confidenceLabel: {
+    fontFamily: Fonts.sans,
+    fontSize: 11,
+    color: Palette.text.muted,
+    flexShrink: 0,
+  },
+  confidenceBar: {
+    flex: 1,
+    height: 6,
+    backgroundColor: Palette.border,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  confidenceFill: {
+    height: '100%',
+    backgroundColor: Palette.primary[400],
+    borderRadius: 3,
+  },
+  confidencePct: {
+    fontFamily: Fonts.sans,
+    fontSize: 11,
+    fontWeight: '700',
+    color: Palette.primary[500],
+    flexShrink: 0,
+  },
   resultHeader: {
     flexDirection: 'row',
-    gap: Spacing.three,
-  },
-  resultImage: {
-    width: 70,
-    height: 70,
-    borderRadius: 16,
+    gap: Spacing.two,
+    alignItems: 'flex-start',
   },
   wordRow: {
     flexDirection: 'row',
@@ -447,12 +524,12 @@ const styles = StyleSheet.create({
   },
   resultWord: {
     fontFamily: Fonts.sans,
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: '900',
     color: Palette.text.primary,
   },
   posChip: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Palette.warning.bg,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -461,25 +538,23 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 10,
     fontWeight: '800',
-    color: '#D97706',
+    color: Palette.warning.text,
   },
   phoneticRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    marginTop: 2,
   },
   phoneticText: {
     fontFamily: Fonts.sans,
-    fontSize: 13,
+    fontSize: 14,
     color: Palette.text.ipa,
   },
   resultVn: {
     fontFamily: Fonts.sans,
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     color: Palette.text.primary,
-    marginTop: 4,
   },
   sentenceBox: {
     backgroundColor: Palette.canvas,
@@ -490,13 +565,14 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 11,
     color: Palette.text.muted,
+    marginBottom: 2,
   },
   sentenceEn: {
     fontFamily: Fonts.sans,
     fontSize: 13,
     fontWeight: '600',
     color: Palette.text.primary,
-    marginTop: 2,
+    fontStyle: 'italic',
   },
   actionRow: {
     flexDirection: 'row',
@@ -505,8 +581,8 @@ const styles = StyleSheet.create({
   saveDeckBtn: {
     flex: 1,
     backgroundColor: Palette.primary[500],
-    height: 48,
-    borderRadius: 14,
+    height: 50,
+    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -519,15 +595,15 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
   },
   lessonPickerBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
+    width: 50,
+    height: 50,
+    borderRadius: 16,
     backgroundColor: Palette.primary[100],
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  // Lesson Picker Modal
+  // Lesson picker
   modalOverlayCenter: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -538,6 +614,7 @@ const styles = StyleSheet.create({
     backgroundColor: Palette.surfaceWhite,
     borderRadius: 24,
     padding: Spacing.four,
+    maxHeight: 480,
     gap: Spacing.two,
   },
   pickerTitle: {
@@ -550,7 +627,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 12,
     color: Palette.text.secondary,
-    marginBottom: Spacing.one,
   },
   lessonItem: {
     flexDirection: 'row',
@@ -559,10 +635,9 @@ const styles = StyleSheet.create({
     backgroundColor: Palette.canvas,
     borderRadius: 14,
     gap: Spacing.two,
+    marginBottom: Spacing.one,
   },
-  lessonItemIcon: {
-    fontSize: 20,
-  },
+  lessonItemIcon: { fontSize: 20 },
   lessonItemName: {
     flex: 1,
     fontFamily: Fonts.sans,
@@ -573,7 +648,6 @@ const styles = StyleSheet.create({
   closePickerBtn: {
     alignItems: 'center',
     paddingVertical: Spacing.two,
-    marginTop: Spacing.one,
   },
   closePickerBtnText: {
     fontFamily: Fonts.sans,
