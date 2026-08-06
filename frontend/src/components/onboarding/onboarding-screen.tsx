@@ -9,18 +9,18 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { Fonts, Spacing } from '@/constants/theme';
+import { Palette, Fonts, Spacing } from '@/constants/theme';
 
 export const DropsPalette = {
-  bgDark: '#361968',
-  bgCard: 'rgba(255, 255, 255, 0.12)',
-  bgCardSelected: 'rgba(255, 255, 255, 0.25)',
-  accentLime: '#E5F554',
-  accentLimeDark: '#D4E738',
-  textDark: '#251048',
+  bgDark: Palette.canvasDark,
+  bgCard: 'rgba(255, 255, 255, 0.10)',
+  bgCardSelected: 'rgba(255, 255, 255, 0.22)',
+  accentLime: Palette.primary[300],
+  accentLimeDark: Palette.primary[400],
+  textDark: Palette.text.primary,
   textLight: '#FFFFFF',
-  textMuted: '#D0C2E8',
-  borderSelected: '#E5F554',
+  textMuted: '#A3B8A3',
+  borderSelected: Palette.primary[300],
   progressBarBg: 'rgba(255, 255, 255, 0.15)',
 };
 
@@ -445,8 +445,8 @@ const styles = StyleSheet.create({
     width: 180,
     height: 180,
     borderRadius: 90,
-    backgroundColor: '#3FB984',
-    opacity: 0.8,
+    backgroundColor: Palette.primary[500],
+    opacity: 0.6,
   },
   blobPurple: {
     position: 'absolute',
@@ -455,8 +455,8 @@ const styles = StyleSheet.create({
     width: 220,
     height: 220,
     borderRadius: 110,
-    backgroundColor: '#A855F7',
-    opacity: 0.6,
+    backgroundColor: Palette.secondary[500],
+    opacity: 0.5,
   },
   blobPink: {
     position: 'absolute',
@@ -465,8 +465,8 @@ const styles = StyleSheet.create({
     width: 140,
     height: 140,
     borderRadius: 70,
-    backgroundColor: '#EC4899',
-    opacity: 0.5,
+    backgroundColor: Palette.primary[400],
+    opacity: 0.4,
   },
 
   // Question Step Styles

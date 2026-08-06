@@ -143,7 +143,7 @@ export default function FlashcardDeckScreen({
               </View>
             ) : sessionFinished ? (
               <View style={styles.finishedCard}>
-                <Ionicons name="trophy" size={56} color="#EAB308" />
+                <Ionicons name="trophy" size={56} color={Palette.warning.text} />
                 <Text style={styles.finishedTitle}>Hoàn thành buổi ôn tập! 🎉</Text>
                 <Text style={styles.finishedSub}>Bạn vừa luyện tập xong {filteredWords.length} thẻ từ vựng.</Text>
 
@@ -539,7 +539,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   posChip: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Palette.warning.bg,
     paddingHorizontal: 10,
     paddingVertical: 3,
     borderRadius: 8,
@@ -550,7 +550,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 11,
     fontWeight: '800',
-    color: '#D97706',
+    color: Palette.warning.text,
   },
   audioButton: {
     flexDirection: 'row',
@@ -627,12 +627,12 @@ const styles = StyleSheet.create({
     borderColor: Palette.border,
   },
   rateBtnAgain: {
-    backgroundColor: '#FDF0F0',
-    borderColor: '#F87171',
+    backgroundColor: Palette.error.bg,
+    borderColor: Palette.error.text,
   },
   rateBtnGood: {
-    backgroundColor: '#FEF3C7',
-    borderColor: '#FBBF24',
+    backgroundColor: Palette.warning.bg,
+    borderColor: Palette.warning.text,
   },
   rateBtnEasy: {
     backgroundColor: Palette.primary[100],
@@ -732,7 +732,7 @@ const styles = StyleSheet.create({
     marginTop: Spacing.two,
   },
   libPosChip: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Palette.warning.bg,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
@@ -741,6 +741,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 10,
     fontWeight: '800',
-    color: '#D97706',
+    color: Palette.warning.text,
   },
 });

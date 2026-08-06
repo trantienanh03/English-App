@@ -127,10 +127,10 @@ export default function PracticeQuizScreen({
                     <Text style={styles.optionIndex}>{String.fromCharCode(65 + idx)}</Text>
                     <Text style={styles.optionText}>{opt}</Text>
                     {isAnswered && isCorrectOption && (
-                      <Ionicons name="checkmark-circle" size={20} color="#1E6B3A" />
+                      <Ionicons name="checkmark-circle" size={20} color={Palette.success.text} />
                     )}
                     {isAnswered && isSelected && !isCorrect && (
-                      <Ionicons name="close-circle" size={20} color="#B03535" />
+                      <Ionicons name="close-circle" size={20} color={Palette.error.text} />
                     )}
                   </TouchableOpacity>
                 );
@@ -144,7 +144,7 @@ export default function PracticeQuizScreen({
                   <MaterialCommunityIcons
                     name={isCorrect ? "emoticon-happy-outline" : "emoticon-sad-outline"}
                     size={24}
-                    color={isCorrect ? "#1E6B3A" : "#B03535"}
+                    color={isCorrect ? Palette.success.text : Palette.error.text}
                   />
                   <Text style={[styles.feedbackTitle, isCorrect ? styles.txtCorrect : styles.txtWrong]}>
                     {isCorrect ? 'Chính xác! Giỏi lắm! 🎉' : 'Rất tiếc, chưa đúng rồi! 😅'}
@@ -165,14 +165,14 @@ export default function PracticeQuizScreen({
           /* QUIZ FINISHED CELEBRATION */
           <View style={styles.finishedWrapper}>
             <View style={styles.celebrationCard}>
-              <MaterialCommunityIcons name="trophy-award" size={64} color="#EAB308" />
+              <MaterialCommunityIcons name="trophy-award" size={64} color={Palette.warning.text} />
               <Text style={styles.celebrationTitle}>Hoàn thành Quiz! 🌟</Text>
               <Text style={styles.celebrationSub}>
                 Bạn trả lời đúng <Text style={styles.boldScore}>{score}/{mockQuizzes.length}</Text> câu hỏi.
               </Text>
 
               <View style={styles.xpBonusCard}>
-                <MaterialCommunityIcons name="lightning-bolt" size={20} color="#EAB308" />
+                <MaterialCommunityIcons name="lightning-bolt" size={20} color={Palette.warning.text} />
                 <Text style={styles.xpBonusText}>Thưởng: +{score * 15 + 10} XP!</Text>
               </View>
 
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     color: Palette.text.primary,
   },
   scoreBadge: {
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Palette.warning.bg,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 12,
     fontWeight: '800',
-    color: '#D97706',
+    color: Palette.warning.text,
   },
 
   content: {
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#FEF3C7',
+    backgroundColor: Palette.warning.bg,
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 14,
@@ -433,7 +433,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 14,
     fontWeight: '800',
-    color: '#D97706',
+    color: Palette.warning.text,
   },
   finishedBtnGroup: {
     width: '100%',
