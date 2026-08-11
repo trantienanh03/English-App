@@ -8,7 +8,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { UserProgress, VocabularyWord, Lesson } from '@/types';
 import { playAudio } from '@/utils/audio';
@@ -158,7 +158,7 @@ export default function DashboardScreen({
         {/* WORD OF THE DAY */}
         <View style={styles.sectionCard}>
           <View style={styles.wotdHeader}>
-            <Feather name="sparkles" size={16} color={Palette.primary[500]} />
+            <Ionicons name="sparkles" size={16} color={Palette.primary[500]} />
             <Text style={styles.wotdBadgeText}>TỪ VỰNG HÔM NAY</Text>
           </View>
 

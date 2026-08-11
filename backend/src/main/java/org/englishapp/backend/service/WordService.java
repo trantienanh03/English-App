@@ -1,6 +1,5 @@
 package org.englishapp.backend.service;
 
-import lombok.RequiredArgsConstructor;
 import org.englishapp.backend.dto.WordDto;
 import org.englishapp.backend.entity.Word;
 import org.englishapp.backend.repository.WordRepository;
@@ -11,10 +10,13 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class WordService {
 
     private final WordRepository wordRepository;
+
+    public WordService(WordRepository wordRepository) {
+        this.wordRepository = wordRepository;
+    }
 
     public List<WordDto> findAll() {
         return wordRepository.findAll()

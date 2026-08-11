@@ -111,7 +111,7 @@ export default function PracticeQuizScreen({
                 const isSelected = selectedOption === opt;
                 const isCorrectOption = opt === currentQuiz.answer;
 
-                let optionStyle = styles.optionNormal;
+                let optionStyle: any = styles.optionNormal;
                 if (isAnswered) {
                   if (isCorrectOption) optionStyle = styles.optionCorrect;
                   else if (isSelected && !isCorrect) optionStyle = styles.optionWrong;

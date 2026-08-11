@@ -1,6 +1,5 @@
 package org.englishapp.backend.controller;
 
-import lombok.RequiredArgsConstructor;
 import org.englishapp.backend.dto.WordDto;
 import org.englishapp.backend.service.WordService;
 import org.springframework.http.ResponseEntity;
@@ -10,10 +9,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/words")
-@RequiredArgsConstructor
 public class WordController {
 
     private final WordService wordService;
+
+    public WordController(WordService wordService) {
+        this.wordService = wordService;
+    }
 
     /**
      * Returns all 80 COCO words.

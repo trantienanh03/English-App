@@ -1,7 +1,6 @@
 package org.englishapp.backend.controller;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.englishapp.backend.dto.SyncRequest;
 import org.englishapp.backend.dto.SyncResponse;
 import org.englishapp.backend.service.LeaderboardService;
@@ -10,10 +9,13 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/sync")
-@RequiredArgsConstructor
 public class SyncController {
 
     private final LeaderboardService leaderboardService;
+
+    public SyncController(LeaderboardService leaderboardService) {
+        this.leaderboardService = leaderboardService;
+    }
 
     /**
      * Receives the user's accumulated local progress and upserts it.

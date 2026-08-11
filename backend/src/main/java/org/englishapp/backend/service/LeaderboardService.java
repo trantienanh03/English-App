@@ -1,6 +1,5 @@
 package org.englishapp.backend.service;
 
-import lombok.RequiredArgsConstructor;
 import org.englishapp.backend.dto.LeaderboardEntryDto;
 import org.englishapp.backend.dto.SyncRequest;
 import org.englishapp.backend.dto.SyncResponse;
@@ -14,12 +13,15 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
-@RequiredArgsConstructor
 public class LeaderboardService {
 
     private static final int TOP_LIMIT = 50;
 
     private final UserProgressRepository userProgressRepository;
+
+    public LeaderboardService(UserProgressRepository userProgressRepository) {
+        this.userProgressRepository = userProgressRepository;
+    }
 
     @Transactional
     public SyncResponse sync(SyncRequest req) {
