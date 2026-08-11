@@ -1,8 +1,40 @@
 -- ============================================================
--- V2: Seed all 80 COCO classes with Vietnamese vocabulary
+-- V100: Force drop old legacy tables and recreate clean Vocam schema + seed 80 COCO words
 -- ============================================================
--- Format: (coco_class, en_word, phonetic, pos, definition, translation, example_en, example_vn)
 
+DROP TABLE IF EXISTS words CASCADE;
+DROP TABLE IF EXISTS user_progress CASCADE;
+
+CREATE TABLE words (
+    id          BIGSERIAL    PRIMARY KEY,
+    coco_class  VARCHAR(50)  NOT NULL UNIQUE,   -- YOLO class name: "cup", "cat"
+    en_word     VARCHAR(100) NOT NULL,
+    phonetic    VARCHAR(100),                   -- IPA: /kʌp/
+    pos         VARCHAR(20),                    -- Noun, Verb, Adjective
+    definition  TEXT,                           -- Short English definition
+    translation VARCHAR(200) NOT NULL,          -- Vietnamese meaning
+    example_en  TEXT,
+    example_vn  TEXT,
+    created_at  TIMESTAMPTZ  DEFAULT NOW()
+);
+
+CREATE TABLE user_progress (
+    id              BIGSERIAL    PRIMARY KEY,
+    device_uuid     VARCHAR(36)  NOT NULL UNIQUE,   -- UUID generated on first app launch
+    display_name    VARCHAR(100) NOT NULL DEFAULT 'Người dùng',
+    total_xp        INTEGER      NOT NULL DEFAULT 0,
+    current_streak  INTEGER      NOT NULL DEFAULT 0,
+    longest_streak  INTEGER      NOT NULL DEFAULT 0,
+    words_learned   INTEGER      NOT NULL DEFAULT 0,
+    last_sync_at    TIMESTAMPTZ,
+    created_at      TIMESTAMPTZ  DEFAULT NOW(),
+    updated_at      TIMESTAMPTZ  DEFAULT NOW()
+);
+
+-- Sort leaderboard by XP efficiently
+CREATE INDEX IF NOT EXISTS idx_user_progress_xp ON user_progress (total_xp DESC);
+
+-- Seed all 80 COCO classes with Vietnamese vocabulary
 INSERT INTO words (coco_class, en_word, phonetic, pos, definition, translation, example_en, example_vn) VALUES
 ('person',        'person',        '/ˈpɜːrsən/',    'Noun', 'A human being',                           'người',               'There is a person standing at the door.',          'Có một người đang đứng ở cửa.'),
 ('bicycle',       'bicycle',       '/ˈbaɪsɪkəl/',   'Noun', 'A two-wheeled vehicle powered by pedals', 'xe đạp',              'She rides her bicycle to school every day.',       'Cô ấy đạp xe đến trường mỗi ngày.'),
@@ -65,7 +97,7 @@ INSERT INTO words (coco_class, en_word, phonetic, pos, definition, translation, 
 ('potted plant',  'potted plant',  '/ˈpɒtɪd plɑːnt/', 'Noun','A plant growing in a pot or container', 'cây trồng trong chậu','She waters the potted plant every morning.',       'Cô ấy tưới cây trồng trong chậu mỗi buổi sáng.'),
 ('bed',           'bed',           '/bɛd/',           'Noun', 'A piece of furniture for sleeping',     'cái giường',          'Make sure to make your bed every morning.',         'Hãy nhớ dọn giường mỗi buổi sáng.'),
 ('dining table',  'dining table',  '/ˈdaɪnɪŋ ˈteɪbəl/','Noun','A table used for eating meals',       'bàn ăn',              'The whole family sat around the dining table.',    'Cả gia đình ngồi quanh bàn ăn.'),
-('toilet',        'toilet',        '/ˈtɔɪlɪt/',       'Noun', 'A bowl used for urination and defecation','bồn cầu',           'Please flush the toilet after use.',               'Vui lòng xả nước sau khi sử dụng bồn cầu.'),
+('toilet',        'toilet',        '/ˈtɔɪlət/',       'Noun', 'A bowl used for body waste',            'bồn cầu',             'The bathroom has a clean toilet.',                 'Phòng tắm có một bồn cầu sạch sẻ.'),
 ('tv',            'television',    '/ˈtɛlɪvɪʒən/',    'Noun', 'A device for watching broadcasts',     'tivi / máy thu hình', 'He watches the news on television every evening.', 'Anh ấy xem tin tức trên tivi mỗi tối.'),
 ('laptop',        'laptop',        '/ˈlæptɒp/',       'Noun', 'A portable personal computer',         'máy tính xách tay',   'She works on her laptop at the coffee shop.',      'Cô ấy làm việc bằng laptop tại quán cà phê.'),
 ('mouse',         'mouse',         '/maʊs/',          'Noun', 'A small device for controlling a computer','con chuột máy tính','He moved the mouse to click the icon.',          'Anh ấy di chuyển chuột để nhấp vào biểu tượng.'),
