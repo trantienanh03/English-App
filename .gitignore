@@ -5,3 +5,8 @@ target/
 .expo/
 node_modules/
 dist/
+venv/
+ai_service/venv/
+*.pt
+*.onnx
+runs/

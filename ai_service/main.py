@@ -17,10 +17,18 @@ from PIL import Image
 import numpy as np
 from ultralytics import YOLO
 
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    load_ai_model()
+    yield
+
 app = FastAPI(
     title="English App - AI Object Detection Service",
     description="Dịch vụ AI nhận diện vật thể từ ảnh camera cho ứng dụng học từ vựng tiếng Anh",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Cấu hình CORS để cho phép Spring Boot backend hoặc di động kết nối
@@ -48,9 +56,7 @@ def load_ai_model():
         print(f"⚠️ Chưa tìm thấy {MODEL_PATH}, nạp mô hình Pretrained dự phòng: {FALLBACK_MODEL}")
         model = YOLO(FALLBACK_MODEL)
 
-@app.on_event("startup")
-async def startup_event():
-    load_ai_model()
+
 
 # Định nghĩa Schema dữ liệu đầu ra
 class BoundingBox(BaseModel):
