@@ -76,6 +76,12 @@ class PredictionResponse(BaseModel):
     inference_time_ms: float
     predictions: List[DetectedObject]
 
+from fastapi.responses import FileResponse
+
+@app.get("/", summary="Giao diện Web Test AI Model")
+def web_demo():
+    return FileResponse("web_demo.html")
+
 @app.get("/health", summary="Kiểm tra trạng thái AI Service")
 def health_check():
     model_name = MODEL_PATH if os.path.exists(MODEL_PATH) else FALLBACK_MODEL
