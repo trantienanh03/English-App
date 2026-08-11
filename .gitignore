@@ -1,12 +1,31 @@
+# IDE & OS
 .idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Environment variables
 .env
 *.env
+
+# Build outputs
 target/
+dist/
+build/
 .expo/
 node_modules/
-dist/
+
+# Python Virtual Environments & Caches
 venv/
+.venv/
 ai_service/venv/
+**/venv/
+**/__pycache__/
+*.pyc
+
+# AI Model Binaries & Runs
 *.pt
 *.onnx
+*.engine
 runs/
+clip/
