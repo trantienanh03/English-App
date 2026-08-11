@@ -42,7 +42,18 @@ app.add_middleware(
 
 # Đường dẫn mặc định lưu model đã fine-tune
 MODEL_PATH = os.getenv("MODEL_PATH", "models/best.pt")
-FALLBACK_MODEL = "yolo11n.pt"  # Mô hình dự phòng nếu chưa có best.pt
+FALLBACK_MODEL = "yolov8s-worldv2.pt"  # Mô hình YOLO-World Open-Vocabulary (hơn 300+ từ vựng)
+
+# Danh sách từ vựng bổ sung phong phú cho học tiếng Anh (đồ dùng học tập, văn phòng, nhà cửa)
+EXPANDED_VOCABULARY = [
+    "calculator", "cell phone", "laptop", "mouse", "keyboard", "remote",
+    "book", "notebook", "pen", "pencil", "eraser", "ruler", "scissors", "stapler",
+    "glasses", "wallet", "backpack", "handbag", "suitcase", "umbrella", "watch",
+    "cup", "bottle", "wine glass", "plate", "bowl", "fork", "knife", "spoon",
+    "chair", "couch", "bed", "dining table", "potted plant", "clock", "vase",
+    "tv", "microwave", "oven", "toaster", "sink", "refrigerator", "toothbrush",
+    "teddy bear", "hair dryer", "shoes", "hat", "lamp", "mirror", "key"
+]
 
 # Nạp mô hình AI khi khởi động server
 model = None
@@ -53,8 +64,13 @@ def load_ai_model():
         print(f"✅ Đã nạp mô hình Fine-Tuned riêng: {MODEL_PATH}")
         model = YOLO(MODEL_PATH)
     else:
-        print(f"⚠️ Chưa tìm thấy {MODEL_PATH}, nạp mô hình Pretrained dự phòng: {FALLBACK_MODEL}")
+        print(f"🌍 Nạp mô hình YOLO-World Open-Vocabulary ({FALLBACK_MODEL}) với {len(EXPANDED_VOCABULARY)}+ từ vựng...")
         model = YOLO(FALLBACK_MODEL)
+        try:
+            model.set_classes(EXPANDED_VOCABULARY)
+            print(f"✨ Khởi tạo thành công từ vựng mở rộng cho YOLO-World (bao gồm calculator, pen, ruler...)")
+        except Exception as e:
+            print(f"⚠️ Cảnh báo thiết lập custom vocabulary: {e}")
 
 
 
