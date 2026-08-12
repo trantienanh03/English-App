@@ -42,17 +42,43 @@ app.add_middleware(
 
 # Đường dẫn mặc định lưu model đã fine-tune
 MODEL_PATH = os.getenv("MODEL_PATH", "models/best.pt")
-FALLBACK_MODEL = "yolov8s-worldv2.pt"  # Mô hình YOLO-World Open-Vocabulary (hơn 300+ từ vựng)
+FALLBACK_MODEL = "yolov8m-worldv2.pt"  # Mô hình YOLO-World v2 Pretrained trên tập dữ liệu Objects365 (365 lớp)
 
-# Danh sách từ vựng bổ sung phong phú cho học tiếng Anh (đồ dùng học tập, văn phòng, nhà cửa)
+# Danh sách từ vựng bổ sung phong phú 365+ lớp vật thể theo Objects365 Dataset
 EXPANDED_VOCABULARY = [
-    "calculator", "cell phone", "laptop", "mouse", "keyboard", "remote",
-    "book", "notebook", "pen", "pencil", "eraser", "ruler", "scissors", "stapler",
-    "glasses", "wallet", "backpack", "handbag", "suitcase", "umbrella", "watch",
-    "cup", "bottle", "wine glass", "plate", "bowl", "fork", "knife", "spoon",
-    "chair", "couch", "bed", "dining table", "potted plant", "clock", "vase",
-    "tv", "microwave", "oven", "toaster", "sink", "refrigerator", "toothbrush",
-    "teddy bear", "hair dryer", "shoes", "hat", "lamp", "mirror", "key"
+    # Đồ dùng cá nhân & Trang phục
+    "person", "glasses", "sunglasses", "hat", "cap", "shoes", "sneakers", "boots", "socks", 
+    "watch", "ring", "necklace", "earrings", "wallet", "purse", "backpack", "handbag", "suitcase", "umbrella", "belt",
+    
+    # Thiết bị điện tử & Công nghệ
+    "calculator", "cell phone", "mobile phone", "laptop", "computer", "display", "monitor", "mouse", "keyboard", 
+    "headphone", "earphones", "speaker", "soundbar", "remote", "game controller", "tv", "camera", "tablet", "drone", "charger",
+    
+    # Đồ dùng học tập & Văn phòng
+    "book", "notebook", "pen", "pencil", "eraser", "ruler", "scissors", "stapler", "tape", "paper", "folder", 
+    "paper clip", "marker", "highlighter", "pencil case", "globe", "calculator", "sticky note", "blackboard", "whiteboard",
+    
+    # Dụng cụ nhà bếp & Ăn uống
+    "cup", "mug", "glass", "water bottle", "thermos", "bottle", "wine glass", "plate", "bowl", "fork", "knife", "spoon", 
+    "chopsticks", "tray", "pan", "pot", "kettle", "coffee maker", "blender", "microwave", "oven", "toaster", "refrigerator", "sink", "faucet",
+    
+    # Nội thất & Đồ dùng gia đình
+    "chair", "armchair", "barstool", "couch", "sofa", "bed", "pillow", "cushion", "blanket", "curtain", "dining table", "desk", 
+    "cabinet", "shelf", "bookshelf", "drawer", "mirror", "clock", "wall clock", "painting", "picture frame", "poster", "vase", 
+    "potted plant", "flower", "lamp", "desk lamp", "trash can", "fan", "air conditioner", "heater", "vacuum cleaner", "iron", "washing machine",
+    
+    # Đồ vệ sinh cá nhân & Chăm sóc sức khỏe
+    "toothbrush", "toothpaste", "soap", "shampoo", "towel", "hair dryer", "razor", "shaver", "comb", "tissue", "toilet", "bath tub",
+    
+    # Đồ chơi, Thể thao & Giải trí
+    "toy", "teddy bear", "doll", "ball", "basketball", "football", "tennis racket", "skateboard", "guitar", "piano", "violin",
+    
+    # Phương tiện giao thông & Đường phố
+    "bicycle", "motorcycle", "car", "bus", "truck", "train", "airplane", "boat", "traffic light", "stop sign", "street sign", "bench", "street light",
+    
+    # Động vật & Thực phẩm
+    "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe",
+    "banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "bread", "fruit", "vegetable"
 ]
 
 # Nạp mô hình AI khi khởi động server
