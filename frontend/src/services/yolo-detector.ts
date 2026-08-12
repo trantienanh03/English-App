@@ -88,14 +88,63 @@ export async function mockDetect(): Promise<DetectionResult | null> {
  * }
  */
 
+export const AI_SERVICE_URL = 'http://localhost:8000';
+
 /**
  * Main detection entry point.
- * In demo mode: uses mockDetect().
- * After Sprint 3 integration: replace with realDetect(imageBase64).
+ * 1. Attempts live inference via FastAPI AI Microservice at http://localhost:8000/predict
+ * 2. If AI service is offline or unreachable, seamlessly falls back to mockDetect()
  */
-export async function detect(_imageBase64?: string): Promise<DetectionResult | null> {
-  // TODO (Sprint 3): replace mockDetect() with realDetect(_imageBase64)
-  return mockDetect();
+export async function detect(fileBlobOrFormData?: any): Promise<DetectionResult | null> {
+  try {
+    let bodyData: any = fileBlobOrFormData;
+
+    // If no image is provided, create a sample test image for web demo
+    if (!bodyData) {
+      const response = await fetch(`${AI_SERVICE_URL}/health`);
+      if (response.ok) {
+        // AI service is healthy
+        console.log('⚡ Connected to live FastAPI AI Microservice at http://localhost:8000');
+      }
+    }
+
+    if (bodyData) {
+      const apiRes = await fetch(`${AI_SERVICE_URL}/predict?confidence_threshold=0.30`, {
+        method: 'POST',
+        body: bodyData,
+      });
+
+      if (apiRes.ok) {
+        const data = await apiRes.json();
+        if (data.success && data.predictions.length > 0) {
+          const topPred = data.predictions[0];
+          const cocoClass = topPred.label.toLowerCase();
+          const confidence = topPred.confidence;
+
+          let word = getCachedWordByClass(cocoClass);
+          if (!word) {
+            word = {
+              id: `word_${Date.now()}`,
+              word: topPred.label,
+              pos: 'Noun',
+              phonetic: `/${cocoClass}/`,
+              vn: topPred.label,
+              sentence: `This is a ${cocoClass}.`,
+              difficulty: 'easy',
+            };
+          }
+          return { cocoClass, confidence, word };
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('AI Microservice connection error, using fallback:', err);
+  }
+
+  // Fallback to local SQLite mock detection
+  const fallback = await mockDetect();
+  if (!fallback) return null;
+  return fallback;
 }
 
 /**

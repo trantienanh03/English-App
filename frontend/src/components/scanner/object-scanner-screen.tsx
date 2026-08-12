@@ -63,7 +63,7 @@ export default function ObjectScannerScreen({
    * 2. If word not in local cache, fetch from Spring Boot API
    * 3. Show result bottom sheet
    */
-  const handleScan = async () => {
+  const handleScan = async (formData?: any) => {
     if (isScanning) return;
 
     setIsScanning(true);
@@ -72,11 +72,10 @@ export default function ObjectScannerScreen({
     startPulse();
 
     try {
-      // Run YOLO inference (mock in demo, real ONNX in Sprint 3)
-      const result: DetectionResult | null = await detect();
+      // Run YOLO inference (Live FastAPI AI Microservice or SQLite fallback)
+      const result: DetectionResult | null = await detect(formData);
 
       if (!result) {
-        // Nothing detected — try fetch a random cached word for demo
         setIsScanning(false);
         stopPulse();
         return;
@@ -91,14 +90,20 @@ export default function ObjectScannerScreen({
           vocabulary = cached;
         } else {
           const remote = await api.getWordByClass(result.cocoClass);
-          if (remote) vocabulary = remote;
+          if (remote) {
+            vocabulary = remote;
+          } else {
+            vocabulary = {
+              id: `word_${Date.now()}`,
+              word: result.cocoClass,
+              pos: 'Noun',
+              phonetic: `/${result.cocoClass}/`,
+              vn: result.cocoClass,
+              sentence: `This is a ${result.cocoClass}.`,
+              difficulty: 'easy',
+            };
+          }
         }
-      }
-
-      if (!vocabulary) {
-        setIsScanning(false);
-        stopPulse();
-        return;
       }
 
       setScannedResult(vocabulary);
