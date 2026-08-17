@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="Sequence FastAPI Fallback" id="seq-fallback-06">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Lifelines -->
+        <mxCell id="p_user" value="User&#xa;(Nguoi dung)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="80" y="40" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="line_user" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_user">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="95" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p_ss" value="ObjectScannerScreen&#xa;(UI Screen)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="210" y="50" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="line_ss" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_ss">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="280" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p_yd" value="YoloDetectorService&#xa;(Service Layer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#fbc02d;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="410" y="50" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="line_yd" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_yd">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="480" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p_fast" value="FastAPI AI Service&#xa;(Port 8000)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#ef6c00;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="610" y="50" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="line_fast" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_fast">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="680" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p_yw" value="YOLOv8-World Model&#xa;(365 classes)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#f57c00;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="810" y="50" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="line_yw" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_yw">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="880" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Messages -->
+        <mxCell id="m1" value="1. Nhan QUET VAT THE" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="95" y="130" as="sourcePoint" />
+            <mxPoint x="280" y="130" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m2" value="2. detect(imageFormData)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="280" y="160" as="sourcePoint" />
+            <mxPoint x="480" y="160" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Note: ONNX Error -->
+        <mxCell id="note_error" value="On-device ONNX Model Gap / Failed / Low RAM Memory" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#ffebee;strokeColor=#c62828;fontSize=10;fontStyle=1;fontColor=#c62828;" vertex="1" parent="1">
+          <mxGeometry x="360" y="195" width="240" height="35" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m3" value="3. POST /predict (multipart/form-data image, conf=0.30)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#ef6c00;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="480" y="250" as="sourcePoint" />
+            <mxPoint x="680" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m4" value="4. PIL.Image.open(bytes)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;curved=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="680" y="275" as="sourcePoint" />
+            <mxPoint x="680" y="295" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="715" y="275" />
+              <mxPoint x="715" y="295" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m5" value="5. model.predict(image, conf=0.30)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#f57c00;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="680" y="320" as="sourcePoint" />
+            <mxPoint x="880" y="320" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m6" value="6. Raw Detections (bounding_boxes, labels, scores)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#f57c00;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="880" y="360" as="sourcePoint" />
+            <mxPoint x="680" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m7" value="7. Filter confidence &amp; NMS sorting" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;curved=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="680" y="385" as="sourcePoint" />
+            <mxPoint x="680" y="405" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="715" y="385" />
+              <mxPoint x="715" y="405" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m8" value="8. PredictionResponse JSON (predictions: [{label, confidence, box}])" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#ef6c00;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="680" y="440" as="sourcePoint" />
+            <mxPoint x="480" y="440" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m9" value="9. Return DetectionResult to UI" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="480" y="490" as="sourcePoint" />
+            <mxPoint x="280" y="490" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m10" value="10. Hien thi ket qua nhan dien tu Server AI" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#0288d1;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="280" y="530" as="sourcePoint" />
+            <mxPoint x="95" y="530" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="ERD Diagram" id="erd-10">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Tables -->
+        <!-- USERS -->
+        <mxCell id="tbl_users" value="USERS&#xa;--&#xa;* id : uuid [PK]&#xa;* email : varchar [UK]&#xa;  password_hash : varchar&#xa;  display_name : varchar&#xa;  avatar_url : text&#xa;  is_active : boolean&#xa;  role : varchar&#xa;  created_at : timestamptz" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="40" width="220" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- REFRESH_TOKENS -->
+        <mxCell id="tbl_tokens" value="REFRESH_TOKENS&#xa;--&#xa;* id : uuid [PK]&#xa;+ user_id : uuid [FK]&#xa;  token_hash : varchar&#xa;  device_info : varchar&#xa;  is_revoked : boolean&#xa;  expires_at : timestamptz&#xa;  created_at : timestamptz" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#e91e63;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="40" width="220" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- DECKS -->
+        <mxCell id="tbl_decks" value="DECKS&#xa;--&#xa;* id : uuid [PK]&#xa;+ user_id : uuid [FK]&#xa;  name : varchar&#xa;  description : text&#xa;  is_public : boolean&#xa;  created_at : timestamptz" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="260" width="220" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- WORDS -->
+        <mxCell id="tbl_words" value="WORDS&#xa;--&#xa;* id : bigint [PK]&#xa;* coco_class : varchar [UK]&#xa;  en_word : varchar&#xa;  phonetic : varchar&#xa;  pos : varchar&#xa;  definition : text&#xa;  translation : text&#xa;  example_en : text" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="600" y="40" width="220" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- USER_PROGRESS -->
+        <mxCell id="tbl_prog" value="USER_PROGRESS&#xa;--&#xa;* id : uuid [PK]&#xa;* device_uuid : varchar [UK]&#xa;  display_name : varchar&#xa;  total_xp : integer&#xa;  current_streak : integer&#xa;  longest_streak : integer&#xa;  words_learned : integer&#xa;  last_sync_at : timestamptz" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#9c27b0;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="440" width="220" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- FLASHCARDS -->
+        <mxCell id="tbl_flash" value="FLASHCARDS&#xa;--&#xa;* id : uuid [PK]&#xa;+ user_id : uuid [FK]&#xa;+ word_id : bigint [FK]&#xa;  image_path : text&#xa;  ease_factor : decimal&#xa;  interval_days : integer&#xa;  repetitions : integer&#xa;  next_review_at : timestamptz&#xa;  is_synced : boolean" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#fbc02d;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="320" y="260" width="230" height="200" as="geometry" />
+        </mxCell>
+
+        <!-- REVIEW_LOGS -->
+        <mxCell id="tbl_logs" value="REVIEW_LOGS&#xa;--&#xa;* id : uuid [PK]&#xa;+ flashcard_id : uuid [FK]&#xa;  quality : smallint&#xa;  reviewed_at : timestamptz&#xa;  new_interval : integer&#xa;  new_ease_factor : decimal" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#ef6c00;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="600" y="260" width="220" height="150" as="geometry" />
+        </mxCell>
+
+        <!-- Relationships -->
+        <!-- USERS 1 * REFRESH_TOKENS -->
+        <mxCell id="rel_usr_tok" value="1 : N (has)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#e91e63;" edge="1" parent="1" source="tbl_users" target="tbl_tokens">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- USERS 1 * DECKS -->
+        <mxCell id="rel_usr_deck" value="1 : N (creates)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#0288d1;" edge="1" parent="1" source="tbl_users" target="tbl_decks">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- USERS 1 * FLASHCARDS -->
+        <mxCell id="rel_usr_flash" value="1 : N (owns)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#fbc02d;" edge="1" parent="1" source="tbl_users" target="tbl_flash">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="150" y="240" />
+              <mxPoint x="360" y="240" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- WORDS 1 * FLASHCARDS -->
+        <mxCell id="rel_word_flash" value="1 : N (referenced by)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#2e7d32;" edge="1" parent="1" source="tbl_words" target="tbl_flash">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- FLASHCARDS 1 * REVIEW_LOGS -->
+        <mxCell id="rel_flash_log" value="1 : N (has logs)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#ef6c00;" edge="1" parent="1" source="tbl_flash" target="tbl_logs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

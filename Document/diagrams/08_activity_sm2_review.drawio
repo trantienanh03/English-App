@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="Activity SM-2 Review" id="act-sm2-08">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Start Node -->
+        <mxCell id="a_start" value="" style="ellipse;html=1;shape=startState;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="220" y="40" width="30" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a_query" value="Query SQLite SELECT flashcards&#xa;WHERE next_review_at &lt;= NOW()" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="125" y="100" width="220" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="a_start" target="a_query">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Decision: Has Flashcards? -->
+        <mxCell id="d_has" value="Co tu can on?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="160" y="175" width="150" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="a_query" target="d_has">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a_empty" value="Hien thi Thong bao: Hom nay khong co tu can on. On tiep next_date" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#f57c00;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="380" y="182.5" width="220" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="e_has_no" value="Khong" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontColor=#c62828;" edge="1" parent="1" source="d_has" target="a_empty">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a_end_empty" value="" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="640" y="190" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="e_empty_end" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="a_empty" target="a_end_empty">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Main Loop -->
+        <mxCell id="a_front" value="Hien thi mat truoc Flashcard&#xa;(Tu Tieng Anh + Hinh anh)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="130" y="270" width="210" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="e_has_yes" value="Co" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontColor=#2e7d32;" edge="1" parent="1" source="d_has" target="a_front">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a_flip" value="Nguoi dung nhan Lat the" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#fbc02d;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="145" y="340" width="180" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="a_front" target="a_flip">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a_back" value="Hien thi mat sau Flashcard&#xa;(Phien am + Nghia Tieng Viet + Vi du)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="120" y="405" width="230" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="a_flip" target="a_back">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a_rate" value="Nguoi dung chon muc do nho quality (0=Quen, 3=Nho tot, 5=Thuoc)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#fbc02d;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="105" y="475" width="260" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="a_back" target="a_rate">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a_sm2_calc" value="SM-2 Module tinh toán:&#xa;newEF, newInterval, nextReviewAt" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="125" y="555" width="220" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="a_rate" target="a_sm2_calc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a_update_db" value="UPDATE flashcards &amp; INSERT review_logs vao SQLite local" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="110" y="635" width="250" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="a_sm2_calc" target="a_update_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Decision: More cards? -->
+        <mxCell id="d_more" value="Con tu can on?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="155" y="705" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="a_update_db" target="d_more">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_more_yes" value="Co" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontColor=#2e7d32;" edge="1" parent="1" source="d_more" target="a_front">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="60" y="735" />
+              <mxPoint x="60" y="292.5" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Finish Loop -->
+        <mxCell id="a_summary" value="Hien thi Ket qua Phien on tap&#xa;(So tu da on - XP nhan duoc - Current Streak)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="390" y="712.5" width="260" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="e_more_no" value="Khong" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontColor=#c62828;" edge="1" parent="1" source="d_more" target="a_summary">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a_sync_bg" value="SyncService trigger dong bo tien do ngam len Cloud Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#9c27b0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="690" y="712.5" width="260" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="a_summary" target="a_sync_bg">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="a_end_final" value="" style="ellipse;html=1;shape=endState;fillColor=#000000;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="990" y="720" width="30" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;" edge="1" parent="1" source="a_sync_bg" target="a_end_final">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

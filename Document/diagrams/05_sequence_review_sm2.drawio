@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="Sequence Review SM-2" id="seq-sm2-05">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Lifelines -->
+        <mxCell id="p_user" value="User&#xa;(Nguoi dung)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="40" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="line_user" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_user">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="75" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p_rs" value="ReviewScreen&#xa;(UI Screen)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="170" y="50" width="130" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="line_rs" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_rs">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="235" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p_sq" value="SQLite Local DB&#xa;(flashcards, logs)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="340" y="40" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="line_sq" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_sq">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p_sm" value="SM2Algorithm&#xa;(Spaced Repetition)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#fbc02d;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="500" y="50" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="line_sm" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_sm">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="570" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p_ss" value="SyncService&#xa;(Background Sync)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#9c27b0;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="680" y="50" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="line_ss" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_ss">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="750" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p_api" value="Spring Boot API&#xa;(SyncController)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="860" y="50" width="140" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="line_api" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_api">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="930" y="680" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Messages -->
+        <mxCell id="m1" value="1. Mo man hinh On tap" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="75" y="140" as="sourcePoint" />
+            <mxPoint x="235" y="140" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m2" value="2. SELECT flashcards WHERE next_review_at &lt;= NOW()" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#2e7d32;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="235" y="170" as="sourcePoint" />
+            <mxPoint x="400" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m3" value="3. List&lt;Flashcard&gt; den han on" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#2e7d32;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="400" y="200" as="sourcePoint" />
+            <mxPoint x="235" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Loop Frame -->
+        <mxCell id="frame_loop" value="loop [Voi moi Flashcard den han]" style="swimlane;startSize=20;collapsible=0;rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#ff9800;fontStyle=1;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="50" y="220" width="570" height="270" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m4" value="4. Hien thi mat truoc (Word + Image)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="235" y="255" as="sourcePoint" />
+            <mxPoint x="75" y="255" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m5" value="5. Nhan Lat the" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="75" y="285" as="sourcePoint" />
+            <mxPoint x="235" y="285" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m6" value="6. Hien thi mat sau (Phonetic, Meaning, Example)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="235" y="315" as="sourcePoint" />
+            <mxPoint x="75" y="315" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m7" value="7. Chon muc do nho quality (0..5)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="75" y="355" as="sourcePoint" />
+            <mxPoint x="235" y="355" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m8" value="8. calculate(quality, easeFactor, interval, reps)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#fbc02d;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="235" y="385" as="sourcePoint" />
+            <mxPoint x="570" y="385" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m9" value="9. SM2Result (newEF, newInterval, nextReviewAt)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#fbc02d;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="570" y="415" as="sourcePoint" />
+            <mxPoint x="235" y="415" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m10" value="10. UPDATE flashcards &amp; INSERT review_logs" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#2e7d32;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="235" y="450" as="sourcePoint" />
+            <mxPoint x="400" y="450" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Summary & Sync -->
+        <mxCell id="m11" value="11. UPDATE user_progress (streak++, xp += 50)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#2e7d32;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="235" y="515" as="sourcePoint" />
+            <mxPoint x="400" y="515" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m12" value="12. triggerSyncNow()" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#9c27b0;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="235" y="555" as="sourcePoint" />
+            <mxPoint x="750" y="555" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m13" value="13. POST /api/sync/progress (xp, streak, logs)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#1976d2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="750" y="585" as="sourcePoint" />
+            <mxPoint x="930" y="585" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m14" value="14. 200 OK (updated rank)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#1976d2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="930" y="615" as="sourcePoint" />
+            <mxPoint x="750" y="615" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

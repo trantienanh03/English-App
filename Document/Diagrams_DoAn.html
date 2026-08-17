@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>So do He Thong — Vocam English Learning App</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0f1117;
+    color: #e0e0e0;
+    padding: 32px 24px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    color: #7FDBCA;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #888;
+    font-size: 0.85rem;
+    margin-bottom: 40px;
+  }
+  .diagram-card {
+    background: #1a1d27;
+    border: 1px solid #2a2d3a;
+    border-radius: 16px;
+    margin-bottom: 36px;
+    overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+  .diagram-header {
+    background: #22263a;
+    padding: 14px 24px;
+    border-bottom: 1px solid #2a2d3a;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .diagram-num {
+    background: #7FDBCA;
+    color: #0f1117;
+    font-weight: 800;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    padding: 2px 8px;
+    flex-shrink: 0;
+  }
+  .diagram-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #c9d1d9;
+  }
+  .diagram-type {
+    margin-left: auto;
+    font-size: 0.72rem;
+    color: #7FDBCA;
+    border: 1px solid #7FDBCA44;
+    border-radius: 12px;
+    padding: 2px 10px;
+    flex-shrink: 0;
+  }
+  .diagram-body {
+    padding: 24px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    overflow-x: auto;
+    min-height: 80px;
+  }
+  .diagram-body svg {
+    max-width: 100%;
+    height: auto;
+  }
+  .mermaid {
+    max-width: 100%;
+  }
+  /* Use Case diagram: render at full size, scroll horizontally if needed */
+  .diagram-body-usecase {
+    overflow-x: auto;
+    overflow-y: visible;
+    justify-content: flex-start;
+    padding: 32px;
+  }
+  .diagram-body-usecase .mermaid {
+    max-width: none;
+    min-width: 900px;
+  }
+  .diagram-body-usecase svg {
+    max-width: none !important;
+    width: auto !important;
+    height: auto !important;
+    transform: scale(1.25);
+    transform-origin: top left;
+  }
+  .error-msg {
+    color: #ff6b6b;
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 16px;
+  }
+</style>
+</head>
+<body>
+<h1>So do He Thong — Vocam</h1>
+<p class="subtitle">Tran Tien Anh &mdash; MSSV: 22130016 &mdash; Ung dung hoc tu vung tieng Anh voi YOLO</p>
+
+<!-- 1. Use Case Diagram -->
+<div class="diagram-card">
+  <div class="diagram-header">
+    <span class="diagram-num">01</span>
+    <span class="diagram-title">Use Case Diagram — Tong quan chuc nang he thong</span>
+    <span class="diagram-type">Use Case</span>
+  </div>
+  <div class="diagram-body diagram-body-usecase">
+    <div class="mermaid">
+graph LR
+    USER(["👤 Nguoi dung"])
+
+    subgraph SYSTEM["Vocam Application -- System Boundary"]
+        subgraph SCAN["Nhan dien Vat the"]
+            UC01["UC01\nMo man hinh quet camera"]
+            UC02["UC02\nChup anh vat the"]
+            UC03["UC03\nNhan dien vat the\nbang YOLO"]
+            UC04["UC04\nHien thi tu vung\ntieng Anh"]
+            UC05["UC05\nNghe phat am\ntu vung"]
+        end
+        subgraph VOCAB["Quan ly Tu vung"]
+            UC06["UC06\nLuu tu vao\nso tu Flashcard"]
+            UC07["UC07\nThem tu vao\nbai hoc Lesson"]
+            UC08["UC08\nXem danh sach flashcard"]
+            UC09["UC09\nTim kiem tu da hoc"]
+        end
+        subgraph REVIEW["On tap"]
+            UC10["UC10\nOn tap flashcard\ntheo SM-2"]
+            UC11["UC11\nThuc hien bai Quiz"]
+            UC12["UC12\nXem lich su on tap"]
+        end
+        subgraph PROGRESS["Theo doi Tien do"]
+            UC13["UC13\nXem thong ke hoc tap"]
+            UC14["UC14\nXem streak hoc hang ngay"]
+            UC15["UC15\nXem bang xep hang"]
+            UC16["UC16\nDong bo tien do\nlen server"]
+        end
+        subgraph AUTH["Xac thuc"]
+            UC17["UC17\nDang ky tai khoan"]
+            UC18["UC18\nDang nhap JWT"]
+            UC19["UC19\nDang xuat"]
+            UC20["UC20\nLam moi Access Token"]
+        end
+    end
+
+    USER --> UC01
+    USER --> UC02
+    USER --> UC04
+    USER --> UC05
+    USER --> UC06
+    USER --> UC07
+    USER --> UC08
+    USER --> UC09
+    USER --> UC10
+    USER --> UC11
+    USER --> UC12
+    USER --> UC13
+    USER --> UC14
+    USER --> UC15
+    USER --> UC16
+    USER --> UC17
+    USER --> UC18
+    USER --> UC19
+
+    UC02 -.->|"include"| UC03
+    UC03 -.->|"include"| UC04
+    UC06 -.->|"extend"| UC16
+    UC10 -.->|"extend"| UC16
+    UC15 -.->|"include"| UC18
+    UC16 -.->|"include"| UC18
+
+    style SYSTEM fill:#1e2233,stroke:#7FDBCA,stroke-width:2px,color:#c9d1d9
+    style SCAN fill:#1a3a2a,stroke:#4CAF50,color:#c9d1d9
+    style VOCAB fill:#1a2a3a,stroke:#2196F3,color:#c9d1d9
+    style REVIEW fill:#3a2a1a,stroke:#FF9800,color:#c9d1d9
+    style PROGRESS fill:#2a1a3a,stroke:#9C27B0,color:#c9d1d9
+    style AUTH fill:#3a1a2a,stroke:#E91E63,color:#c9d1d9
+    style USER fill:#22263a,stroke:#7FDBCA,color:#7FDBCA
+    </div>
+  </div>
+</div>
+
+<!-- 2. System Architecture -->
+<div class="diagram-card">
+  <div class="diagram-header">
+    <span class="diagram-num">02</span>
+    <span class="diagram-title">System Architecture Diagram — Kien truc Tong quan</span>
+    <span class="diagram-type">Architecture</span>
+  </div>
+  <div class="diagram-body">
+    <div class="mermaid">
+graph TB
+    subgraph MOBILE["Mobile App React Native Expo TypeScript"]
+        subgraph SCREENS["UI Screens"]
+            SC_SCAN["Scanner Screen Object Detection"]
+            SC_FLASH["Flashcard Screen"]
+            SC_REVIEW["Review Screen SM-2"]
+            SC_PROGRESS["Progress Screen"]
+            SC_AUTH["Auth Screen Login Register"]
+            SC_LEADER["Leaderboard Screen"]
+        end
+        subgraph ON_DEVICE["On-Device Layer Offline"]
+            YOLO["YOLOv8n Model ONNX Runtime 6MB duoi 100ms"]
+            SQLITE[("SQLite Local DB words flashcards review_logs")]
+            SM2["SM-2 Algorithm Spaced Repetition"]
+            AUDIO["TTS Audio phat am"]
+        end
+        subgraph SVC["Service Layer"]
+            SVC_YOLO["YoloDetectorService"]
+            SVC_API["ApiService HTTP client"]
+            SVC_SYNC["SyncService background sync"]
+        end
+    end
+    subgraph BACKEND["Backend Services"]
+        subgraph SPRING["Spring Boot Java 17 Port 8080"]
+            CTRL_WORD["WordController GET /api/words"]
+            CTRL_AUTH["AuthController POST /api/auth"]
+            CTRL_SYNC["SyncController POST /api/sync/progress"]
+            CTRL_LEAD["LeaderboardController GET /api/leaderboard"]
+            SEC["Spring Security JWT Filter"]
+        end
+        subgraph AI_SVC["FastAPI AI Service Python Port 8000"]
+            FASTAPI["FastAPI App"]
+            YOLO_SERVER["YOLOv8-World v2 365 classes"]
+        end
+    end
+    subgraph DATA["Data Layer"]
+        PG[("PostgreSQL users words user_progress refresh_tokens")]
+    end
+    SC_SCAN --> SVC_YOLO
+    SC_FLASH --> SQLITE
+    SC_REVIEW --> SM2
+    SC_REVIEW --> SQLITE
+    SC_AUTH --> SVC_API
+    SC_LEADER --> SVC_API
+    SVC_YOLO -->|"1. On-device ONNX PRIMARY"| YOLO
+    YOLO -->|"class_id + confidence"| SVC_YOLO
+    SVC_YOLO -->|"lookup vocabulary"| SQLITE
+    SVC_YOLO -.->|"2. Fallback khi ONNX loi"| AI_SVC
+    AI_SVC -->|"predictions JSON"| SVC_YOLO
+    SVC_API -->|"HTTPS + JWT"| SPRING
+    SVC_SYNC -->|"POST sync background"| CTRL_SYNC
+    SPRING -->|"JPA Hibernate"| PG
+    style ON_DEVICE fill:#1a3a2a,stroke:#4CAF50,stroke-width:2px,color:#c9d1d9
+    style SPRING fill:#1a2a3a,stroke:#2196F3,stroke-width:2px,color:#c9d1d9
+    style AI_SVC fill:#3a2a1a,stroke:#FF9800,stroke-width:2px,color:#c9d1d9
+    style DATA fill:#2a1a3a,stroke:#9C27B0,stroke-width:2px,color:#c9d1d9
+    </div>
+  </div>
+</div>
+
+<!-- 3. Sequence Diagram 1 -->
+<div class="diagram-card">
+  <div class="diagram-header">
+    <span class="diagram-num">03</span>
+    <span class="diagram-title">Sequence Diagram 1 — Quet va Nhan dien Vat the On-Device</span>
+    <span class="diagram-type">Sequence</span>
+  </div>
+  <div class="diagram-body">
+    <div class="mermaid">
+sequenceDiagram
+    actor User as Nguoi dung
+    participant SS as ObjectScannerScreen
+    participant YD as YoloDetectorService
+    participant ONNX as YOLOv8n ONNX Runtime
+    participant SQ as SQLite Local DB
+    participant API as Spring Boot API
+    participant AUDIO as AudioService
+    User->>SS: Nhan QUET VAT THE
+    SS->>SS: setIsScanning true, startPulse
+    SS->>YD: detect imageFormData
+    YD->>ONNX: run inputTensor 1x3x640x640
+    ONNX->>ONNX: preprocess resize normalize
+    ONNX->>ONNX: inference
+    ONNX->>ONNX: postprocess + NMS conf 0.35
+    ONNX-->>YD: DetectionResult cocoClass confidence
+    YD->>SQ: getCachedWordByClass cocoClass
+    alt Tu co trong SQLite cache
+        SQ-->>YD: VocabularyWord offline OK
+    else Tu chua duoc cache
+        YD->>API: GET /api/words/cocoClass
+        API-->>YD: BackendWordDto JSON
+        YD->>SQ: saveToCache word
+    end
+    YD-->>SS: DetectionResult cocoClass confidence word
+    SS->>SS: setScannedResult word, setShowResultSheet true
+    SS->>AUDIO: playAudio word
+    SS->>User: Hien thi Bottom Sheet word phonetic meaning example
+    </div>
+  </div>
+</div>
+
+<!-- 4. Sequence Diagram 2 -->
+<div class="diagram-card">
+  <div class="diagram-header">
+    <span class="diagram-num">04</span>
+    <span class="diagram-title">Sequence Diagram 2 — Dang nhap va Xac thuc JWT</span>
+    <span class="diagram-type">Sequence</span>
+  </div>
+  <div class="diagram-body">
+    <div class="mermaid">
+sequenceDiagram
+    actor User as Nguoi dung
+    participant APP as Mobile App
+    participant STORE as AsyncStorage local
+    participant API as Spring Boot API
+    participant DB as PostgreSQL
+    User->>APP: Nhap email va password
+    APP->>API: POST /api/auth/login email password
+    API->>DB: SELECT user WHERE email
+    DB-->>API: User entity
+    API->>API: BCrypt.verify password hash
+    alt Xac thuc thanh cong
+        API->>API: JWT.sign userId role accessToken 15 phut
+        API->>API: JWT.sign userId refreshToken 30 ngay
+        API->>DB: INSERT refresh_tokens token_hash device_info
+        API-->>APP: 200 OK accessToken refreshToken user
+        APP->>STORE: luu accessToken va refreshToken
+        APP->>User: Chuyen den man hinh chinh
+    else Xac thuc that bai
+        API-->>APP: 401 Unauthorized
+        APP->>User: Email hoac mat khau khong dung
+    end
+    Note over APP,API: Khi accessToken het han sau 15 phut
+    APP->>API: POST /api/auth/refresh refreshToken
+    API->>DB: SELECT refresh_token WHERE hash AND is_revoked=false
+    API->>API: Verify chua het han, tao accessToken moi
+    API-->>APP: 200 OK newAccessToken
+    APP->>STORE: Cap nhat accessToken moi
+    </div>
+  </div>
+</div>
+
+<!-- 5. Sequence Diagram 3 -->
+<div class="diagram-card">
+  <div class="diagram-header">
+    <span class="diagram-num">05</span>
+    <span class="diagram-title">Sequence Diagram 3 — On tap Flashcard SM-2</span>
+    <span class="diagram-type">Sequence</span>
+  </div>
+  <div class="diagram-body">
+    <div class="mermaid">
+sequenceDiagram
+    actor User as Nguoi dung
+    participant RS as ReviewScreen
+    participant SM as SM2Algorithm
+    participant SQ as SQLite Local DB
+    participant SS as SyncService
+    participant API as Spring Boot API
+    User->>RS: Mo man hinh on tap
+    RS->>SQ: SELECT flashcards WHERE next_review_at qua han
+    SQ-->>RS: List Flashcard den han
+    alt Khong co tu can on
+        RS->>User: Hom nay khong co tu can on
+    else Co tu can on
+        loop Voi moi Flashcard
+            RS->>User: Hien thi mat truoc tu tieng Anh hinh anh
+            User->>RS: Nhan Lat the
+            RS->>User: Hien thi mat sau phien am nghia vi du
+            User->>RS: Chon muc do nho 0 Quen 3 Nho tot 5 Rat thuoc
+            RS->>SM: calculate quality easeFactor interval repetitions
+            SM->>SM: tinh newEF newInterval theo SM-2
+            SM-->>RS: SM2Result newEF newInterval nextReviewAt
+            RS->>SQ: UPDATE flashcards ease_factor interval_days next_review_at
+            RS->>SQ: INSERT review_logs flashcard_id quality reviewed_at
+        end
+        RS->>SQ: UPDATE user_progress streak xp last_study_date
+        RS->>User: Hien thi ket qua phien tu da on XP streak
+        RS->>SS: triggerSync
+        SS->>API: POST /api/sync/progress xp streak wordsLearned
+        API-->>SS: 200 OK rank
+    end
+    </div>
+  </div>
+</div>
+
+<!-- 6. Sequence Diagram 4 -->
+<div class="diagram-card">
+  <div class="diagram-header">
+    <span class="diagram-num">06</span>
+    <span class="diagram-title">Sequence Diagram 4 — FastAPI Fallback khi ONNX loi</span>
+    <span class="diagram-type">Sequence</span>
+  </div>
+  <div class="diagram-body">
+    <div class="mermaid">
+sequenceDiagram
+    actor User as Nguoi dung
+    participant SS as ObjectScannerScreen
+    participant YD as YoloDetectorService
+    participant FAST as FastAPI AI Service port 8000
+    participant YW as YOLOv8-World Model 365 classes
+    participant SQ as SQLite Local DB
+    User->>SS: Nhan QUET VAT THE
+    SS->>YD: detect imageFormData
+    YD->>YD: Thu ONNX on-device primary
+    Note over YD: On-device ONNX khong kha dung
+    YD->>FAST: POST /predict multipart image confidence 0.30
+    FAST->>FAST: PIL.Image.open bytes
+    FAST->>YW: model image conf 0.30
+    YW->>YW: YOLO-World inference open-vocabulary
+    YW-->>FAST: Raw detections
+    FAST->>FAST: Loc theo confidence sap xep
+    FAST-->>YD: PredictionResponse predictions label confidence box
+    YD->>SQ: getCachedWordByClass topLabel
+    alt Co trong cache
+        SQ-->>YD: VocabularyWord
+    else Khong co cache
+        YD->>YD: Tao VocabularyWord co ban word=label pos=Noun
+    end
+    YD-->>SS: DetectionResult
+    SS->>User: Hien thi ket qua nhan dien
+    </div>
+  </div>
+</div>
+
+<!-- 7. Activity Diagram 1 -->
+<div class="diagram-card">
+  <div class="diagram-header">
+    <span class="diagram-num">07</span>
+    <span class="diagram-title">Activity Diagram 1 — Luong Quet va Luu Tu vung</span>
+    <span class="diagram-type">Activity</span>
+  </div>
+  <div class="diagram-body">
+    <div class="mermaid">
+flowchart TD
+    START([Bat dau]) --> OPEN[Mo Object Scanner Screen]
+    OPEN --> INIT[Khoi tao YOLO ONNX Runtime nap model on-device]
+    INIT --> READY{Model kha dung?}
+    READY -->|Khong| FALLBACK[Chuyen sang FastAPI AI Microservice mode]
+    READY -->|Co| WAIT[Hien thi viewfinder cho nguoi dung]
+    FALLBACK --> WAIT
+    WAIT --> TAP[Nguoi dung nhan QUET VAT THE]
+    TAP --> SCAN[Chup anh tu camera startPulse animation]
+    SCAN --> INFER[Chay YOLO inference on-device hoac FastAPI]
+    INFER --> DETECT{Phat hien vat the?}
+    DETECT -->|Khong| RETRY[Khong nhan dien duoc Thu lai]
+    RETRY --> WAIT
+    DETECT -->|Co| LOOKUP[Tra cuu tu vung tu SQLite local cache]
+    LOOKUP --> CACHED{Co trong cache?}
+    CACHED -->|Co| SHOW[Hien thi Bottom Sheet word phonetic meaning example]
+    CACHED -->|Khong| FETCH[Goi Spring Boot API GET /api/words/class]
+    FETCH --> SHOW
+    SHOW --> AUDIO[Tu dong phat am TTS Audio]
+    AUDIO --> CHOOSE{Nguoi dung chon}
+    CHOOSE -->|"Luu vao so tu +15 XP"| SAVE_FLASH[Luu Flashcard vao SQLite\nease=2.5 interval=1 reps=0]
+    CHOOSE -->|"Them vao bai hoc"| SAVE_LESSON[Chon Lesson Luu tu vao Lesson]
+    CHOOSE -->|Dong| WAIT
+    SAVE_FLASH --> XP[Cong 15 XP Hien thi toast]
+    SAVE_LESSON --> TOAST[Hien thi Da them vao bai hoc]
+    XP --> SYNC_CHECK{Co ket noi Internet?}
+    SYNC_CHECK -->|Co| SYNC[SyncService POST /api/sync/progress dong bo ngam]
+    SYNC_CHECK -->|Khong| MARK[Danh dau pending_sync Sync lan sau]
+    SYNC --> WAIT
+    MARK --> WAIT
+    TOAST --> WAIT
+    </div>
+  </div>
+</div>
+
+<!-- 8. Activity Diagram 2 -->
+<div class="diagram-card">
+  <div class="diagram-header">
+    <span class="diagram-num">08</span>
+    <span class="diagram-title">Activity Diagram 2 — Luong On tap SM-2</span>
+    <span class="diagram-type">Activity</span>
+  </div>
+  <div class="diagram-body">
+    <div class="mermaid">
+flowchart TD
+    START([Bat dau]) --> QUERY[Query SQLite SELECT flashcards WHERE next_review_at qua han]
+    QUERY --> HAS{Co tu can on?}
+    HAS -->|Khong| EMPTY[Hom nay khong co tu can on\nOn tiep next_date]
+    EMPTY --> END([Ket thuc])
+    HAS -->|Co| SHOW_FRONT[Hien thi mat truoc\nTu tieng Anh + Hinh anh]
+    SHOW_FRONT --> TAP_FLIP[Nguoi dung nhan Lat the]
+    TAP_FLIP --> SHOW_BACK[Hien thi mat sau\nPhien am + Nghia + Vi du]
+    SHOW_BACK --> RATE[Nguoi dung chon muc do nho\n0=Quen 3=Nho tot 5=Rat thuoc]
+    RATE --> SM2[SM-2 tinh toan newEF newInterval nextReviewAt]
+    SM2 --> UPDATE_DB[UPDATE flashcards\nease_factor interval_days next_review_at]
+    UPDATE_DB --> INSERT_LOG[INSERT review_logs\nflashcard_id quality reviewed_at]
+    INSERT_LOG --> MORE{Con tu can on?}
+    MORE -->|Co| SHOW_FRONT
+    MORE -->|Khong| SUMMARY[Hien thi ket qua phien\nTu da on - XP nhan - Streak]
+    SUMMARY --> UPDATE_PROG[UPDATE user_progress\nstreak xp last_study_date]
+    UPDATE_PROG --> SYNC_BG[SyncService dong bo tien do len server ngam]
+    SYNC_BG --> END
+    </div>
+  </div>
+</div>
+
+<!-- 9. Class Diagram -->
+<div class="diagram-card">
+  <div class="diagram-header">
+    <span class="diagram-num">09</span>
+    <span class="diagram-title">Class Diagram — Cau truc lop he thong</span>
+    <span class="diagram-type">Class</span>
+  </div>
+  <div class="diagram-body">
+    <div class="mermaid">
+classDiagram
+    class VocabularyWord {
+        +String id
+        +String word
+        +String phonetic
+        +String vn
+        +String pos
+        +String sentence
+        +String difficulty
+        +String imageUrl
+    }
+    class Flashcard {
+        +String id
+        +String wordId
+        +Float easeFactor
+        +Int intervalDays
+        +Int repetitions
+        +Date nextReviewAt
+        +Boolean isSynced
+    }
+    class ReviewLog {
+        +String id
+        +String flashcardId
+        +Int quality
+        +Date reviewedAt
+        +Int newInterval
+        +Float newEaseFactor
+    }
+    class UserProgress {
+        +String deviceUuid
+        +String displayName
+        +Int totalXp
+        +Int currentStreak
+        +Int longestStreak
+        +Int wordsLearned
+    }
+    class DetectionResult {
+        +String cocoClass
+        +Float confidence
+        +VocabularyWord word
+    }
+    class SM2Result {
+        +Float newEaseFactor
+        +Int newInterval
+        +Int newRepetitions
+        +Date nextReviewAt
+    }
+    class YoloDetectorService {
+        +detect(formData) DetectionResult
+        +mockDetect() DetectionResult
+        +lookupWord(cocoClass) VocabularyWord
+    }
+    class ApiService {
+        +getAllWords() List~VocabularyWord~
+        +getWordByClass(cocoClass) VocabularyWord
+        +syncProgress(payload) SyncResponseDto
+        +getLeaderboard() List~LeaderboardEntry~
+    }
+    class SyncService {
+        +syncNow() void
+        +scheduleSyncOnConnect() void
+    }
+    class SM2Algorithm {
+        +calculate(quality, ef, interval, reps) SM2Result
+        -computeNewEF(quality, ef) Float
+        -computeNextInterval(reps, interval, ef) Int
+    }
+    class Word {
+        +Long id
+        +String cocoClass
+        +String enWord
+        +String phonetic
+        +String definition
+        +String translation
+    }
+    class UserProgressEntity {
+        +Long id
+        +String deviceUuid
+        +Integer totalXp
+        +Integer currentStreak
+        +Integer wordsLearned
+        +LocalDateTime lastSyncAt
+    }
+    Flashcard "*" --> "1" VocabularyWord : references
+    Flashcard "1" --> "*" ReviewLog : has
+    UserProgress "1" --> "*" Flashcard : owns
+    DetectionResult --> VocabularyWord : contains
+    YoloDetectorService ..> DetectionResult : produces
+    YoloDetectorService ..> ApiService : uses fallback
+    SM2Algorithm ..> SM2Result : returns
+    SyncService ..> ApiService : uses
+    </div>
+  </div>
+</div>
+
+<!-- 10. ERD -->
+<div class="diagram-card">
+  <div class="diagram-header">
+    <span class="diagram-num">10</span>
+    <span class="diagram-title">ERD — Entity Relationship Diagram</span>
+    <span class="diagram-type">ERD</span>
+  </div>
+  <div class="diagram-body">
+    <div class="mermaid">
+erDiagram
+    USERS {
+        uuid id PK
+        varchar email UK
+        varchar password_hash
+        varchar display_name
+        text avatar_url
+        boolean is_active
+        boolean is_email_verified
+        varchar role
+        timestamptz created_at
+    }
+    REFRESH_TOKENS {
+        uuid id PK
+        uuid user_id FK
+        varchar token_hash
+        varchar device_info
+        boolean is_revoked
+        timestamptz expires_at
+    }
+    WORDS {
+        bigint id PK
+        varchar coco_class UK
+        varchar en_word
+        varchar phonetic
+        varchar pos
+        text definition
+        text translation
+        text example_en
+        text example_vn
+    }
+    USER_PROGRESS {
+        uuid id PK
+        varchar device_uuid UK
+        varchar display_name
+        integer total_xp
+        integer current_streak
+        integer longest_streak
+        integer words_learned
+        timestamptz last_sync_at
+    }
+    DECKS {
+        uuid id PK
+        uuid user_id FK
+        varchar name
+        text description
+        boolean is_public
+        timestamptz created_at
+    }
+    FLASHCARDS {
+        uuid id PK
+        uuid user_id FK
+        bigint word_id FK
+        text image_path
+        decimal ease_factor
+        integer interval_days
+        integer repetitions
+        timestamptz next_review_at
+        boolean is_synced
+        timestamptz created_at
+    }
+    REVIEW_LOGS {
+        uuid id PK
+        uuid flashcard_id FK
+        smallint quality
+        timestamptz reviewed_at
+        integer new_interval
+        decimal new_ease_factor
+    }
+    USERS ||--o{ REFRESH_TOKENS : "has"
+    USERS ||--o{ DECKS : "creates"
+    USERS ||--o{ FLASHCARDS : "owns"
+    WORDS ||--o{ FLASHCARDS : "referenced by"
+    FLASHCARDS ||--o{ REVIEW_LOGS : "has"
+    </div>
+  </div>
+</div>
+
+<!-- 11. Deployment -->
+<div class="diagram-card">
+  <div class="diagram-header">
+    <span class="diagram-num">11</span>
+    <span class="diagram-title">Deployment Diagram — So do Trien khai He thong</span>
+    <span class="diagram-type">Deployment</span>
+  </div>
+  <div class="diagram-body">
+    <div class="mermaid">
+graph TB
+    subgraph USER_DEVICE["Thiet bi nguoi dung iOS Android"]
+        subgraph EXPO_APP["Expo React Native App"]
+            RN_BUNDLE["JS Bundle React Native"]
+            ONNX_RT["ONNX Runtime YOLOv8n 6MB"]
+            SQLITE_FILE[("SQLite Database vocabulary.db")]
+            ASYNC_STORE["AsyncStorage JWT tokens"]
+        end
+    end
+    subgraph CLOUD["Cloud Infrastructure AWS VPS"]
+        subgraph SERVER_1["Application Server EC2"]
+            subgraph DOCKER["Docker Compose"]
+                SPRING_C["Container spring-boot Port 8080"]
+                AI_C["Container ai-service Port 8000 FastAPI"]
+                NGINX["Container nginx Port 80 443 Reverse Proxy SSL"]
+            end
+        end
+        subgraph DB_SERVER["Database Server"]
+            PG_C["Container postgres Port 5432 PostgreSQL 15"]
+        end
+    end
+    subgraph EXTERNAL["External Services"]
+        TTS_SVC["Google TTS API"]
+        EXPO_UP["Expo OTA Updates"]
+    end
+    USER_DEVICE -->|"HTTPS 443 REST API JWT"| NGINX
+    NGINX -->|"Proxy 8080"| SPRING_C
+    NGINX -->|"Proxy 8000 fallback"| AI_C
+    SPRING_C -->|"JDBC 5432"| PG_C
+    USER_DEVICE -->|"HTTPS"| TTS_SVC
+    USER_DEVICE -->|"OTA Pull"| EXPO_UP
+    ONNX_RT -.->|"On-device no network needed"| SQLITE_FILE
+    style USER_DEVICE fill:#1a3a2a,stroke:#4CAF50,stroke-width:2px,color:#c9d1d9
+    style CLOUD fill:#1a2a3a,stroke:#2196F3,stroke-width:2px,color:#c9d1d9
+    style EXTERNAL fill:#3a2a1a,stroke:#FF9800,color:#c9d1d9
+    </div>
+  </div>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+      primaryColor: '#1a3a2a',
+      primaryTextColor: '#c9d1d9',
+      primaryBorderColor: '#4CAF50',
+      lineColor: '#7FDBCA',
+      secondaryColor: '#22263a',
+      tertiaryColor: '#1a2a3a',
+      background: '#1a1d27',
+      mainBkg: '#1a1d27',
+      nodeBorder: '#7FDBCA',
+      clusterBkg: '#22263a',
+      titleColor: '#7FDBCA',
+      edgeLabelBackground: '#22263a',
+      sequenceNumberColor: '#7FDBCA',
+      actorBkg: '#22263a',
+      actorBorder: '#7FDBCA',
+      actorTextColor: '#c9d1d9',
+      activationBorderColor: '#7FDBCA',
+      activationBkgColor: '#1a3a2a',
+      noteBkgColor: '#22263a',
+      noteTextColor: '#c9d1d9',
+      noteBorderColor: '#7FDBCA'
+    },
+    flowchart: { curve: 'basis', padding: 20 },
+    sequence: { actorMargin: 50, messageMargin: 30, mirrorActors: false },
+    logLevel: 'error'
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="Use Case Diagram" id="usecase-uml-multi-actor-02">
+    <mxGraphModel dx="1200" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="1600" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Actor 1: Learner (Left) -->
+        <mxCell id="actor_user" value="Nguoi dung&#xa;(Learner)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#64b5f6;strokeColor=#1976d2;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="40" y="620" width="50" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Actor 2: Admin (Right) -->
+        <mxCell id="actor_admin" value="Quan tri vien&#xa;(Admin)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffb74d;strokeColor=#f57c00;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="1310" y="620" width="50" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- System Boundary Box -->
+        <mxCell id="system_boundary" value="Vocam Application System Boundary" style="swimlane;startSize=30;horizontal=1;collapsible=0;rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#333333;fontStyle=1;fontSize=14;fontColor=#111111;" vertex="1" parent="1">
+          <mxGeometry x="150" y="40" width="1110" height="1500" as="geometry" />
+        </mxCell>
+
+        <!-- MAIN LEARNER USE CASES (Column 1 inside System Boundary: x=50) -->
+        <mxCell id="uc01" value="UC01: Mo man hinh quet camera" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="50" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc02" value="UC02: Chup anh vat the" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="125" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- ADVANCED NEW USE CASES (AI & Smart Features) -->
+        <mxCell id="uc25" value="UC25: Nhan dien &amp; Tuong tac da vat the&#xa;(Multi-Object Bounding Box)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#b2dfdb;strokeColor=#00695c;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="200" width="270" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc26" value="UC26: Sinh cau vi du ngu canh AI&#xa;(Google Gemini API)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#b2dfdb;strokeColor=#00695c;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="280" width="270" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc04" value="UC04: Hien thi tu vung tieng Anh" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="360" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc05" value="UC05: Nghe phat am tu vung" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="435" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc06" value="UC06: Luu tu vao So tu Flashcard" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="510" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc07" value="UC07: Them tu vao bai hoc Lesson" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="585" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc08" value="UC08: Xem danh sach Flashcard" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="660" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc09" value="UC09: Tim kiem tu da hoc" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="735" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc10" value="UC10: On tap flashcard theo SM-2" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="810" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc27" value="UC27: Nhan thong bao nhac nho SM-2&#xa;(Smart Push Notification)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#b2dfdb;strokeColor=#00695c;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="885" width="270" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc11" value="UC11: Thuc hien bai Quiz" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="965" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc12" value="UC12: Xem lich su on tap" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="1040" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc13" value="UC13: Xem thong ke hoc tap" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="1115" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc14" value="UC14: Xem streak hoc hang ngay" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="1190" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc15" value="UC15: Xem bang xep hang" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="1265" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc17" value="UC17: Dang ky tai khoan" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="1340" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc18" value="UC18: Dang nhap JWT" style="ellipse;whiteSpace=wrap;html=1;fillColor=#7ec0ee;strokeColor=#1c6ea4;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="50" y="1415" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- INCLUDED / EXTENDED USE CASES (Column 2 Center: x=420) -->
+        <mxCell id="uc03" value="UC03: Nhan dien vat the&#xa;bang YOLO" style="ellipse;whiteSpace=wrap;html=1;fillColor=#90caf9;strokeColor=#1565c0;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="420" y="125" width="270" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc16" value="UC16: Dong bo tien do&#xa;len server" style="ellipse;whiteSpace=wrap;html=1;fillColor=#90caf9;strokeColor=#1565c0;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="420" y="585" width="270" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc19" value="UC19: Dang xuat" style="ellipse;whiteSpace=wrap;html=1;fillColor=#90caf9;strokeColor=#1565c0;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="420" y="1340" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc20" value="UC20: Lam moi Access Token" style="ellipse;whiteSpace=wrap;html=1;fillColor=#90caf9;strokeColor=#1565c0;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="420" y="1415" width="270" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- ADMIN USE CASES (Column 3 Right inside Boundary: x=780) -->
+        <mxCell id="uc21" value="UC21: Quan ly tu vung he thong&#xa;(CRUD Vocabulary)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#e65100;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="780" y="585" width="270" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc22" value="UC22: Quan ly bai hoc Lesson mau" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#e65100;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="780" y="685" width="270" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc23" value="UC23: Quan ly tai khoan nguoi dung&#xa;(User Management)" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#e65100;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="780" y="785" width="270" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc24" value="UC24: Xem thong ke tong quan he thong" style="ellipse;whiteSpace=wrap;html=1;fillColor=#ffe0b2;strokeColor=#e65100;fontColor=#000000;fontStyle=1;fontSize=11;" vertex="1" parent="system_boundary">
+          <mxGeometry x="780" y="885" width="270" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ASSOCIATION LINES: Learner to Main Use Cases -->
+        <mxCell id="assoc_01" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc01">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_02" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc02">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Association to New Features -->
+        <mxCell id="assoc_25" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#00695c;strokeWidth=2;" edge="1" parent="1" source="actor_user" target="uc25">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_26" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#00695c;strokeWidth=2;" edge="1" parent="1" source="actor_user" target="uc26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_27" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#00695c;strokeWidth=2;" edge="1" parent="1" source="actor_user" target="uc27">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="assoc_04" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc04">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_05" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc05">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_06" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc06">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_07" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc07">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_08" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc08">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_09" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc09">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_10" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc10">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_11" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_12" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc12">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_13" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc13">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_14" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc14">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_15" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_17" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_18" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#333333;strokeWidth=1.5;" edge="1" parent="1" source="actor_user" target="uc18">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ASSOCIATION LINES: Admin to Admin Use Cases -->
+        <mxCell id="assoc_adm_21" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#e65100;strokeWidth=1.5;" edge="1" parent="1" source="actor_admin" target="uc21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_adm_22" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#e65100;strokeWidth=1.5;" edge="1" parent="1" source="actor_admin" target="uc22">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_adm_23" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#e65100;strokeWidth=1.5;" edge="1" parent="1" source="actor_admin" target="uc23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="assoc_adm_24" style="edgeStyle=none;rounded=0;html=1;endArrow=none;strokeColor=#e65100;strokeWidth=1.5;" edge="1" parent="1" source="actor_admin" target="uc24">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- INCLUDE AND EXTEND RELATIONSHIPS -->
+        <mxCell id="rel_inc_02_03" value="&amp;lt;&amp;lt;Include&amp;gt;&amp;gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;endSize=8;html=1;strokeColor=#c62828;fontSize=10;fontStyle=1;" edge="1" parent="system_boundary" source="uc02" target="uc03">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_inc_25_03" value="&amp;lt;&amp;lt;Include&amp;gt;&amp;gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;endSize=8;html=1;strokeColor=#c62828;fontSize=10;fontStyle=1;" edge="1" parent="system_boundary" source="uc25" target="uc03">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_inc_25_26" value="&amp;lt;&amp;lt;Include&amp;gt;&amp;gt;" style="edgeStyle=orthogonalEdgeStyle;dashed=1;endArrow=open;endSize=8;html=1;strokeColor=#c62828;fontSize=10;fontStyle=1;" edge="1" parent="system_boundary" source="uc25" target="uc26">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
