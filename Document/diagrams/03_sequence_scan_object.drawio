@@ -1,183 +1,144 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mxfile host="drawio" version="26.0.0">
-  <diagram name="Sequence Scan Object" id="seq-scan-03">
+  <diagram name="Sequence Scan Object Online" id="seq-scan-online-03">
     <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
         <!-- Participants Lifelines -->
-        <!-- User -->
         <mxCell id="p_user" value="User&#xa;(Nguoi dung)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
           <mxGeometry x="60" y="40" width="30" height="60" as="geometry" />
         </mxCell>
         <mxCell id="line_user" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_user">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="75" y="660" as="targetPoint" />
+            <mxPoint x="75" y="600" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <!-- ObjectScannerScreen -->
-        <mxCell id="p_screen" value="ObjectScannerScreen&#xa;(UI Screen)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="160" y="50" width="140" height="50" as="geometry" />
+        <mxCell id="p_screen" value="ObjectScannerScreen&#xa;(Mobile App UI)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="170" y="50" width="150" height="50" as="geometry" />
         </mxCell>
         <mxCell id="line_screen" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_screen">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="230" y="660" as="targetPoint" />
+            <mxPoint x="245" y="600" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <!-- YoloDetectorService -->
-        <mxCell id="p_yolo" value="YoloDetectorService&#xa;(Service Layer)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#fbc02d;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="340" y="50" width="140" height="50" as="geometry" />
+        <mxCell id="p_fastapi" value="FastAPI AI Service&#xa;(Port 8000)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#ef6c00;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="380" y="50" width="150" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="line_yolo" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_yolo">
+        <mxCell id="line_fastapi" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_fastapi">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="410" y="660" as="targetPoint" />
+            <mxPoint x="455" y="600" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <!-- ONNX Runtime -->
-        <mxCell id="p_onnx" value="YOLOv8n ONNX&#xa;(On-Device)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="520" y="50" width="130" height="50" as="geometry" />
-        </mxCell>
-        <mxCell id="line_onnx" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_onnx">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="585" y="660" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-
-        <!-- SQLite DB -->
-        <mxCell id="p_sqlite" value="SQLite Local DB&#xa;(Cache)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="690" y="40" width="110" height="60" as="geometry" />
-        </mxCell>
-        <mxCell id="line_sqlite" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_sqlite">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="745" y="660" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-
-        <!-- Spring Boot API -->
-        <mxCell id="p_api" value="Spring Boot API&#xa;(Backend Server)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="840" y="50" width="130" height="50" as="geometry" />
+        <mxCell id="p_api" value="Spring Boot API&#xa;(Port 8080)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="590" y="50" width="150" height="50" as="geometry" />
         </mxCell>
         <mxCell id="line_api" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_api">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="905" y="660" as="targetPoint" />
+            <mxPoint x="665" y="600" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="p_db" value="PostgreSQL DB&#xa;(Central Store)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#d1c4e9;strokeColor=#512da8;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="800" y="40" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="line_db" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_db">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="860" y="600" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
         <!-- Messages & Interactions -->
-        <!-- 1. User -> Screen -->
         <mxCell id="m1" value="1. Nhan QUET VAT THE" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="75" y="140" as="sourcePoint" />
-            <mxPoint x="230" y="140" as="targetPoint" />
+            <mxPoint x="245" y="140" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <!-- 2. Screen self -->
-        <mxCell id="m2" value="2. setIsScanning(true), startPulseAnimation()" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;curved=1;" edge="1" parent="1">
+        <mxCell id="m2" value="2. POST /predict-multi (imageFormData)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#ef6c00;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="230" y="165" as="sourcePoint" />
-            <mxPoint x="230" y="190" as="targetPoint" />
+            <mxPoint x="245" y="180" as="sourcePoint" />
+            <mxPoint x="455" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m3" value="3. Run YOLOv8-World &amp; Gemini AI Generator" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;curved=1;strokeColor=#ef6c00;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="455" y="210" as="sourcePoint" />
+            <mxPoint x="455" y="230" as="targetPoint" />
             <Array as="points">
-              <mxPoint x="265" y="165" />
-              <mxPoint x="265" y="190" />
+              <mxPoint x="490" y="210" />
+              <mxPoint x="490" y="230" />
             </Array>
           </mxGeometry>
         </mxCell>
 
-        <!-- 3. Screen -> YoloDetector -->
-        <mxCell id="m3" value="3. detect(imageFormData)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1">
+        <mxCell id="m4" value="4. MultiPredictResponse (boxes, labels, Gemini context_sentence)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#ef6c00;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="230" y="210" as="sourcePoint" />
-            <mxPoint x="410" y="210" as="targetPoint" />
+            <mxPoint x="455" y="260" as="sourcePoint" />
+            <mxPoint x="245" y="260" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <!-- 4. YoloDetector -> ONNX -->
-        <mxCell id="m4" value="4. run(inputTensor 1x3x640x640)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#2e7d32;" edge="1" parent="1">
+        <mxCell id="m5" value="5. GET /api/words/{label}" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#1565c0;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="410" y="240" as="sourcePoint" />
-            <mxPoint x="585" y="240" as="targetPoint" />
+            <mxPoint x="245" y="300" as="sourcePoint" />
+            <mxPoint x="665" y="300" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <!-- 5. ONNX return -->
-        <mxCell id="m5" value="5. DetectionResult (class_id, conf=0.88)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#2e7d32;" edge="1" parent="1">
+        <mxCell id="m6" value="6. SELECT word FROM words WHERE coco_class = ?" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#512da8;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="585" y="280" as="sourcePoint" />
-            <mxPoint x="410" y="280" as="targetPoint" />
+            <mxPoint x="665" y="330" as="sourcePoint" />
+            <mxPoint x="860" y="330" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <!-- 6. YoloDetector -> SQLite -->
-        <mxCell id="m6" value="6. getCachedWordByClass(cocoClass)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1">
+        <mxCell id="m7" value="7. Word Entity (phonetic, translation, example)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#512da8;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="410" y="310" as="sourcePoint" />
-            <mxPoint x="745" y="310" as="targetPoint" />
+            <mxPoint x="860" y="360" as="sourcePoint" />
+            <mxPoint x="665" y="360" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <!-- Alt Frame: Cache Hit vs Miss -->
-        <mxCell id="frame_alt" value="alt [Tu co trong SQLite cache]" style="swimlane;startSize=20;collapsible=0;rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#0288d1;fontStyle=1;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="380" y="335" width="560" height="175" as="geometry" />
-        </mxCell>
-
-        <mxCell id="m7_hit" value="7a. VocabularyWord (offline OK)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;" edge="1" parent="1">
+        <mxCell id="m8" value="8. BackendWordDto JSON" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#1565c0;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="745" y="375" as="sourcePoint" />
-            <mxPoint x="410" y="375" as="targetPoint" />
+            <mxPoint x="665" y="390" as="sourcePoint" />
+            <mxPoint x="245" y="390" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <!-- Separator in Alt -->
-        <mxCell id="line_alt_sep" style="edgeStyle=none;dashed=1;html=1;endArrow=none;strokeColor=#0288d1;" edge="1" parent="1">
+        <mxCell id="m9" value="9. Render BoundingBoxes + Gemini Sentence + Vocabulary Details" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#0288d1;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="380" y="395" as="sourcePoint" />
-            <mxPoint x="940" y="395" as="targetPoint" />
+            <mxPoint x="245" y="440" as="sourcePoint" />
+            <mxPoint x="75" y="440" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="lbl_else" value="[else: Tu chua cache]" style="text;html=1;fontSize=9;fontStyle=2;fontColor=#0288d1;" vertex="1" parent="1">
-          <mxGeometry x="390" y="400" width="120" height="20" as="geometry" />
-        </mxCell>
-
-        <mxCell id="m7_miss" value="7b. GET /api/words/{class}" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#1565c0;" edge="1" parent="1">
+        <!-- Save Word Action -->
+        <mxCell id="m10" value="10. Nhan LUU VAO SO TU" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="410" y="425" as="sourcePoint" />
-            <mxPoint x="905" y="425" as="targetPoint" />
+            <mxPoint x="75" y="490" as="sourcePoint" />
+            <mxPoint x="245" y="490" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="m8_res" value="8. BackendWordDto JSON" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#1565c0;" edge="1" parent="1">
+        <mxCell id="m11" value="11. POST /api/sync/progress (flashcard, XP)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#1565c0;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="905" y="455" as="sourcePoint" />
-            <mxPoint x="410" y="455" as="targetPoint" />
+            <mxPoint x="245" y="520" as="sourcePoint" />
+            <mxPoint x="665" y="520" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="m9_save" value="9. saveToCache(word)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1">
+        <mxCell id="m12" value="12. INSERT INTO flashcards &amp; UPDATE user_progress" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#512da8;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="410" y="485" as="sourcePoint" />
-            <mxPoint x="745" y="485" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-
-        <!-- 10. Return to UI -->
-        <mxCell id="m10" value="10. DetectionResult + VocabularyWord" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;fontStyle=1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="410" y="530" as="sourcePoint" />
-            <mxPoint x="230" y="530" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-
-        <!-- 11. UI to User -->
-        <mxCell id="m11" value="11. Hien thi Bottom Sheet (Word, Phonetic, Meaning) &amp; Play Audio" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;fontStyle=1;strokeColor=#0288d1;" edge="1" parent="1">
-          <mxGeometry relative="1" as="geometry">
-            <mxPoint x="230" y="570" as="sourcePoint" />
-            <mxPoint x="75" y="570" as="targetPoint" />
+            <mxPoint x="665" y="550" as="sourcePoint" />
+            <mxPoint x="860" y="550" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 

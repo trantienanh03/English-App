@@ -7,6 +7,7 @@ import {
   ScrollView,
   Modal,
   Animated,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
@@ -202,7 +203,7 @@ export default function ObjectScannerScreen({
         {/* SCAN BUTTON */}
         <TouchableOpacity
           style={[styles.scanButton, isScanning && styles.scanButtonActive]}
-          onPress={handleScan}
+          onPress={() => handleScan()}
           disabled={isScanning}
         >
           <MaterialCommunityIcons
@@ -211,9 +212,40 @@ export default function ObjectScannerScreen({
             color="#FFFFFF"
           />
           <Text style={styles.scanButtonText}>
-            {isScanning ? 'ĐANG NHẬN DIỆN...' : 'QUÉT VẬT THỂ'}
+            {isScanning ? 'ĐANG NHẬN DIỆN...' : 'QUÉT VẬT THỂ MẪU'}
           </Text>
         </TouchableOpacity>
+
+        {/* WEB SAFARI CAMERA / PHOTO PICKER */}
+        {Platform.OS === 'web' && (
+          <View style={{ marginTop: 12, width: '100%', alignItems: 'center' }}>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              id="web-camera-input"
+              style={{ display: 'none' }}
+              onChange={(e: any) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  const formData = new FormData();
+                  formData.append('file', file);
+                  handleScan(formData);
+                }
+              }}
+            />
+            <TouchableOpacity
+              style={styles.webUploadBtn}
+              onPress={() => {
+                const el = document.getElementById('web-camera-input');
+                if (el) el.click();
+              }}
+            >
+              <Feather name="image" size={18} color="#FFFFFF" />
+              <Text style={styles.webUploadBtnText}>CHỤP / CHỌN ẢNH TỪ ĐIỆN THOẠI</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* RESULT BOTTOM SHEET */}
         <Modal visible={showResultSheet} transparent animationType="slide">
@@ -606,6 +638,24 @@ const styles = StyleSheet.create({
     backgroundColor: Palette.primary[100],
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  webUploadBtn: {
+    backgroundColor: Palette.secondary[600],
+    height: 46,
+    borderRadius: 14,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    width: '100%',
+  },
+  webUploadBtnText: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
 
   // Lesson picker

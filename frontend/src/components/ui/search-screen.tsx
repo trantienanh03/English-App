@@ -72,14 +72,19 @@ export default function SearchScreen({
 
   // Highlight matched substring in a string
   const highlight = (text: string): React.ReactNode => {
-    if (!q) return <Text>{text}</Text>;
+    if (!q) return <Text style={styles.resultText}>{text}</Text>;
     const idx = text.toLowerCase().indexOf(q);
     if (idx === -1) return <Text style={styles.resultText}>{text}</Text>;
+
+    const before = text.slice(0, idx);
+    const match = text.slice(idx, idx + q.length);
+    const after = text.slice(idx + q.length);
+
     return (
       <Text style={styles.resultText}>
-        {text.slice(0, idx)}
-        <Text style={styles.resultHighlight}>{text.slice(idx, idx + q.length)}</Text>
-        {text.slice(idx + q.length)}
+        {before ? <Text>{before}</Text> : null}
+        <Text style={styles.resultHighlight}>{match}</Text>
+        {after ? <Text>{after}</Text> : null}
       </Text>
     );
   };
@@ -143,20 +148,18 @@ export default function SearchScreen({
         )}
 
         {/* NO RESULTS */}
-        {q && !hasResults && (
+        {Boolean(q && !hasResults) && (
           <View style={styles.emptyState}>
             <Feather name="frown" size={48} color={Palette.text.muted} />
             <Text style={styles.emptyTitle}>Không tìm thấy</Text>
-            <Text style={styles.emptySubtitle}>Không có kết quả nào khớp với "{query}"</Text>
+            <Text style={styles.emptySubtitle}>{`Không có kết quả nào khớp với "${query}"`}</Text>
           </View>
         )}
 
         {/* WORD RESULTS */}
-        {showWords && matchedWords.length > 0 && (
+        {Boolean(showWords && matchedWords.length > 0) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              Từ vựng ({matchedWords.length})
-            </Text>
+            <Text style={styles.sectionTitle}>{`TỪ VỰNG (${matchedWords.length})`}</Text>
             {matchedWords.map((word) => (
               <TouchableOpacity
                 key={word.id}
@@ -185,11 +188,9 @@ export default function SearchScreen({
         )}
 
         {/* LESSON RESULTS */}
-        {showLessons && matchedLessons.length > 0 && (
+        {Boolean(showLessons && matchedLessons.length > 0) && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              Bài học ({matchedLessons.length})
-            </Text>
+            <Text style={styles.sectionTitle}>{`BÀI HỌC (${matchedLessons.length})`}</Text>
             {matchedLessons.map((lesson) => (
               <TouchableOpacity
                 key={lesson.id}
@@ -199,7 +200,7 @@ export default function SearchScreen({
                 <Text style={styles.lessonIcon}>{lesson.icon}</Text>
                 <View style={styles.lessonInfo}>
                   {highlight(lesson.name)}
-                  <Text style={styles.lessonMeta} numberOfLines={1}>{lesson.category} · {lesson.wordCount} từ</Text>
+                  <Text style={styles.lessonMeta} numberOfLines={1}>{`${lesson.category} · ${lesson.wordCount} từ`}</Text>
                 </View>
                 <Feather name="chevron-right" size={16} color={Palette.text.muted} />
               </TouchableOpacity>

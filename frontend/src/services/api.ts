@@ -1,7 +1,15 @@
-import { VocabularyWord } from '@/types';
+import Constants from 'expo-constants';
 
-// Spring Boot backend base URL — update port/IP as needed for LAN/production
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080';
+const getHostIp = () => {
+  const hostUri = Constants.expoConfig?.hostUri || (Constants as any).manifest?.debuggerHost;
+  if (hostUri) {
+    return hostUri.split(':')[0];
+  }
+  return '192.168.1.22';
+};
+
+const HOST_IP = getHostIp();
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || `http://${HOST_IP}:8080`;
 
 export interface BackendWordDto {
   id: number;
