@@ -19,9 +19,9 @@ async function isOnline(): Promise<boolean> {
 
 /**
  * Main Sync Manager:
- * 1. Skips silently when offline — no error thrown.
- * 2. Downloads latest 80-word COCO dictionary and caches in SQLite.
- * 3. Pushes accumulated local events and progress to the Spring Boot server.
+ * 1. Skips silently when no internet connection is available.
+ * 2. Downloads latest vocabulary dictionary from backend and caches in memory.
+ * 3. Pushes user progress and learning metrics to the Spring Boot server.
  */
 export async function syncWithBackend(
   currentProgress: UserProgress,
@@ -44,7 +44,7 @@ export async function syncWithBackend(
     console.warn('Skipped remote dictionary sync:', err);
   }
 
-  // 2. Push offline-accumulated progress to leaderboard server
+  // Push user progress to leaderboard server
   const unsyncedEvents = getUnsyncedEvents();
   const flashcards = getLocalFlashcards();
 

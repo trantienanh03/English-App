@@ -73,7 +73,7 @@ export default function ObjectScannerScreen({
     startPulse();
 
     try {
-      // Run YOLO inference (Live FastAPI AI Microservice or SQLite fallback)
+      // Run YOLO inference via FastAPI AI Microservice
       const result: DetectionResult | null = await detect(formData);
 
       if (!result) {

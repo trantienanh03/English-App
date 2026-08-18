@@ -81,7 +81,7 @@ export const api = {
       const data: BackendWordDto[] = await response.json();
       return data.map(mapWordDtoToVocabularyWord);
     } catch (err) {
-      console.warn('Backend unavailable, using offline fallback:', err);
+      console.warn('Backend unavailable, returning empty word list:', err);
       return [];
     }
   },
