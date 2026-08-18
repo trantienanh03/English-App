@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { VocabularyWord } from '@/types';
 
 const getHostIp = () => {
   const hostUri = Constants.expoConfig?.hostUri || (Constants as any).manifest?.debuggerHost;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,7 +8,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { UserProgress, VocabularyWord, Lesson } from '@/types';
 import { playAudio } from '@/utils/audio';
@@ -17,6 +17,8 @@ interface DashboardScreenProps {
   progress: UserProgress;
   lessons: Lesson[];
   savedWords: VocabularyWord[];
+  wordOfTheDay: VocabularyWord | null;
+  userName: string;
   onNavigate: (tab: string) => void;
   onStartLesson: (lessonId: string) => void;
   onStartQuiz: () => void;
@@ -27,25 +29,20 @@ export default function DashboardScreen({
   progress,
   lessons,
   savedWords,
+  wordOfTheDay,
+  userName,
   onNavigate,
   onStartLesson,
   onStartQuiz,
   onLogout,
 }: DashboardScreenProps) {
-  const [wordOfTheDay] = useState<VocabularyWord>({
-    id: 'w8',
-    word: 'Punctual',
-    phonetic: '/ˈpʌŋktʃuəl/',
-    vn: 'Đúng giờ, không trễ hẹn',
-    pos: 'Adjective',
-    sentence: 'Please be punctual for the meeting tomorrow.',
-    sentenceVn: 'Xin vui lòng có mặt đúng giờ cho cuộc họp sáng mai.',
-    difficulty: 'medium',
-    imageUrl: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=400&auto=format&fit=crop&q=60'
-  });
-
   const xpPercentage = Math.min(Math.round((progress.xp / progress.nextLevelXp) * 100), 100);
   const activeLesson = lessons[0];
+
+  // Derive initials for avatar from userName
+  const initials = userName
+    ? userName.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
+    : 'V';
 
   const dailyQuests = [
     { id: 'q_scan', text: 'Quét 1 vật thể thực tế với Object Scanner', xp: 15, completed: savedWords.some(w => w.captured) },
@@ -62,29 +59,23 @@ export default function DashboardScreen({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* HEADER BAR: STREAK & LEVEL */}
+        {/* HEADER BAR: USER INFO & STREAK */}
         <View style={styles.topHeaderRow}>
           <View style={styles.profileBadge}>
-            <View style={styles.avatarWrapper}>
-              <Image
-                source={{ uri: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256' }}
-                style={styles.avatar}
-              />
-              <View style={styles.proTag}>
-                <Text style={styles.proTagText}>PRO</Text>
-              </View>
+            <View style={styles.avatarCircle}>
+              <Text style={styles.avatarInitials}>{initials}</Text>
             </View>
             <View>
-              <Text style={styles.appName}>Vocam</Text>
+              <Text style={styles.appName}>Xin chào, {userName || 'Học viên'}!</Text>
               <View style={styles.xpRow}>
-                <MaterialCommunityIcons name="lightning-bolt" size={14} color={Palette.warning.text} />
+                <Feather name="zap" size={13} color={Palette.warning.text} />
                 <Text style={styles.xpText}>{progress.xp} XP • Lv.{progress.level}</Text>
               </View>
             </View>
           </View>
 
           <View style={styles.streakBadge}>
-            <MaterialCommunityIcons name="fire" size={18} color={Palette.error.text} />
+            <Text style={styles.streakFire}>🔥</Text>
             <Text style={styles.streakText}>{progress.streak} ngày</Text>
           </View>
         </View>
@@ -97,7 +88,7 @@ export default function DashboardScreen({
               <Text style={styles.levelCardTitle}>Sắp thăng hạng rồi! 🚀</Text>
             </View>
             <TouchableOpacity style={styles.quizQuickBtn} onPress={onStartQuiz}>
-              <MaterialCommunityIcons name="target" size={14} color="#FFFFFF" />
+              <Feather name="target" size={14} color="#FFFFFF" />
               <Text style={styles.quizQuickBtnText}>LÀM QUIZ</Text>
             </TouchableOpacity>
           </View>
@@ -158,33 +149,46 @@ export default function DashboardScreen({
         {/* WORD OF THE DAY */}
         <View style={styles.sectionCard}>
           <View style={styles.wotdHeader}>
-            <Ionicons name="sparkles" size={16} color={Palette.primary[500]} />
+            <Feather name="star" size={15} color={Palette.primary[500]} />
             <Text style={styles.wotdBadgeText}>TỪ VỰNG HÔM NAY</Text>
           </View>
 
-          <View style={styles.wotdContent}>
-            <Image source={{ uri: wordOfTheDay.imageUrl }} style={styles.wotdImage} />
-            <View style={{ flex: 1 }}>
-              <View style={styles.wordTitleRow}>
-                <Text style={styles.wordTitle}>{wordOfTheDay.word}</Text>
-                <View style={styles.posBadge}>
-                  <Text style={styles.posText}>{wordOfTheDay.pos}</Text>
+          {wordOfTheDay ? (
+            <View style={styles.wotdContent}>
+              {wordOfTheDay.imageUrl ? (
+                <Image source={{ uri: wordOfTheDay.imageUrl }} style={styles.wotdImage} />
+              ) : null}
+              <View style={{ flex: 1 }}>
+                <View style={styles.wordTitleRow}>
+                  <Text style={styles.wordTitle}>{wordOfTheDay.word}</Text>
+                  <View style={styles.posBadge}>
+                    <Text style={styles.posText}>{wordOfTheDay.pos}</Text>
+                  </View>
+                </View>
+                <View style={styles.phoneticRow}>
+                  <Text style={styles.phoneticText}>{wordOfTheDay.phonetic}</Text>
+                  <TouchableOpacity onPress={() => playAudio(wordOfTheDay.word)} style={styles.audioBtn}>
+                    <Feather name="volume-2" size={16} color={Palette.primary[500]} />
+                  </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.phoneticRow}>
-                <Text style={styles.phoneticText}>{wordOfTheDay.phonetic}</Text>
-                <TouchableOpacity onPress={() => playAudio(wordOfTheDay.word)} style={styles.audioBtn}>
-                  <Feather name="volume-2" size={16} color={Palette.primary[500]} />
-                </TouchableOpacity>
-              </View>
             </View>
-          </View>
+          ) : (
+            <View style={styles.wotdContent}>
+              <View style={styles.wotdPlaceholder}>
+                <Feather name="book" size={20} color={Palette.text.muted} />
+              </View>
+              <Text style={styles.wotdLoadingText}>Đang tải từ vựng hôm nay...</Text>
+            </View>
+          )}
 
-          <View style={styles.vnDefBox}>
-            <Text style={styles.vnDefLabel}>Nghĩa tiếng Việt</Text>
-            <Text style={styles.vnDefText}>🇻🇳 {wordOfTheDay.vn}</Text>
-            <Text style={styles.sentenceText}>“{wordOfTheDay.sentence}”</Text>
-          </View>
+          {wordOfTheDay && (
+            <View style={styles.vnDefBox}>
+              <Text style={styles.vnDefLabel}>Nghĩa tiếng Việt</Text>
+              <Text style={styles.vnDefText}>🇻🇳 {wordOfTheDay.vn}</Text>
+              <Text style={styles.sentenceText}>"{wordOfTheDay.sentence}"</Text>
+            </View>
+          )}
         </View>
 
         {/* RECENT CAPTURED WORDS SHORTCUT */}
@@ -263,8 +267,8 @@ export default function DashboardScreen({
                 ]}
               >
                 <View style={styles.questLeft}>
-                  <MaterialCommunityIcons
-                    name={quest.completed ? "check-circle" : "checkbox-blank-circle-outline"}
+                  <Feather
+                    name={quest.completed ? 'check-circle' : 'circle'}
                     size={20}
                     color={quest.completed ? Palette.primary[500] : Palette.text.muted}
                   />
@@ -326,39 +330,30 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: Spacing.two,
   },
-  avatarWrapper: {
-    position: 'relative',
-  },
-  avatar: {
+  avatarCircle: {
     width: 44,
     height: 44,
     borderRadius: 22,
-  },
-  proTag: {
-    position: 'absolute',
-    bottom: -2,
-    right: -2,
     backgroundColor: Palette.primary[500],
-    borderRadius: 8,
-    paddingHorizontal: 4,
-    paddingVertical: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  proTagText: {
+  avatarInitials: {
     fontFamily: Fonts.sans,
-    fontSize: 8,
-    fontWeight: '900',
+    fontSize: 16,
+    fontWeight: '800',
     color: '#FFFFFF',
   },
   appName: {
     fontFamily: Fonts.sans,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '800',
     color: Palette.text.primary,
   },
   xpRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 2,
+    gap: 3,
   },
   xpText: {
     fontFamily: Fonts.sans,
@@ -382,6 +377,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '800',
     color: Palette.warning.text,
+  },
+  streakFire: {
+    fontSize: 16,
   },
 
   // Level Card
@@ -672,6 +670,21 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     color: Palette.text.secondary,
     marginTop: 4,
+  },
+  wotdPlaceholder: {
+    width: 56,
+    height: 56,
+    borderRadius: 14,
+    backgroundColor: Palette.canvas,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  wotdLoadingText: {
+    fontFamily: Fonts.sans,
+    fontSize: 13,
+    color: Palette.text.muted,
+    fontStyle: 'italic',
+    flex: 1,
   },
 
   // Captured items
