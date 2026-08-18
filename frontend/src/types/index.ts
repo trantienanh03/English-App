@@ -29,7 +29,7 @@ export interface UserProgress {
   xp: number;
   level: number;
   nextLevelXp: number;
-  wordsLearned: number;     // total flashcards saved to local SQLite
+  wordsLearned: number;     // total flashcards saved by the user
   weeklyXp: { day: string; xp: number; active: boolean }[];
   badges: Badge[];
 }

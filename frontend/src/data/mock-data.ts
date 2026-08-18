@@ -222,7 +222,7 @@ export const mockUserProgress: UserProgress = {
   xp: 320,
   level: 3,
   nextLevelXp: 500,
-  wordsLearned: 0, // real count loaded from SQLite on app mount
+  wordsLearned: 0, // will be updated once flashcards are loaded into memory
   weeklyXp: [
     { day: 'T2', xp: 40, active: true },
     { day: 'T3', xp: 50, active: true },
