@@ -45,12 +45,12 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
   const [showStreak, setShowStreak] = useState<boolean>(false);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
-  // App State Data
+  // App State Data — words & lessons start empty and are fetched from API
   const [userProgress, setUserProgress] = useState<UserProgress>(mockUserProgress);
-  const [savedWords, setSavedWords] = useState<VocabularyWord[]>(mockWords);
+  const [savedWords, setSavedWords] = useState<VocabularyWord[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>(mockLessons);
 
-  // Initialize SQLite database and load persisted data on app mount
+  // On app mount: restore in-memory flashcards and trigger background sync
   useEffect(() => {
     try {
       initDatabase();
@@ -72,10 +72,10 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
         setSavedWords(mapped);
       }
 
-      // Update wordsLearned in progress state to reflect real SQLite count
+      // Update wordsLearned to reflect the in-memory flashcard count
       setUserProgress(prev => ({ ...prev, wordsLearned: localCards.length }));
 
-      // Best-effort background sync — skips silently when offline
+      // Best-effort background sync — skips silently when no network
       triggerBackgroundSync(mockUserProgress);
     } catch (err) {
       console.warn('Database initialization warning:', err);
@@ -106,7 +106,7 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
         return prev;
       }
       const updated = [newWord, ...prev];
-      // Keep wordsLearned in sync with actual SQLite count
+      // Keep wordsLearned in sync with actual in-memory flashcard count
       setUserProgress(p => {
         const next = { ...p, wordsLearned: updated.length };
         triggerBackgroundSync(next);
