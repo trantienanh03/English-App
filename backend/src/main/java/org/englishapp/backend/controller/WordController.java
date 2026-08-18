@@ -17,10 +17,7 @@ public class WordController {
         this.wordService = wordService;
     }
 
-    /**
-     * Returns all 80 COCO words.
-     * The app calls this once on first launch and caches everything in SQLite.
-     */
+    /** Returns all 80 COCO vocabulary words. */
     @GetMapping
     public ResponseEntity<List<WordDto>> getAll() {
         return ResponseEntity.ok(wordService.findAll());

@@ -13,7 +13,10 @@ public interface UserProgressRepository extends JpaRepository<UserProgress, Long
 
     Optional<UserProgress> findByDeviceUuid(String deviceUuid);
 
-    // Top N users sorted by XP for global leaderboard
+    /** Top N users sorted by XP for global leaderboard */
     @Query("SELECT u FROM UserProgress u ORDER BY u.totalXp DESC LIMIT :limit")
     List<UserProgress> findTopByXp(int limit);
+
+    /** Count users with more XP than :xp — used for efficient rank calculation */
+    long countByTotalXpGreaterThan(int xp);
 }

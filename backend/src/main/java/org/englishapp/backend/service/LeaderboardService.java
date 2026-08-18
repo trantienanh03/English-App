@@ -68,12 +68,9 @@ public class LeaderboardService {
                 .toList();
     }
 
-    // Count how many users have more XP than this user (+1 = their rank)
+    // Count how many users have strictly more XP → their position is rank+1
     private int calculateRank(String deviceUuid, int xp) {
-        long ahead = userProgressRepository.findAll()
-                .stream()
-                .filter(u -> !u.getDeviceUuid().equals(deviceUuid) && u.getTotalXp() > xp)
-                .count();
+        long ahead = userProgressRepository.countByTotalXpGreaterThan(xp);
         return (int) ahead + 1;
     }
 }
