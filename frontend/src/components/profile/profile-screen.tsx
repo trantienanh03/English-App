@@ -5,10 +5,10 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
-  Image,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { UserProgress } from '@/types';
 import { api, LeaderboardEntry } from '@/services/api';
@@ -16,59 +16,74 @@ import { getOrCreateDeviceUuid } from '@/db/database';
 
 interface ProfileScreenProps {
   progress: UserProgress;
+  userName: string;
+  userEmail: string;
   onLogout: () => void;
   onOpenSettings?: () => void;
 }
 
-export default function ProfileScreen({ progress, onLogout, onOpenSettings }: ProfileScreenProps) {
+export default function ProfileScreen({ progress, userName, userEmail, onLogout, onOpenSettings }: ProfileScreenProps) {
   const [dailyGoal, setDailyGoal] = useState<string>('10 mins daily');
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [currentUuid, setCurrentUuid] = useState<string>('');
+  const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState<boolean>(true);
 
   useEffect(() => {
-    try {
-      const uuid = getOrCreateDeviceUuid();
-      setCurrentUuid(uuid);
-
-      api.getLeaderboard().then((entries) => {
+    const load = async () => {
+      try {
+        const uuid = getOrCreateDeviceUuid();
+        setCurrentUuid(uuid);
+        const entries = await api.getLeaderboard();
         if (entries.length > 0) {
           setLeaderboard(entries);
         }
-      });
-    } catch (err) {
-      console.warn('Leaderboard fetch warning:', err);
-    }
+      } catch (err) {
+        console.warn('Leaderboard fetch warning:', err);
+      } finally {
+        setIsLoadingLeaderboard(false);
+      }
+    };
+    load();
   }, []);
 
+  // Derive initials from userName
+  const initials = userName
+    ? userName.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
+    : 'V';
+
   const stats = [
-    { icon: 'fire', color: Palette.error.text, label: 'Streak hiện tại', value: `${progress.streak} ngày` },
-    { icon: 'lightning-bolt', color: Palette.warning.text, label: 'Tổng số XP', value: `${progress.xp} XP` },
-    { icon: 'target', color: Palette.info.text, label: 'Cấp độ học tập', value: `Lv.${progress.level}` },
-    { icon: 'cards-outline', color: Palette.primary[500], label: 'Huy hiệu mở khóa', value: `${progress.badges.filter(b => b.unlocked).length}/${progress.badges.length}` },
+    { icon: 'zap' as const, color: Palette.warning.text, label: 'Tổng số XP', value: `${progress.xp} XP` },
+    { icon: 'trending-up' as const, color: Palette.info.text, label: 'Cấp độ học tập', value: `Lv.${progress.level}` },
+    { icon: 'bookmark' as const, color: Palette.primary[500], label: 'Từ đã học', value: `${progress.wordsLearned} từ` },
+    { icon: 'award' as const, color: Palette.secondary[500], label: 'Huy hiệu mở khóa', value: `${progress.badges.filter(b => b.unlocked).length}/${progress.badges.length}` },
   ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+
         {/* AVATAR & USER INFO */}
         <View style={styles.profileHeader}>
-          <Image
-            source={{ uri: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=256' }}
-            style={styles.avatar}
-          />
-          <Text style={styles.userName}>Thành Trần</Text>
-          <Text style={styles.userEmail}>thanhtran.dev@example.com</Text>
+          <View style={styles.avatarCircle}>
+            <Text style={styles.avatarInitials}>{initials}</Text>
+          </View>
+          <Text style={styles.userName}>{userName || 'Học Viên Vocam'}</Text>
+          {userEmail ? (
+            <Text style={styles.userEmail}>{userEmail}</Text>
+          ) : null}
 
-          <View style={styles.proBadge}>
-            <MaterialCommunityIcons name="crown" size={14} color={Palette.warning.text} />
-            <Text style={styles.proBadgeText}>THÀNH VIÊN PRO</Text>
+          <View style={styles.streakBadge}>
+            <Text style={styles.streakFire}>🔥</Text>
+            <Text style={styles.streakText}>{progress.streak} ngày streak</Text>
           </View>
         </View>
 
+        {/* SETTINGS BUTTON */}
         {onOpenSettings && (
           <TouchableOpacity style={styles.settingsBtn} onPress={onOpenSettings}>
-            <Feather name="settings" size={18} color={Palette.text.muted} />
+            <Feather name="settings" size={16} color={Palette.text.muted} />
             <Text style={styles.settingsBtnText}>Cài đặt</Text>
+            <Feather name="chevron-right" size={14} color={Palette.text.muted} style={{ marginLeft: 'auto' }} />
           </TouchableOpacity>
         )}
 
@@ -76,7 +91,7 @@ export default function ProfileScreen({ progress, onLogout, onOpenSettings }: Pr
         <View style={styles.statsGrid}>
           {stats.map((stat, idx) => (
             <View key={idx} style={styles.statCard}>
-              <MaterialCommunityIcons name={stat.icon as any} size={22} color={stat.color} />
+              <Feather name={stat.icon} size={20} color={stat.color} />
               <Text style={styles.statValue}>{stat.value}</Text>
               <Text style={styles.statLabel}>{stat.label}</Text>
             </View>
@@ -102,24 +117,30 @@ export default function ProfileScreen({ progress, onLogout, onOpenSettings }: Pr
         {/* GLOBAL LEADERBOARD */}
         <View style={styles.sectionCard}>
           <View style={styles.leaderboardTitleRow}>
-            <MaterialCommunityIcons name="trophy" size={20} color={Palette.warning.text} />
+            <Feather name="award" size={18} color={Palette.warning.text} />
             <Text style={styles.sectionTitle}>Bảng xếp hạng toàn cầu 🏆</Text>
           </View>
 
-          {leaderboard.length === 0 ? (
+          {isLoadingLeaderboard ? (
+            <View style={styles.leaderboardLoading}>
+              <ActivityIndicator size="small" color={Palette.primary[500]} />
+              <Text style={styles.leaderboardLoadingText}>Đang tải bảng xếp hạng...</Text>
+            </View>
+          ) : leaderboard.length === 0 ? (
             <View style={styles.emptyLeaderboard}>
-              <Text style={styles.emptyLeaderboardText}>Chưa có kết nối server hoặc chưa có xếp hạng</Text>
+              <Feather name="wifi-off" size={24} color={Palette.text.muted} />
+              <Text style={styles.emptyLeaderboardText}>Chưa có kết nối server</Text>
             </View>
           ) : (
             <View style={styles.leaderboardList}>
               {leaderboard.slice(0, 10).map((item) => {
                 const isMe = item.deviceUuid === currentUuid;
-                const medalColor = item.rank === 1 ? '#FFD700' : item.rank === 2 ? '#C0C0C0' : item.rank === 3 ? '#CD7F32' : Palette.text.muted;
+                const medalEmoji = item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : item.rank === 3 ? '🥉' : null;
                 return (
                   <View key={item.rank + item.deviceUuid} style={[styles.leaderboardRow, isMe && styles.leaderboardRowMe]}>
                     <View style={styles.rankBadge}>
-                      {item.rank <= 3 ? (
-                        <MaterialCommunityIcons name="crown" size={16} color={medalColor} />
+                      {medalEmoji ? (
+                        <Text style={styles.rankMedal}>{medalEmoji}</Text>
                       ) : (
                         <Text style={styles.rankNumber}>#{item.rank}</Text>
                       )}
@@ -127,7 +148,10 @@ export default function ProfileScreen({ progress, onLogout, onOpenSettings }: Pr
                     <Text style={[styles.leaderboardName, isMe && styles.leaderboardNameMe]} numberOfLines={1}>
                       {item.displayName} {isMe ? '(Tôi)' : ''}
                     </Text>
-                    <Text style={styles.leaderboardXp}>{item.totalXp} XP</Text>
+                    <View style={styles.leaderboardXpBadge}>
+                      <Feather name="zap" size={10} color={Palette.warning.text} />
+                      <Text style={styles.leaderboardXp}>{item.totalXp}</Text>
+                    </View>
                   </View>
                 );
               })}
@@ -168,19 +192,39 @@ const styles = StyleSheet.create({
   },
   content: {
     paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.two,
+    paddingTop: Spacing.three,
     paddingBottom: 110,
   },
 
+  // Profile Header
   profileHeader: {
     alignItems: 'center',
-    marginBottom: Spacing.four,
+    marginBottom: Spacing.three,
+    paddingVertical: Spacing.four,
+    backgroundColor: Palette.surfaceWhite,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: Palette.border,
   },
-  avatar: {
+  avatarCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
+    backgroundColor: Palette.primary[500],
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: Spacing.two,
+    shadowColor: Palette.primary[500],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  avatarInitials: {
+    fontFamily: Fonts.sans,
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#FFFFFF',
   },
   userName: {
     fontFamily: Fonts.sans,
@@ -194,22 +238,45 @@ const styles = StyleSheet.create({
     color: Palette.text.secondary,
     marginTop: 2,
   },
-  proBadge: {
+  streakBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     backgroundColor: Palette.warning.bg,
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 14,
     marginTop: Spacing.two,
   },
-  proBadgeText: {
+  streakFire: {
+    fontSize: 16,
+  },
+  streakText: {
     fontFamily: Fonts.sans,
-    fontSize: 10,
-    fontWeight: '900',
+    fontSize: 13,
+    fontWeight: '800',
     color: Palette.warning.text,
-    letterSpacing: 0.5,
+  },
+
+  // Settings Button
+  settingsBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: Spacing.three,
+    paddingVertical: 12,
+    backgroundColor: Palette.surfaceWhite,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: Palette.border,
+    marginBottom: Spacing.three,
+  },
+  settingsBtnText: {
+    fontFamily: Fonts.sans,
+    fontSize: 14,
+    fontWeight: '600',
+    color: Palette.text.secondary,
+    flex: 1,
   },
 
   // Stats Grid
@@ -226,10 +293,11 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     borderColor: Palette.border,
+    gap: 4,
   },
   statValue: {
     fontFamily: Fonts.sans,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '800',
     color: Palette.text.primary,
     marginTop: 4,
@@ -238,7 +306,6 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 11,
     color: Palette.text.muted,
-    marginTop: 2,
   },
 
   // Section Card
@@ -261,12 +328,15 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Palette.text.secondary,
     marginBottom: Spacing.two,
+    marginTop: 2,
   },
 
+  // Badges
   badgesGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: Spacing.two,
+    marginTop: Spacing.two,
   },
   badgeCard: {
     width: '48%',
@@ -287,6 +357,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: Palette.text.primary,
+    textAlign: 'center',
   },
   badgeDesc: {
     fontFamily: Fonts.sans,
@@ -296,7 +367,93 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // Goals
+  // Leaderboard
+  leaderboardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: Spacing.two,
+  },
+  leaderboardLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: Spacing.three,
+  },
+  leaderboardLoadingText: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    color: Palette.text.muted,
+  },
+  emptyLeaderboard: {
+    alignItems: 'center',
+    paddingVertical: Spacing.three,
+    gap: Spacing.two,
+  },
+  emptyLeaderboardText: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    color: Palette.text.muted,
+  },
+  leaderboardList: {
+    gap: 4,
+  },
+  leaderboardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.two,
+    paddingVertical: 10,
+    backgroundColor: Palette.canvas,
+    borderRadius: 12,
+    gap: Spacing.two,
+  },
+  leaderboardRowMe: {
+    backgroundColor: Palette.primary[100],
+    borderWidth: 1,
+    borderColor: Palette.primary[300],
+  },
+  rankBadge: {
+    width: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rankMedal: {
+    fontSize: 18,
+  },
+  rankNumber: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    fontWeight: '800',
+    color: Palette.text.muted,
+  },
+  leaderboardName: {
+    flex: 1,
+    fontFamily: Fonts.sans,
+    fontSize: 13,
+    fontWeight: '600',
+    color: Palette.text.primary,
+  },
+  leaderboardNameMe: {
+    fontWeight: '800',
+    color: Palette.primary[500],
+  },
+  leaderboardXpBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: Palette.warning.bg,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  leaderboardXp: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    fontWeight: '800',
+    color: Palette.warning.text,
+  },
+
+  // Daily Goal
   goalRow: {
     gap: 8,
     marginTop: Spacing.two,
@@ -306,13 +463,16 @@ const styles = StyleSheet.create({
     padding: Spacing.two,
     borderRadius: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: Palette.border,
   },
   goalBtnActive: {
     backgroundColor: Palette.primary[500],
+    borderColor: Palette.primary[500],
   },
   goalBtnText: {
     fontFamily: Fonts.sans,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     color: Palette.text.primary,
   },
@@ -330,90 +490,13 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.three,
     backgroundColor: Palette.error.bg,
     borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#FECACA',
   },
   logoutBtnText: {
     fontFamily: Fonts.sans,
     fontSize: 14,
     fontWeight: '700',
     color: Palette.error.text,
-  },
-  settingsBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: Palette.canvas,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Palette.border,
-    marginBottom: Spacing.two,
-  },
-  settingsBtnText: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    fontWeight: '600',
-    color: Palette.text.muted,
-  },
-  // Leaderboard styles
-  leaderboardTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: Spacing.two,
-  },
-  emptyLeaderboard: {
-    paddingVertical: Spacing.two,
-    alignItems: 'center',
-  },
-  emptyLeaderboardText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: Palette.text.muted,
-  },
-  leaderboardList: {
-    gap: Spacing.one,
-  },
-  leaderboardRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.two,
-    paddingVertical: 10,
-    backgroundColor: Palette.canvas,
-    borderRadius: 12,
-    gap: Spacing.two,
-  },
-  leaderboardRowMe: {
-    backgroundColor: Palette.primary[100],
-    borderWidth: 1,
-    borderColor: Palette.primary[300],
-  },
-  rankBadge: {
-    width: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  rankNumber: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    fontWeight: '800',
-    color: Palette.text.muted,
-  },
-  leaderboardName: {
-    flex: 1,
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    fontWeight: '600',
-    color: Palette.text.primary,
-  },
-  leaderboardNameMe: {
-    fontWeight: '800',
-    color: Palette.primary[500],
-  },
-  leaderboardXp: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    fontWeight: '800',
-    color: Palette.warning.text,
   },
 });
