@@ -3,7 +3,7 @@ import DropsAuthScreen from './drops-auth-screen';
 
 interface SignupScreenProps {
   onLoginPress?: () => void;
-  onSignupSuccess: () => void;
+  onSignupSuccess: (name?: string, email?: string) => void;
   onClose?: () => void;
 }
 
@@ -11,7 +11,7 @@ export default function SignupScreen({ onSignupSuccess, onClose }: SignupScreenP
   return (
     <DropsAuthScreen
       initialMode="signup"
-      onAuthSuccess={() => onSignupSuccess()}
+      onAuthSuccess={(name, email) => onSignupSuccess(name, email)}
       onClose={onClose}
     />
   );

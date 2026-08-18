@@ -6,11 +6,12 @@ import {
   TouchableOpacity,
   Modal,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { UserProgress, VocabularyWord, Lesson } from '@/types';
-import { mockWords, mockLessons, mockUserProgress } from '@/data/mock-data';
+import { mockLessons, mockUserProgress } from '@/data/mock-data';
 import {
   initDatabase,
   getOrCreateDeviceUuid,
@@ -21,6 +22,7 @@ import {
   LocalFlashcard,
 } from '@/db/database';
 import { triggerBackgroundSync } from '@/services/sync-service';
+import { api } from '@/services/api';
 
 import DashboardScreen from './dashboard/dashboard-screen';
 import FlashcardDeckScreen from './flashcards/flashcard-deck-screen';
@@ -34,10 +36,12 @@ import SearchScreen from './ui/search-screen';
 import StreakCelebrationModal from './ui/streak-celebration-modal';
 
 interface MainContainerProps {
+  userName: string;
+  userEmail: string;
   onLogout: () => void;
 }
 
-export default function MainContainer({ onLogout }: MainContainerProps) {
+export default function MainContainer({ userName, userEmail, onLogout }: MainContainerProps) {
   const [activeTab, setActiveTab] = useState<'home' | 'learn' | 'scan' | 'cards' | 'profile'>('home');
   const [showQuizModal, setShowQuizModal] = useState<boolean>(false);
   const [showSearch, setShowSearch] = useState<boolean>(false);
@@ -49,37 +53,56 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
   const [userProgress, setUserProgress] = useState<UserProgress>(mockUserProgress);
   const [savedWords, setSavedWords] = useState<VocabularyWord[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>(mockLessons);
+  const [wordOfTheDay, setWordOfTheDay] = useState<VocabularyWord | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // On app mount: restore in-memory flashcards and trigger background sync
+  // On app mount: restore in-memory flashcards, fetch word list, trigger background sync
   useEffect(() => {
-    try {
-      initDatabase();
-      getOrCreateDeviceUuid();
+    const init = async () => {
+      try {
+        initDatabase();
+        getOrCreateDeviceUuid();
 
-      const localCards = getLocalFlashcards();
-      if (localCards.length > 0) {
-        const mapped: VocabularyWord[] = localCards.map((c: LocalFlashcard) => ({
-          id: c.id,
-          word: c.en_word,
-          phonetic: c.phonetic || '',
-          vn: c.translation,
-          pos: c.pos || 'Noun',
-          sentence: c.example_en || '',
-          sentenceVn: c.example_vn || '',
-          difficulty: c.ease_factor < 2.0 ? 'hard' : c.ease_factor < 2.6 ? 'medium' : 'easy',
-          cocoClass: c.coco_class,
-        }));
-        setSavedWords(mapped);
+        const localCards = getLocalFlashcards();
+        if (localCards.length > 0) {
+          const mapped: VocabularyWord[] = localCards.map((c: LocalFlashcard) => ({
+            id: c.id,
+            word: c.en_word,
+            phonetic: c.phonetic || '',
+            vn: c.translation,
+            pos: c.pos || 'Noun',
+            sentence: c.example_en || '',
+            sentenceVn: c.example_vn || '',
+            difficulty: c.ease_factor < 2.0 ? 'hard' : c.ease_factor < 2.6 ? 'medium' : 'easy',
+            cocoClass: c.coco_class,
+          }));
+          setSavedWords(mapped);
+        }
+
+        // Update wordsLearned to reflect the in-memory flashcard count
+        setUserProgress(prev => ({ ...prev, wordsLearned: localCards.length }));
+
+        // Fetch words from API and pick a random Word of the Day
+        try {
+          const remoteWords = await api.getAllWords();
+          if (remoteWords.length > 0) {
+            const randomIdx = Math.floor(Math.random() * remoteWords.length);
+            setWordOfTheDay(remoteWords[randomIdx]);
+          }
+        } catch {
+          // API unavailable — Word of the Day stays null
+        }
+
+        // Best-effort background sync — skips silently when no network
+        triggerBackgroundSync(mockUserProgress, userName || 'Học Viên Vocam');
+      } catch (err) {
+        console.warn('App initialization warning:', err);
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-      // Update wordsLearned to reflect the in-memory flashcard count
-      setUserProgress(prev => ({ ...prev, wordsLearned: localCards.length }));
-
-      // Best-effort background sync — skips silently when no network
-      triggerBackgroundSync(mockUserProgress);
-    } catch (err) {
-      console.warn('Database initialization warning:', err);
-    }
+    init();
   }, []);
 
   // XP Handler
@@ -93,7 +116,7 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
         newNextXp += 300;
       }
       const updated = { ...prev, xp: newXp, level: newLevel, nextLevelXp: newNextXp };
-      triggerBackgroundSync(updated);
+      triggerBackgroundSync(updated, userName || 'Học Viên Vocam');
       return updated;
     });
   };
@@ -109,7 +132,7 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
       // Keep wordsLearned in sync with actual in-memory flashcard count
       setUserProgress(p => {
         const next = { ...p, wordsLearned: updated.length };
-        triggerBackgroundSync(next);
+        triggerBackgroundSync(next, userName || 'Học Viên Vocam');
         return next;
       });
       return updated;
@@ -161,6 +184,15 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
     }
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingScreen}>
+        <ActivityIndicator size="large" color={Palette.primary[500]} />
+        <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
+      </View>
+    );
+  }
+
   const renderActiveScreen = () => {
     switch (activeTab) {
       case 'home':
@@ -169,6 +201,8 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
             progress={userProgress}
             lessons={lessons}
             savedWords={savedWords}
+            wordOfTheDay={wordOfTheDay}
+            userName={userName}
             onNavigate={(tab) => setActiveTab(tab as any)}
             onStartLesson={handleStartLesson}
             onStartQuiz={() => setShowQuizModal(true)}
@@ -205,6 +239,8 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
         return (
           <ProfileScreen
             progress={userProgress}
+            userName={userName}
+            userEmail={userEmail}
             onLogout={onLogout}
             onOpenSettings={() => setShowSettings(true)}
           />
@@ -243,7 +279,7 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
                   style={styles.scannerTabBtn}
                   onPress={() => setActiveTab('scan')}
                 >
-                  <MaterialCommunityIcons name="camera-iris" size={26} color="#FFFFFF" />
+                  <Feather name="aperture" size={24} color="#FFFFFF" />
                 </TouchableOpacity>
               );
             }
@@ -282,7 +318,7 @@ export default function MainContainer({ onLogout }: MainContainerProps) {
           <LessonDetailScreen
             lesson={selectedLesson}
             onClose={() => setSelectedLesson(null)}
-            onStartLesson={(id) => {
+            onStartLesson={(_id) => {
               setSelectedLesson(null);
               setActiveTab('cards');
             }}
@@ -328,6 +364,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Palette.canvas,
+  },
+  loadingScreen: {
+    flex: 1,
+    backgroundColor: Palette.canvas,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    fontFamily: Fonts.sans,
+    fontSize: 14,
+    color: Palette.text.muted,
   },
   bottomTabContainer: {
     position: 'absolute',

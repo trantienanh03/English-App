@@ -16,6 +16,8 @@ export default function HomeScreen() {
   const [isBooting, setIsBooting] = useState(true);
   const [currentScreen, setCurrentScreen] = useState<Screen>('onboarding');
   const [userOnboardingData, setUserOnboardingData] = useState<OnboardingData | null>(null);
+  const [userName, setUserName] = useState<string>('');
+  const [userEmail, setUserEmail] = useState<string>('');
 
   useEffect(() => {
     const timer = setTimeout(() => setIsBooting(false), SPLASH_MS);
@@ -33,7 +35,13 @@ export default function HomeScreen() {
   if (currentScreen === 'dashboard') {
     return (
       <MainContainer
-        onLogout={() => setCurrentScreen('onboarding')}
+        userName={userName}
+        userEmail={userEmail}
+        onLogout={() => {
+          setUserName('');
+          setUserEmail('');
+          setCurrentScreen('onboarding');
+        }}
       />
     );
   }
@@ -54,11 +62,9 @@ export default function HomeScreen() {
     return (
       <SignupScreen
         onLoginPress={() => setCurrentScreen('login')}
-        onSignupSuccess={() => {
-          const planInfo = userOnboardingData
-            ? ` (${userOnboardingData.level} • ${userOnboardingData.dailyTime})`
-            : '';
-          alert(`Đăng ký thành công! Lộ trình học của bạn${planInfo} đã được kích hoạt.`);
+        onSignupSuccess={(name?: string, email?: string) => {
+          setUserName(name || 'Học Viên Vocam');
+          setUserEmail(email || '');
           setCurrentScreen('dashboard');
         }}
       />
@@ -68,7 +74,11 @@ export default function HomeScreen() {
   return (
     <LoginScreen
       onSignupPress={() => setCurrentScreen('signup')}
-      onLoginSuccess={() => setCurrentScreen('dashboard')}
+      onLoginSuccess={(name?: string, email?: string) => {
+        setUserName(name || email?.split('@')[0] || 'Học Viên Vocam');
+        setUserEmail(email || '');
+        setCurrentScreen('dashboard');
+      }}
     />
   );
 }
