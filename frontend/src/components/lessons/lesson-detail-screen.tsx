@@ -8,7 +8,7 @@ import {
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { Lesson, VocabularyWord } from '@/types';
 import { playAudio } from '@/utils/audio';
@@ -76,7 +76,7 @@ export default function LessonDetailScreen({
               </Text>
             </View>
             <View style={styles.badge}>
-              <MaterialCommunityIcons name="card-text-outline" size={12} color={Palette.text.muted} />
+              <Feather name="file-text" size={12} color={Palette.text.muted} />
               <Text style={styles.badgeText}>{lesson.wordCount} từ</Text>
             </View>
           </View>
@@ -107,7 +107,7 @@ export default function LessonDetailScreen({
 
           {lesson.words.length === 0 ? (
             <View style={styles.emptyState}>
-              <MaterialCommunityIcons name="cards-outline" size={40} color={Palette.text.muted} />
+              <Feather name="layers" size={36} color={Palette.text.muted} />
               <Text style={styles.emptyText}>Bài học này chưa có từ vựng</Text>
             </View>
           ) : (

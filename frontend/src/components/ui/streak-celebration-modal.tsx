@@ -8,7 +8,7 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 
 interface StreakCelebrationModalProps {
@@ -70,7 +70,7 @@ export default function StreakCelebrationModal({
 
           {/* Fire icon with pulse animation */}
           <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-            <MaterialCommunityIcons name="fire" size={64} color={Palette.error.text} />
+            <Text style={styles.fireEmoji}>🔥</Text>
           </Animated.View>
 
           <Text style={styles.milestoneLabel}>{milestoneLabel}</Text>
@@ -82,7 +82,7 @@ export default function StreakCelebrationModal({
 
           {/* XP reward badge */}
           <View style={styles.xpBadge}>
-            <MaterialCommunityIcons name="lightning-bolt" size={16} color={Palette.warning.text} />
+            <Feather name="zap" size={15} color={Palette.warning.text} />
             <Text style={styles.xpBadgeText}>+{xpEarned} XP thưởng</Text>
           </View>
 
@@ -121,6 +121,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 24,
     elevation: 12,
+  },
+
+  fireEmoji: {
+    fontSize: 60,
   },
 
   milestoneLabel: {

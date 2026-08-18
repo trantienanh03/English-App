@@ -8,7 +8,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 
 export const DropsPalette = {
@@ -140,7 +140,7 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
           {/* Illustration Avatar */}
           <View style={styles.illustrationContainer}>
             <View style={styles.avatarCircle}>
-              <Ionicons name="person" size={80} color="#FFFFFF" />
+              <Feather name="user" size={72} color="#FFFFFF" />
               <View style={styles.waveBadge}>
                 <Text style={styles.waveEmoji}>👋</Text>
               </View>
@@ -186,7 +186,7 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
                       <Text style={styles.pillSub}>{item.sub}</Text>
                     </View>
                     {isSelected && (
-                      <Ionicons name="checkmark-circle" size={24} color={DropsPalette.accentLime} />
+                      <Feather name="check-circle" size={22} color={DropsPalette.accentLime} />
                     )}
                   </TouchableOpacity>
                 );
@@ -274,7 +274,7 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
                       <Text style={styles.pillSub}>{item.sub}</Text>
                     </View>
                     {isSelected && (
-                      <Ionicons name="checkmark-circle" size={24} color={DropsPalette.accentLime} />
+                      <Feather name="check-circle" size={22} color={DropsPalette.accentLime} />
                     )}
                   </TouchableOpacity>
                 );
@@ -295,7 +295,7 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
         <View style={styles.readyWrapper}>
           <View style={styles.readyCard}>
             <View style={styles.sparkleIconWrapper}>
-              <Ionicons name="sparkles" size={48} color={DropsPalette.accentLime} />
+              <Feather name="star" size={44} color={DropsPalette.accentLime} />
             </View>
             <Text style={styles.readyTitle}>Your English Plan is Ready! 🎉</Text>
             <Text style={styles.readySubtitle}>

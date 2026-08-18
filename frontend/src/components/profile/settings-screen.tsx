@@ -8,7 +8,7 @@ import {
   Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 
 interface SettingsScreenProps {

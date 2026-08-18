@@ -9,7 +9,7 @@ import {
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { VocabularyWord } from '@/types';
 import { playAudio, playSoundEffect } from '@/utils/audio';
@@ -143,7 +143,7 @@ export default function FlashcardDeckScreen({
               </View>
             ) : sessionFinished ? (
               <View style={styles.finishedCard}>
-                <Ionicons name="trophy" size={56} color={Palette.warning.text} />
+                <Feather name="award" size={52} color={Palette.warning.text} />
                 <Text style={styles.finishedTitle}>Hoàn thành buổi ôn tập! 🎉</Text>
                 <Text style={styles.finishedSub}>Bạn vừa luyện tập xong {filteredWords.length} thẻ từ vựng.</Text>
 

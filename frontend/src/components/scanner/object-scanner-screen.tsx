@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { VocabularyWord, Lesson } from '@/types';
 import DotsLoader from '@/components/ui/dots-loader';
@@ -151,7 +151,7 @@ export default function ObjectScannerScreen({
         {/* HEADER */}
         <View style={styles.topHeader}>
           <View style={styles.headerTitleRow}>
-            <MaterialCommunityIcons name="camera-iris" size={24} color={Palette.primary[300]} />
+            <Feather name="aperture" size={22} color={Palette.primary[300]} />
             <Text style={styles.headerTitle}>AI Object Scanner</Text>
           </View>
           <Text style={styles.headerSubtitle}>
@@ -162,7 +162,7 @@ export default function ObjectScannerScreen({
         {/* TOAST */}
         {addedToast && (
           <View style={styles.toastBox}>
-            <Ionicons name="checkmark-circle" size={18} color="#FFFFFF" />
+            <Feather name="check-circle" size={18} color="#FFFFFF" />
             <Text style={styles.toastText}>{addedToast}</Text>
           </View>
         )}
@@ -170,7 +170,7 @@ export default function ObjectScannerScreen({
         {/* VIEWFINDER */}
         <Animated.View style={[styles.viewfinder, { transform: [{ scale: pulseAnim }] }]}>
           <View style={styles.cameraBackground}>
-            <MaterialCommunityIcons name="cube-scan" size={80} color="rgba(255, 255, 255, 0.12)" />
+            <Feather name="maximize" size={80} color="rgba(255, 255, 255, 0.12)" />
           </View>
 
           {/* Corner brackets */}
@@ -195,7 +195,7 @@ export default function ObjectScannerScreen({
 
           {/* Model info badge */}
           <View style={styles.modelBadge}>
-            <MaterialCommunityIcons name="chip" size={12} color={Palette.primary[300]} />
+            <Feather name="cpu" size={12} color={Palette.primary[300]} />
             <Text style={styles.modelBadgeText}>YOLOv8 nano · On-Device</Text>
           </View>
         </Animated.View>
@@ -206,8 +206,8 @@ export default function ObjectScannerScreen({
           onPress={() => handleScan()}
           disabled={isScanning}
         >
-          <MaterialCommunityIcons
-            name={isScanning ? 'progress-clock' : 'camera'}
+          <Feather
+            name={isScanning ? 'loader' : 'camera'}
             size={22}
             color="#FFFFFF"
           />
@@ -257,7 +257,7 @@ export default function ObjectScannerScreen({
                 <View style={styles.sheetContent}>
                   {/* Confidence bar */}
                   <View style={styles.confidenceRow}>
-                    <MaterialCommunityIcons name="brain" size={14} color={Palette.text.muted} />
+                    <Feather name="cpu" size={13} color={Palette.text.muted} />
                     <Text style={styles.confidenceLabel}>Độ tin cậy mô hình:</Text>
                     <View style={styles.confidenceBar}>
                       <View style={[styles.confidenceFill, { width: `${confidencePct}%` as any }]} />
@@ -301,7 +301,7 @@ export default function ObjectScannerScreen({
                   {/* Action buttons */}
                   <View style={styles.actionRow}>
                     <TouchableOpacity style={styles.saveDeckBtn} onPress={handleSaveToDeck}>
-                      <Ionicons name="add-circle" size={20} color="#FFFFFF" />
+                      <Feather name="plus-circle" size={20} color="#FFFFFF" />
                       <Text style={styles.saveDeckBtnText}>LƯU VÀO SỔ TỪ (+15 XP)</Text>
                     </TouchableOpacity>
 

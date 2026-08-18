@@ -7,7 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { mockQuizzes } from '@/data/mock-data';
 import { playAudio, playSoundEffect } from '@/utils/audio';
@@ -127,10 +127,10 @@ export default function PracticeQuizScreen({
                     <Text style={styles.optionIndex}>{String.fromCharCode(65 + idx)}</Text>
                     <Text style={styles.optionText}>{opt}</Text>
                     {isAnswered && isCorrectOption && (
-                      <Ionicons name="checkmark-circle" size={20} color={Palette.success.text} />
+                      <Feather name="check-circle" size={20} color={Palette.success.text} />
                     )}
                     {isAnswered && isSelected && !isCorrect && (
-                      <Ionicons name="close-circle" size={20} color={Palette.error.text} />
+                      <Feather name="x-circle" size={20} color={Palette.error.text} />
                     )}
                   </TouchableOpacity>
                 );
@@ -141,8 +141,8 @@ export default function PracticeQuizScreen({
             {isAnswered && (
               <View style={[styles.feedbackBox, isCorrect ? styles.feedbackCorrect : styles.feedbackWrong]}>
                 <View style={styles.feedbackTextRow}>
-                  <MaterialCommunityIcons
-                    name={isCorrect ? "emoticon-happy-outline" : "emoticon-sad-outline"}
+                  <Feather
+                    name={isCorrect ? 'smile' : 'frown'}
                     size={24}
                     color={isCorrect ? Palette.success.text : Palette.error.text}
                   />
@@ -165,14 +165,14 @@ export default function PracticeQuizScreen({
           /* QUIZ FINISHED CELEBRATION */
           <View style={styles.finishedWrapper}>
             <View style={styles.celebrationCard}>
-              <MaterialCommunityIcons name="trophy-award" size={64} color={Palette.warning.text} />
+              <Feather name="award" size={60} color={Palette.warning.text} />
               <Text style={styles.celebrationTitle}>Hoàn thành Quiz! 🌟</Text>
               <Text style={styles.celebrationSub}>
                 Bạn trả lời đúng <Text style={styles.boldScore}>{score}/{mockQuizzes.length}</Text> câu hỏi.
               </Text>
 
               <View style={styles.xpBonusCard}>
-                <MaterialCommunityIcons name="lightning-bolt" size={20} color={Palette.warning.text} />
+                <Feather name="zap" size={18} color={Palette.warning.text} />
                 <Text style={styles.xpBonusText}>Thưởng: +{score * 15 + 10} XP!</Text>
               </View>
 

@@ -9,7 +9,7 @@ import {
   Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { VocabularyWord } from '@/types';
 import { playAudio } from '@/utils/audio';
@@ -102,7 +102,7 @@ export default function WordDetailScreen({
         {/* MEANING CARD */}
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeaderRow}>
-            <MaterialCommunityIcons name="translate" size={16} color={Palette.primary[500]} />
+            <Feather name="globe" size={15} color={Palette.primary[500]} />
             <Text style={styles.sectionTitle}>Nghĩa tiếng Việt</Text>
           </View>
           <Text style={styles.meaningText}>🇻🇳 {word.vn}</Text>
@@ -133,7 +133,7 @@ export default function WordDetailScreen({
         {/* MEMORY TIP CARD */}
         <View style={[styles.sectionCard, styles.tipCard]}>
           <View style={styles.sectionHeaderRow}>
-            <MaterialCommunityIcons name="lightbulb-on" size={16} color={Palette.warning.text} />
+            <Feather name="zap" size={15} color={Palette.warning.text} />
             <Text style={[styles.sectionTitle, { color: Palette.warning.text }]}>Mẹo ghi nhớ</Text>
           </View>
           <Text style={styles.tipText}>
