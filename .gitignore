@@ -29,3 +29,6 @@ ai_service/venv/
 *.engine
 runs/
 clip/
+
+# Custom AI Agent Skills & Configurations
+.agents/
