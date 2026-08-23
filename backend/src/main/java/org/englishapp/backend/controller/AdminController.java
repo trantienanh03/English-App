@@ -28,8 +28,7 @@ public class AdminController {
                 "totalUsers", userService.countUsers(),
                 "activeUsers", userService.countActiveUsers(),
                 "lockedUsers", userService.countLockedUsers(),
-                "totalWords", wordService.count(),
-                "totalSystemXp", userService.sumTotalXp()
+                "totalWords", wordService.count()
         ));
     }
 

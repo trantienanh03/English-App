@@ -14,7 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { api, BackendWordDto, LeaderboardEntry } from '@/services/api';
+import { api, BackendWordDto, AdminUserEntry } from '@/services/api';
 import { supabase } from '@/lib/supabase';
 
 interface AdminNavigatorProps {
@@ -26,27 +26,24 @@ type AdminTab = 'dashboard' | 'words' | 'users';
 
 export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
-  const [stats, setStats] = useState<{ totalUsers: number; activeUsers: number; lockedUsers: number; totalWords: number; totalSystemXp: number } | null>(null);
+  const [stats, setStats] = useState<{ totalUsers: number; activeUsers: number; lockedUsers: number; totalWords: number } | null>(null);
   const [words, setWords] = useState<BackendWordDto[]>([]);
-  const [users, setUsers] = useState<LeaderboardEntry[]>([]);
+  const [users, setUsers] = useState<AdminUserEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
-  // Word edit modal state
   const [editWord, setEditWord] = useState<Partial<BackendWordDto> | null>(null);
   const [savingWord, setSavingWord] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [s, w, u] = await Promise.all([
-        api.fetchAdminStats().catch(() => ({ totalUsers: 0, activeUsers: 0, lockedUsers: 0, totalWords: 365, totalSystemXp: 0 })),
+      const [s, w] = await Promise.all([
+        api.fetchAdminStats().catch(() => ({ totalUsers: 0, activeUsers: 0, lockedUsers: 0, totalWords: 365 })),
         api.fetchAllWords().catch(() => []),
-        api.fetchLeaderboard().catch(() => []),
       ]);
       setStats(s);
       setWords(w as any);
-      setUsers(u);
     } catch (e: any) {
       console.warn('Error loading admin data:', e);
     } finally {
@@ -58,7 +55,7 @@ export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorP
     loadData();
   }, [loadData]);
 
-  const handleToggleLock = async (user: LeaderboardEntry) => {
+  const handleToggleLock = async (user: AdminUserEntry) => {
     try {
       const res = await api.toggleUserLock(user.userId);
       setUsers(prev => prev.map(u => u.userId === user.userId ? { ...u, locked: res.status === 'LOCKED' } : u));
@@ -224,7 +221,7 @@ export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorP
                 <View key={u.userId} style={styles.userCard}>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.userName}>{u.displayName || 'Học Viên Vocam'}</Text>
-                    <Text style={styles.userMeta}>XP: {u.totalXp} • Streak: {u.currentStreak}d • {u.locked ? '🔒 LOCKED' : '🟢 ACTIVE'}</Text>
+                    <Text style={styles.userMeta}>Từ đã lưu: {u.wordsSaved} • Từ đã thuộc: {u.wordsLearned} • {u.locked ? '🔒 LOCKED' : '🟢 ACTIVE'}</Text>
                   </View>
                   <TouchableOpacity
                     style={[styles.lockBtn, u.locked && styles.unlockBtn]}

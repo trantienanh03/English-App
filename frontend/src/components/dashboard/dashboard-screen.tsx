@@ -3,852 +3,248 @@ import {
   StyleSheet,
   Text,
   View,
-  ScrollView,
   TouchableOpacity,
+  ScrollView,
   Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { Palette, Fonts, Spacing } from '@/constants/theme';
-import { UserProgress, VocabularyWord, Lesson } from '@/types';
-import { playAudio } from '@/utils/audio';
+import { Lesson, VocabularyWord } from '@/types';
 
 interface DashboardScreenProps {
-  progress: UserProgress;
-  lessons: Lesson[];
-  savedWords: VocabularyWord[];
-  wordOfTheDay: VocabularyWord | null;
   userName: string;
+  userEmail?: string;
+  wordsSavedCount: number;
+  wordsLearnedCount: number;
+  dueCardsCount: number;
+  lessons: Lesson[];
+  wordOfTheDay: VocabularyWord | null;
   onNavigate: (tab: string) => void;
-  onStartLesson: (lessonId: string) => void;
-  onStartQuiz: () => void;
-  onLogout: () => void;
+  onSelectLesson: (lessonId: string) => void;
+  onOpenWordDetail: (word: VocabularyWord) => void;
 }
 
 export default function DashboardScreen({
-  progress,
-  lessons,
-  savedWords,
-  wordOfTheDay,
   userName,
+  wordsSavedCount,
+  wordsLearnedCount,
+  dueCardsCount,
+  lessons,
+  wordOfTheDay,
   onNavigate,
-  onStartLesson,
-  onStartQuiz,
-  onLogout,
+  onSelectLesson,
+  onOpenWordDetail,
 }: DashboardScreenProps) {
-  const xpPercentage = Math.min(Math.round((progress.xp / progress.nextLevelXp) * 100), 100);
-  const activeLesson = lessons[0];
-
-  // Derive initials for avatar from userName
-  const initials = userName
-    ? userName.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
-    : 'V';
-
-  const dailyQuests = [
-    { id: 'q_scan', text: 'Quét 1 vật thể thực tế với Object Scanner', xp: 15, completed: savedWords.some(w => w.captured) },
-    { id: 'q_flash', text: 'Ôn tập 3 thẻ Flashcards trong sổ từ', xp: 10, completed: savedWords.length >= 3 },
-    { id: 'q_quiz', text: 'Làm bài Kiểm tra (Quiz) đạt điểm tối đa', xp: 25, completed: progress.xp >= 350 }
-  ];
-
-  const completedQuestsCount = dailyQuests.filter(q => q.completed).length;
-
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* HEADER BAR: USER INFO & STREAK */}
-        <View style={styles.topHeaderRow}>
-          <View style={styles.profileBadge}>
-            <View style={styles.avatarCircle}>
-              <Text style={styles.avatarInitials}>{initials}</Text>
-            </View>
-            <View>
-              <Text style={styles.appName}>Xin chào, {userName || 'Học viên'}!</Text>
-              <View style={styles.xpRow}>
-                <Feather name="zap" size={13} color={Palette.warning.text} />
-                <Text style={styles.xpText}>{progress.xp} XP • Lv.{progress.level}</Text>
-              </View>
-            </View>
-          </View>
-
-          <View style={styles.streakBadge}>
-            <Text style={styles.streakFire}>🔥</Text>
-            <Text style={styles.streakText}>{progress.streak} ngày</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* HEADER */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.greetingTitle}>Xin chào, {userName || 'Học viên'}! 👋</Text>
+            <Text style={styles.greetingSub}>Hôm nay bạn muốn khám phá từ vựng gì?</Text>
           </View>
         </View>
 
-        {/* XP LEVEL PROGRESS CARD */}
-        <View style={styles.levelCard}>
-          <View style={styles.levelCardHeader}>
-            <View>
-              <Text style={styles.levelCardCategory}>Tiến trình Cấp độ</Text>
-              <Text style={styles.levelCardTitle}>Sắp thăng hạng rồi! 🚀</Text>
+        {/* PROMINENT SCANNER AI CTA BANNER */}
+        <TouchableOpacity style={styles.scannerBanner} onPress={() => onNavigate('scan')} activeOpacity={0.88}>
+          <View style={styles.scannerBannerLeft}>
+            <View style={styles.scannerIconBadge}>
+              <Feather name="aperture" size={28} color="#FFFFFF" />
             </View>
-            <TouchableOpacity style={styles.quizQuickBtn} onPress={onStartQuiz}>
-              <Feather name="target" size={14} color="#FFFFFF" />
-              <Text style={styles.quizQuickBtnText}>LÀM QUIZ</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.scannerBannerTitle}>AI Object Scanner</Text>
+              <Text style={styles.scannerBannerSub}>
+                Hướng camera vào thế giới xung quanh để học từ vựng trực quan
+              </Text>
+            </View>
+          </View>
+          <View style={styles.scanNowBtn}>
+            <Text style={styles.scanNowText}>Quét ngay</Text>
+            <Feather name="arrow-right" size={16} color="#FFFFFF" />
+          </View>
+        </TouchableOpacity>
+
+        {/* LEARNING STATS OVERVIEW CARDS */}
+        <View style={styles.statsRow}>
+          <TouchableOpacity style={[styles.statCard, styles.dueCard]} onPress={() => onNavigate('cards')}>
+            <View style={styles.statIconBadgeDue}>
+              <Feather name="clock" size={20} color="#F59E0B" />
+            </View>
+            <Text style={styles.statVal}>{dueCardsCount}</Text>
+            <Text style={styles.statLbl}>Thẻ cần ôn hôm nay</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.statCard} onPress={() => onNavigate('cards')}>
+            <View style={styles.statIconBadgeSaved}>
+              <Feather name="bookmark" size={20} color="#4F46E5" />
+            </View>
+            <Text style={styles.statVal}>{wordsSavedCount}</Text>
+            <Text style={styles.statLbl}>Từ đã lưu vào Sổ từ</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.statCard} onPress={() => onNavigate('cards')}>
+            <View style={styles.statIconBadgeLearned}>
+              <Feather name="check-circle" size={20} color="#10B981" />
+            </View>
+            <Text style={styles.statVal}>{wordsLearnedCount}</Text>
+            <Text style={styles.statLbl}>Từ đã thuộc (SM-2)</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* WORD OF THE DAY */}
+        {wordOfTheDay && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>💡 Từ vựng của ngày</Text>
+            <TouchableOpacity
+              style={styles.wordOfTheDayCard}
+              onPress={() => onOpenWordDetail(wordOfTheDay)}
+              activeOpacity={0.85}
+            >
+              <View style={styles.wordHeader}>
+                <View>
+                  <Text style={styles.wordTitle}>{wordOfTheDay.word}</Text>
+                  <Text style={styles.wordPhonetic}>{wordOfTheDay.phonetic}</Text>
+                </View>
+                <View style={styles.posBadge}>
+                  <Text style={styles.posBadgeText}>{wordOfTheDay.pos}</Text>
+                </View>
+              </View>
+              <Text style={styles.wordTranslation}>🇻🇳 {wordOfTheDay.vn}</Text>
+              <Text style={styles.wordExample}>“{wordOfTheDay.sentence}”</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* TOPIC LESSONS */}
+        <View style={styles.section}>
+          <View style={styles.rowBetween}>
+            <Text style={styles.sectionTitle}>📚 Bài học theo Chủ đề</Text>
+            <TouchableOpacity onPress={() => onNavigate('learn')}>
+              <Text style={styles.seeAllText}>Xem tất cả ({lessons.length})</Text>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.progressRowText}>
-            <Text style={styles.progressLabel}>Cấp độ {progress.level}</Text>
-            <Text style={styles.progressValue}>{progress.xp} / {progress.nextLevelXp} XP</Text>
-          </View>
-          <View style={styles.progressBarTrack}>
-            <View style={[styles.progressBarFill, { width: `${xpPercentage}%` }]} />
-          </View>
-          <Text style={styles.progressFootnote}>
-            Cần thêm <Text style={styles.progressFootnoteBold}>{progress.nextLevelXp - progress.xp} XP</Text> để lên Level {progress.level + 1}!
-          </Text>
+          {lessons.slice(0, 4).map((lesson) => (
+            <TouchableOpacity
+              key={lesson.id}
+              style={styles.lessonCard}
+              onPress={() => onSelectLesson(lesson.id)}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.lessonIconBadge, { backgroundColor: '#EEF2FF' }]}>
+                <Feather name={(lesson.icon as any) || 'book-open'} size={24} color="#4F46E5" />
+              </View>
+              <View style={styles.lessonInfo}>
+                <Text style={styles.lessonTitle}>{lesson.name}</Text>
+                <Text style={styles.lessonDesc}>{lesson.description}</Text>
+                <View style={styles.lessonFooter}>
+                  <Text style={styles.wordCountText}>{lesson.words.length} từ vựng</Text>
+                  <Text style={styles.progressText}>{Math.round(lesson.progress)}% hoàn thành</Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+          ))}
         </View>
-
-        {/* QUICK START LESSON */}
-        {activeLesson && (
-          <View style={styles.sectionCard}>
-            <View style={styles.sectionHeader}>
-              <View style={styles.sectionTitleRow}>
-                <View style={styles.iconCircleGreen}>
-                  <Feather name="book-open" size={16} color={Palette.primary[500]} />
-                </View>
-                <View>
-                  <Text style={styles.sectionTitle}>Bài học hôm nay</Text>
-                  <Text style={styles.sectionSubtitle}>Bắt đầu ngay để duy trì chuỗi học</Text>
-                </View>
-              </View>
-              <View style={styles.difficultyChip}>
-                <Text style={styles.difficultyText}>{activeLesson.difficulty}</Text>
-              </View>
-            </View>
-
-            <View style={styles.lessonBox}>
-              <Text style={styles.lessonIcon}>{activeLesson.icon}</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.lessonName}>{activeLesson.name}</Text>
-                <Text style={styles.lessonDesc} numberOfLines={1}>{activeLesson.description}</Text>
-                <View style={styles.lessonProgressRow}>
-                  <View style={styles.miniProgressTrack}>
-                    <View style={[styles.miniProgressFill, { width: `${activeLesson.progress}%` }]} />
-                  </View>
-                  <Text style={styles.miniProgressText}>{activeLesson.progress}% hoàn thành</Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                style={styles.continueButton}
-                onPress={() => onStartLesson(activeLesson.id)}
-              >
-                <Text style={styles.continueButtonText}>HỌC TIẾP</Text>
-                <Feather name="chevron-right" size={14} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-
-        {/* WORD OF THE DAY */}
-        <View style={styles.sectionCard}>
-          <View style={styles.wotdHeader}>
-            <Feather name="star" size={15} color={Palette.primary[500]} />
-            <Text style={styles.wotdBadgeText}>TỪ VỰNG HÔM NAY</Text>
-          </View>
-
-          {wordOfTheDay ? (
-            <View style={styles.wotdContent}>
-              {wordOfTheDay.imageUrl ? (
-                <Image source={{ uri: wordOfTheDay.imageUrl }} style={styles.wotdImage} />
-              ) : null}
-              <View style={{ flex: 1 }}>
-                <View style={styles.wordTitleRow}>
-                  <Text style={styles.wordTitle}>{wordOfTheDay.word}</Text>
-                  <View style={styles.posBadge}>
-                    <Text style={styles.posText}>{wordOfTheDay.pos}</Text>
-                  </View>
-                </View>
-                <View style={styles.phoneticRow}>
-                  <Text style={styles.phoneticText}>{wordOfTheDay.phonetic}</Text>
-                  <TouchableOpacity onPress={() => playAudio(wordOfTheDay.word)} style={styles.audioBtn}>
-                    <Feather name="volume-2" size={16} color={Palette.primary[500]} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          ) : (
-            <View style={styles.wotdContent}>
-              <View style={styles.wotdPlaceholder}>
-                <Feather name="book" size={20} color={Palette.text.muted} />
-              </View>
-              <Text style={styles.wotdLoadingText}>Đang tải từ vựng hôm nay...</Text>
-            </View>
-          )}
-
-          {wordOfTheDay && (
-            <View style={styles.vnDefBox}>
-              <Text style={styles.vnDefLabel}>Nghĩa tiếng Việt</Text>
-              <Text style={styles.vnDefText}>🇻🇳 {wordOfTheDay.vn}</Text>
-              <Text style={styles.sentenceText}>"{wordOfTheDay.sentence}"</Text>
-            </View>
-          )}
-        </View>
-
-        {/* RECENT CAPTURED WORDS SHORTCUT */}
-        {savedWords.filter(w => w.captured).length > 0 && (
-          <View style={styles.sectionCard}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Vật thể vừa quét ({savedWords.filter(w => w.captured).length})</Text>
-              <TouchableOpacity onPress={() => onNavigate('cards')}>
-                <Text style={styles.linkText}>Xem tất cả <Feather name="chevron-right" size={12} /></Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.capturedGrid}>
-              {savedWords.filter(w => w.captured).slice(-2).map((word) => (
-                <View key={word.id} style={styles.capturedItemCard}>
-                  <Image source={{ uri: word.imageUrl }} style={styles.capturedThumb} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.capturedWord} numberOfLines={1}>{word.word}</Text>
-                    <Text style={styles.capturedPhonetic} numberOfLines={1}>{word.phonetic}</Text>
-                    <Text style={styles.capturedVn} numberOfLines={1}>🇻🇳 {word.vn}</Text>
-                  </View>
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* WEEKLY XP CHART */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Hoạt động tuần này</Text>
-          <Text style={styles.sectionSubtitle}>Duy trì việc tích lũy XP hàng ngày</Text>
-
-          <View style={styles.chartRow}>
-            {progress.weeklyXp.map((day, idx) => {
-              const maxVal = Math.max(...progress.weeklyXp.map(d => d.xp)) || 1;
-              const barHeightPercent = Math.max(Math.round((day.xp / maxVal) * 100), 10);
-              const isToday = idx === 5;
-
-              return (
-                <View key={day.day} style={styles.chartCol}>
-                  <Text style={styles.chartXpVal}>{day.xp > 0 ? day.xp : ''}</Text>
-                  <View style={styles.chartBarTrack}>
-                    <View
-                      style={[
-                        styles.chartBarFill,
-                        { height: `${barHeightPercent}%` },
-                        day.active ? styles.barActive : styles.barInactive,
-                        isToday && styles.barToday,
-                      ]}
-                    />
-                  </View>
-                  <Text style={[styles.chartDayLabel, isToday && styles.chartDayToday]}>{day.day}</Text>
-                </View>
-              );
-            })}
-          </View>
-        </View>
-
-        {/* DAILY QUESTS */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <View>
-              <Text style={styles.sectionTitle}>Nhiệm vụ hàng ngày</Text>
-              <Text style={styles.sectionSubtitle}>Hoàn thành để nhận thêm nhiều XP</Text>
-            </View>
-            <Text style={styles.questStatusText}>{completedQuestsCount}/{dailyQuests.length} xong</Text>
-          </View>
-
-          <View style={styles.questsList}>
-            {dailyQuests.map((quest) => (
-              <View
-                key={quest.id}
-                style={[
-                  styles.questItem,
-                  quest.completed ? styles.questCompleted : styles.questPending,
-                ]}
-              >
-                <View style={styles.questLeft}>
-                  <Feather
-                    name={quest.completed ? 'check-circle' : 'circle'}
-                    size={20}
-                    color={quest.completed ? Palette.primary[500] : Palette.text.muted}
-                  />
-                  <Text
-                    style={[
-                      styles.questText,
-                      quest.completed && styles.questTextCompleted,
-                    ]}
-                  >
-                    {quest.text}
-                  </Text>
-                </View>
-                <View style={styles.xpRewardTag}>
-                  <Text style={styles.xpRewardText}>+{quest.xp} XP</Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        </View>
-
-        {/* LOGOUT BUTTON */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
-          <Feather name="log-out" size={16} color={Palette.error.text} />
-          <Text style={styles.logoutBtnText}>Đăng xuất</Text>
-        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Palette.canvas,
-  },
-  scrollContainer: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingHorizontal: Spacing.four,
-    paddingBottom: 110,
-    paddingTop: Spacing.two,
-  },
+  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
+  scrollContent: { padding: 16, gap: 16 },
 
-  // Header Row
-  topHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 20,
-    padding: Spacing.three,
-    marginBottom: Spacing.three,
-    borderWidth: 1,
-    borderColor: Palette.border,
+  header: { marginBottom: 4 },
+  greetingTitle: { fontSize: 22, fontWeight: '800', color: '#1E293B' },
+  greetingSub: { fontSize: 13, color: '#64748B', marginTop: 2 },
+
+  scannerBanner: {
+    backgroundColor: '#4F46E5',
+    borderRadius: 18,
+    padding: 18,
+    gap: 14,
+    shadowColor: '#4F46E5',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  profileBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  avatarCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Palette.primary[500],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  avatarInitials: {
-    fontFamily: Fonts.sans,
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  appName: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    fontWeight: '800',
-    color: Palette.text.primary,
-  },
-  xpRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-  },
-  xpText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: Palette.text.secondary,
-    fontWeight: '600',
-  },
-  streakBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: Palette.warning.bg,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+  scannerBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  scannerIconBadge: {
+    width: 52,
+    height: 52,
     borderRadius: 14,
-    borderWidth: 1,
-    borderColor: Palette.border,
-  },
-  streakText: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    fontWeight: '800',
-    color: Palette.warning.text,
-  },
-  streakFire: {
-    fontSize: 16,
-  },
-
-  // Level Card
-  levelCard: {
-    backgroundColor: Palette.primary[500],
-    borderRadius: 24,
-    padding: Spacing.four,
-    marginBottom: Spacing.three,
-  },
-  levelCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: Spacing.three,
-  },
-  levelCardCategory: {
-    fontFamily: Fonts.sans,
-    fontSize: 11,
-    color: Palette.primary[100],
-    fontWeight: '700',
-    textTransform: 'uppercase',
-  },
-  levelCardTitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 20,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    marginTop: 2,
-  },
-  quizQuickBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  quizQuickBtnText: {
-    fontFamily: Fonts.sans,
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  progressRowText: {
+  scannerBannerTitle: { fontSize: 18, fontWeight: '800', color: '#FFFFFF' },
+  scannerBannerSub: { fontSize: 12, color: 'rgba(255, 255, 255, 0.85)', marginTop: 2, lineHeight: 16 },
+  scanNowBtn: {
+    backgroundColor: '#6366F1',
+    alignSelf: 'flex-start',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 6,
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 10,
   },
-  progressLabel: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: Palette.primary[100],
-    fontWeight: '600',
-  },
-  progressValue: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: '#FFFFFF',
-    fontWeight: '800',
-  },
-  progressBarTrack: {
-    height: 10,
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    borderRadius: 5,
-    overflow: 'hidden',
-    marginBottom: Spacing.two,
-  },
-  progressBarFill: {
-    height: '100%',
+  scanNowText: { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },
+
+  statsRow: { flexDirection: 'row', gap: 10 },
+  statCard: {
+    flex: 1,
     backgroundColor: '#FFFFFF',
-    borderRadius: 5,
-  },
-  progressFootnote: {
-    fontFamily: Fonts.sans,
-    fontSize: 11,
-    color: Palette.primary[100],
-  },
-  progressFootnoteBold: {
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-
-  // Section Card Container
-  sectionCard: {
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 24,
-    padding: Spacing.three,
-    marginBottom: Spacing.three,
-    borderWidth: 1,
-    borderColor: Palette.border,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: Spacing.two,
-  },
-  sectionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  iconCircleGreen: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: Palette.primary[100],
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 15,
-    fontWeight: '800',
-    color: Palette.text.primary,
-  },
-  sectionSubtitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: Palette.text.muted,
-  },
-  difficultyChip: {
-    backgroundColor: Palette.secondary[100],
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  difficultyText: {
-    fontFamily: Fonts.sans,
-    fontSize: 11,
-    fontWeight: '700',
-    color: Palette.secondary[600],
-  },
-  linkText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    fontWeight: '700',
-    color: Palette.primary[500],
-  },
-
-  // Lesson Box
-  lessonBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Palette.canvas,
-    borderRadius: 16,
-    padding: Spacing.three,
-    gap: Spacing.two,
-  },
-  lessonIcon: {
-    fontSize: 28,
-  },
-  lessonName: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    fontWeight: '800',
-    color: Palette.text.primary,
-  },
-  lessonDesc: {
-    fontFamily: Fonts.sans,
-    fontSize: 11,
-    color: Palette.text.secondary,
-    marginTop: 2,
-  },
-  lessonProgressRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginTop: 6,
-  },
-  miniProgressTrack: {
-    width: 80,
-    height: 6,
-    backgroundColor: Palette.border,
-    borderRadius: 3,
-    overflow: 'hidden',
-  },
-  miniProgressFill: {
-    height: '100%',
-    backgroundColor: Palette.primary[500],
-    borderRadius: 3,
-  },
-  miniProgressText: {
-    fontFamily: Fonts.sans,
-    fontSize: 10,
-    color: Palette.text.muted,
-    fontWeight: '600',
-  },
-  continueButton: {
-    backgroundColor: Palette.primary[500],
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-  },
-  continueButtonText: {
-    fontFamily: Fonts.sans,
-    fontSize: 11,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-
-  // Word of the Day
-  wotdHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginBottom: Spacing.two,
-  },
-  wotdBadgeText: {
-    fontFamily: Fonts.sans,
-    fontSize: 11,
-    fontWeight: '900',
-    color: Palette.primary[500],
-    letterSpacing: 0.5,
-  },
-  wotdContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.three,
-    marginBottom: Spacing.two,
-  },
-  wotdImage: {
-    width: 56,
-    height: 56,
+    padding: 12,
     borderRadius: 14,
-  },
-  wordTitleRow: {
-    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     alignItems: 'center',
-    gap: 8,
   },
-  wordTitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 18,
-    fontWeight: '800',
-    color: Palette.text.primary,
-  },
-  posBadge: {
-    backgroundColor: Palette.warning.bg,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  posText: {
-    fontFamily: Fonts.sans,
-    fontSize: 10,
-    fontWeight: '800',
-    color: Palette.warning.text,
-  },
-  phoneticRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  dueCard: { borderColor: '#FDE68A', backgroundColor: '#FFFBEB' },
+  statIconBadgeDue: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#FEF3C7', alignItems: 'center', justifyContent: 'center' },
+  statIconBadgeSaved: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
+  statIconBadgeLearned: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#ECFDF5', alignItems: 'center', justifyContent: 'center' },
+  statVal: { fontSize: 20, fontWeight: '800', color: '#1E293B', marginTop: 6 },
+  statLbl: { fontSize: 11, color: '#64748B', textAlign: 'center', marginTop: 2 },
+
+  section: { gap: 10 },
+  rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1E293B' },
+  seeAllText: { fontSize: 12, fontWeight: '600', color: '#4F46E5' },
+
+  wordOfTheDayCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     gap: 6,
-    marginTop: 2,
   },
-  phoneticText: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    color: Palette.text.ipa,
-  },
-  audioBtn: {
-    padding: 2,
-  },
-  vnDefBox: {
-    backgroundColor: Palette.canvas,
-    borderRadius: 14,
-    padding: Spacing.three,
-  },
-  vnDefLabel: {
-    fontFamily: Fonts.sans,
-    fontSize: 11,
-    color: Palette.text.muted,
-  },
-  vnDefText: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    fontWeight: '700',
-    color: Palette.text.primary,
-    marginTop: 2,
-  },
-  sentenceText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    fontStyle: 'italic',
-    color: Palette.text.secondary,
-    marginTop: 4,
-  },
-  wotdPlaceholder: {
-    width: 56,
-    height: 56,
-    borderRadius: 14,
-    backgroundColor: Palette.canvas,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  wotdLoadingText: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    color: Palette.text.muted,
-    fontStyle: 'italic',
-    flex: 1,
-  },
+  wordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  wordTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B' },
+  wordPhonetic: { fontSize: 12, color: '#64748B', fontStyle: 'italic' },
+  posBadge: { backgroundColor: '#EEF2FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  posBadgeText: { color: '#4F46E5', fontSize: 11, fontWeight: '700' },
+  wordTranslation: { fontSize: 14, fontWeight: '700', color: '#10B981' },
+  wordExample: { fontSize: 13, color: '#475569', fontStyle: 'italic', marginTop: 4 },
 
-  // Captured items
-  capturedGrid: {
+  lessonCard: {
     flexDirection: 'row',
-    gap: Spacing.two,
-    marginTop: Spacing.two,
-  },
-  capturedItemCard: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: Palette.canvas,
-    padding: 8,
-    borderRadius: 14,
-  },
-  capturedThumb: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-  },
-  capturedWord: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    fontWeight: '800',
-    color: Palette.text.primary,
-  },
-  capturedPhonetic: {
-    fontFamily: Fonts.sans,
-    fontSize: 10,
-    color: Palette.text.muted,
-  },
-  capturedVn: {
-    fontFamily: Fonts.sans,
-    fontSize: 10,
-    color: Palette.primary[500],
-    fontWeight: '600',
-  },
-
-  // Chart
-  chartRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    height: 100,
-    marginTop: Spacing.three,
-    paddingHorizontal: 4,
-  },
-  chartCol: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 4,
-  },
-  chartXpVal: {
-    fontFamily: Fonts.sans,
-    fontSize: 9,
-    fontWeight: 'bold',
-    color: Palette.text.muted,
-  },
-  chartBarTrack: {
-    width: 20,
-    height: 60,
-    backgroundColor: Palette.canvas,
-    borderRadius: 10,
-    justifyContent: 'flex-end',
-    overflow: 'hidden',
-  },
-  chartBarFill: {
-    width: '100%',
-    borderRadius: 10,
-  },
-  barActive: {
-    backgroundColor: Palette.primary[500],
-  },
-  barInactive: {
-    backgroundColor: Palette.border,
-  },
-  barToday: {
-    backgroundColor: Palette.secondary[500],
-  },
-  chartDayLabel: {
-    fontFamily: Fonts.sans,
-    fontSize: 11,
-    fontWeight: '600',
-    color: Palette.text.muted,
-  },
-  chartDayToday: {
-    fontWeight: '800',
-    color: Palette.primary[500],
-  },
-
-  // Quests
-  questsList: {
-    gap: Spacing.two,
-    marginTop: Spacing.two,
-  },
-  questStatusText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    fontWeight: '800',
-    color: Palette.primary[500],
-  },
-  questItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: Spacing.three,
+    backgroundColor: '#FFFFFF',
     borderRadius: 14,
     borderWidth: 1,
+    borderColor: '#E2E8F0',
+    overflow: 'hidden',
+    marginBottom: 8,
   },
-  questPending: {
-    backgroundColor: Palette.canvas,
-    borderColor: Palette.border,
-  },
-  questCompleted: {
-    backgroundColor: Palette.primary[100],
-    borderColor: Palette.primary[200],
-  },
-  questLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-    flex: 1,
-    paddingRight: 8,
-  },
-  questText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    fontWeight: '600',
-    color: Palette.text.primary,
-  },
-  questTextCompleted: {
-    textDecorationLine: 'line-through',
-    color: Palette.text.muted,
-  },
-  xpRewardTag: {
-    backgroundColor: '#FEF3C7',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  xpRewardText: {
-    fontFamily: Fonts.sans,
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#D97706',
-  },
-
-  // Logout
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.two,
-    paddingVertical: Spacing.three,
-    backgroundColor: Palette.error.bg,
-    borderRadius: 16,
-    marginTop: Spacing.two,
-  },
-  logoutBtnText: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    fontWeight: '700',
-    color: Palette.error.text,
-  },
+  lessonIconBadge: { width: 70, height: 70, borderRadius: 12, alignItems: 'center', justifyContent: 'center', margin: 10 },
+  lessonInfo: { flex: 1, padding: 12, justifyContent: 'center', gap: 4 },
+  lessonTitle: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
+  lessonDesc: { fontSize: 12, color: '#64748B' },
+  lessonFooter: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
+  wordCountText: { fontSize: 11, fontWeight: '600', color: '#4F46E5' },
+  progressText: { fontSize: 11, color: '#10B981', fontWeight: '600' },
 });

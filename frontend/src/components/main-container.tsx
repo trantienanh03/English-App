@@ -29,7 +29,7 @@ import {
   cacheWordsBulk,
   LocalFlashcard,
 } from '@/db/database';
-import { triggerBackgroundSync } from '@/services/sync-service';
+import { syncProgressWithServer } from '@/services/sync-service';
 import { api } from '@/services/api';
 
 import DashboardScreen from './dashboard/dashboard-screen';
@@ -159,7 +159,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
         }
 
         // 5. Background sync
-        triggerBackgroundSync(restoredProgress, userName || 'Học Viên Vocam');
+        syncProgressWithServer(userName || 'Học Viên Vocam');
       } catch (err) {
         console.warn('App initialization warning:', err);
       } finally {
@@ -173,8 +173,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
   // ─── Persist progress helper ───────────────────────────────────────────────
   const persistProgress = useCallback(async (progress: UserProgress) => {
     await saveUserProgress(progress);
-    await saveBadges(progress.badges);
-    triggerBackgroundSync(progress, userName || 'Học Viên Vocam');
+    syncProgressWithServer(userName || 'Học Viên Vocam');
   }, [userName]);
 
   // ─── Badge auto-unlock ─────────────────────────────────────────────────────
@@ -321,20 +320,24 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
     );
   }
 
+  const dueCardsCount = savedWords.length;
+  const wordsLearnedCount = savedWords.filter(w => w.difficulty === 'easy').length;
+
   const renderActiveScreen = () => {
     switch (activeTab) {
       case 'home':
         return (
           <DashboardScreen
-            progress={userProgress}
-            lessons={lessons}
-            savedWords={savedWords}
-            wordOfTheDay={wordOfTheDay}
             userName={userName}
+            userEmail={userEmail}
+            wordsSavedCount={savedWords.length}
+            wordsLearnedCount={wordsLearnedCount}
+            dueCardsCount={dueCardsCount}
+            lessons={lessons}
+            wordOfTheDay={wordOfTheDay}
             onNavigate={(tab) => setActiveTab(tab as any)}
-            onStartLesson={handleStartLesson}
-            onStartQuiz={() => setShowQuizModal(true)}
-            onLogout={onLogout}
+            onSelectLesson={handleStartLesson}
+            onOpenWordDetail={() => setActiveTab('cards')}
           />
         );
       case 'learn':
@@ -350,7 +353,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
             lessons={lessons}
             onAddWordToFlashcards={handleAddWordToFlashcards}
             onAddWordToLesson={handleAddWordToLesson}
-            onAddXp={handleAddXp}
+            onAddXp={() => {}}
             onNavigate={(tab) => setActiveTab(tab as any)}
           />
         );
@@ -366,11 +369,12 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
       case 'profile':
         return (
           <ProfileScreen
-            progress={userProgress}
             userName={userName}
             userEmail={userEmail}
+            wordsSavedCount={savedWords.length}
+            wordsLearnedCount={wordsLearnedCount}
+            dueCardsCount={dueCardsCount}
             onLogout={onLogout}
-            onOpenSettings={() => setShowSettings(true)}
           />
         );
       default:

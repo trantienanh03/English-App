@@ -1,184 +1,121 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
   View,
   TouchableOpacity,
   ScrollView,
-  ActivityIndicator,
+  Switch,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { Palette, Fonts, Spacing } from '@/constants/theme';
-import { UserProgress } from '@/types';
-import { api, LeaderboardEntry } from '@/services/api';
-import { getOrCreateDeviceUuid } from '@/db/database';
+import { scheduleSM2ReviewNotification } from '@/utils/notification';
 
 interface ProfileScreenProps {
-  progress: UserProgress;
   userName: string;
-  userEmail: string;
+  userEmail?: string;
+  wordsSavedCount: number;
+  wordsLearnedCount: number;
+  dueCardsCount: number;
   onLogout: () => void;
-  onOpenSettings?: () => void;
 }
 
-export default function ProfileScreen({ progress, userName, userEmail, onLogout, onOpenSettings }: ProfileScreenProps) {
-  const [dailyGoal, setDailyGoal] = useState<string>('10 mins daily');
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [currentUuid, setCurrentUuid] = useState<string>('');
-  const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState<boolean>(true);
+export default function ProfileScreen({
+  userName,
+  userEmail,
+  wordsSavedCount,
+  wordsLearnedCount,
+  dueCardsCount,
+  onLogout,
+}: ProfileScreenProps) {
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const uuid = getOrCreateDeviceUuid();
-        setCurrentUuid(uuid);
-        const entries = await api.getLeaderboard();
-        if (entries.length > 0) {
-          setLeaderboard(entries);
-        }
-      } catch (err) {
-        console.warn('Leaderboard fetch warning:', err);
-      } finally {
-        setIsLoadingLeaderboard(false);
-      }
-    };
-    load();
-  }, []);
-
-  // Derive initials from userName
-  const initials = userName
-    ? userName.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
-    : 'V';
-
-  const stats = [
-    { icon: 'zap' as const, color: Palette.warning.text, label: 'Tổng số XP', value: `${progress.xp} XP` },
-    { icon: 'trending-up' as const, color: Palette.info.text, label: 'Cấp độ học tập', value: `Lv.${progress.level}` },
-    { icon: 'bookmark' as const, color: Palette.primary[500], label: 'Từ đã học', value: `${progress.wordsLearned} từ` },
-    { icon: 'award' as const, color: Palette.secondary[500], label: 'Huy hiệu mở khóa', value: `${progress.badges.filter(b => b.unlocked).length}/${progress.badges.length}` },
-  ];
+  const handleToggleNotifications = async (value: boolean) => {
+    setNotificationsEnabled(value);
+    if (value) {
+      await scheduleSM2ReviewNotification(dueCardsCount, 3600);
+      Alert.alert('Đã bật thông báo', 'Vocam sẽ nhắc nhở bạn khi có từ vựng cần ôn tập!');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-
-        {/* AVATAR & USER INFO */}
-        <View style={styles.profileHeader}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* PROFILE CARD */}
+        <View style={styles.profileCard}>
           <View style={styles.avatarCircle}>
-            <Text style={styles.avatarInitials}>{initials}</Text>
+            <Text style={styles.avatarText}>
+              {userName ? userName.charAt(0).toUpperCase() : 'U'}
+            </Text>
           </View>
-          <Text style={styles.userName}>{userName || 'Học Viên Vocam'}</Text>
-          {userEmail ? (
-            <Text style={styles.userEmail}>{userEmail}</Text>
-          ) : null}
-
-          <View style={styles.streakBadge}>
-            <Text style={styles.streakFire}>🔥</Text>
-            <Text style={styles.streakText}>{progress.streak} ngày streak</Text>
+          <View style={styles.profileInfo}>
+            <Text style={styles.userName}>{userName || 'Học viên Vocam'}</Text>
+            <Text style={styles.userEmail}>{userEmail || 'learner@vocam.app'}</Text>
           </View>
         </View>
 
-        {/* SETTINGS BUTTON */}
-        {onOpenSettings && (
-          <TouchableOpacity style={styles.settingsBtn} onPress={onOpenSettings}>
-            <Feather name="settings" size={16} color={Palette.text.muted} />
-            <Text style={styles.settingsBtnText}>Cài đặt</Text>
-            <Feather name="chevron-right" size={14} color={Palette.text.muted} style={{ marginLeft: 'auto' }} />
-          </TouchableOpacity>
-        )}
+        {/* LEARNING PROGRESS SUMMARY */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📈 Tiến độ Học tập</Text>
 
-        {/* OVERVIEW STATS GRID */}
-        <View style={styles.statsGrid}>
-          {stats.map((stat, idx) => (
-            <View key={idx} style={styles.statCard}>
-              <Feather name={stat.icon} size={20} color={stat.color} />
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
+          <View style={styles.statsRow}>
+            <View style={styles.statBox}>
+              <Feather name="bookmark" size={24} color="#4F46E5" />
+              <Text style={styles.statNumber}>{wordsSavedCount}</Text>
+              <Text style={styles.statLabel}>Từ đã lưu vào Sổ từ</Text>
             </View>
-          ))}
+
+            <View style={styles.statBox}>
+              <Feather name="check-circle" size={24} color="#10B981" />
+              <Text style={styles.statNumber}>{wordsLearnedCount}</Text>
+              <Text style={styles.statLabel}>Từ đã thuộc (SM-2)</Text>
+            </View>
+
+            <View style={styles.statBox}>
+              <Feather name="clock" size={24} color="#F59E0B" />
+              <Text style={styles.statNumber}>{dueCardsCount}</Text>
+              <Text style={styles.statLabel}>Từ cần ôn hôm nay</Text>
+            </View>
+          </View>
         </View>
 
-        {/* ACHIEVEMENTS & BADGES */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Huy hiệu & Thành tích 🎉</Text>
-          <Text style={styles.sectionSub}>Mở khóa huy hiệu khi đạt mốc học tập</Text>
+        {/* SETTINGS */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>⚙️ Cài đặt & Nhắc nhở</Text>
 
-          <View style={styles.badgesGrid}>
-            {progress.badges.map(badge => (
-              <View key={badge.id} style={[styles.badgeCard, !badge.unlocked && styles.badgeLocked]}>
-                <Text style={styles.badgeIcon}>{badge.icon}</Text>
-                <Text style={styles.badgeName}>{badge.name}</Text>
-                <Text style={styles.badgeDesc}>{badge.description}</Text>
+          <View style={styles.settingItem}>
+            <View style={styles.settingLeft}>
+              <Feather name="bell" size={20} color="#475569" />
+              <View>
+                <Text style={styles.settingTitle}>Thông báo Nhắc ôn tập</Text>
+                <Text style={styles.settingSub}>Báo khi có từ SM-2 đến hạn ôn</Text>
               </View>
-            ))}
-          </View>
-        </View>
-
-        {/* GLOBAL LEADERBOARD */}
-        <View style={styles.sectionCard}>
-          <View style={styles.leaderboardTitleRow}>
-            <Feather name="award" size={18} color={Palette.warning.text} />
-            <Text style={styles.sectionTitle}>Bảng xếp hạng toàn cầu 🏆</Text>
+            </View>
+            <Switch
+              value={notificationsEnabled}
+              onValueChange={handleToggleNotifications}
+              trackColor={{ false: '#CBD5E1', true: '#818CF8' }}
+              thumbColor={notificationsEnabled ? '#4F46E5' : '#F1F5F9'}
+            />
           </View>
 
-          {isLoadingLeaderboard ? (
-            <View style={styles.leaderboardLoading}>
-              <ActivityIndicator size="small" color={Palette.primary[500]} />
-              <Text style={styles.leaderboardLoadingText}>Đang tải bảng xếp hạng...</Text>
+          <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Vocam App', 'Phiên bản 2.0.0 — Hệ thống Học Từ vựng Tiếng Anh AI Scanner & SM-2')}>
+            <View style={styles.settingLeft}>
+              <Feather name="info" size={20} color="#475569" />
+              <View>
+                <Text style={styles.settingTitle}>Về ứng dụng Vocam</Text>
+                <Text style={styles.settingSub}>Phiên bản 2.0.0 (Objects365 & SM-2)</Text>
+              </View>
             </View>
-          ) : leaderboard.length === 0 ? (
-            <View style={styles.emptyLeaderboard}>
-              <Feather name="wifi-off" size={24} color={Palette.text.muted} />
-              <Text style={styles.emptyLeaderboardText}>Chưa có kết nối server</Text>
-            </View>
-          ) : (
-            <View style={styles.leaderboardList}>
-              {leaderboard.slice(0, 10).map((item) => {
-                const isMe = item.userId === currentUuid;
-                const medalEmoji = item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : item.rank === 3 ? '🥉' : null;
-                return (
-                  <View key={item.rank + (item.userId || item.displayName)} style={[styles.leaderboardRow, isMe && styles.leaderboardRowMe]}>
-                    <View style={styles.rankBadge}>
-                      {medalEmoji ? (
-                        <Text style={styles.rankMedal}>{medalEmoji}</Text>
-                      ) : (
-                        <Text style={styles.rankNumber}>#{item.rank}</Text>
-                      )}
-                    </View>
-                    <Text style={[styles.leaderboardName, isMe && styles.leaderboardNameMe]} numberOfLines={1}>
-                      {item.displayName} {isMe ? '(Tôi)' : ''}
-                    </Text>
-                    <View style={styles.leaderboardXpBadge}>
-                      <Feather name="zap" size={10} color={Palette.warning.text} />
-                      <Text style={styles.leaderboardXp}>{item.totalXp}</Text>
-                    </View>
-                  </View>
-                );
-              })}
-            </View>
-          )}
+            <Feather name="chevron-right" size={18} color="#94A3B8" />
+          </TouchableOpacity>
         </View>
 
-        {/* DAILY GOAL SETTINGS */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>Mục tiêu học mỗi ngày</Text>
-          <View style={styles.goalRow}>
-            {['5 mins daily', '10 mins daily', '15 mins or more'].map(goal => (
-              <TouchableOpacity
-                key={goal}
-                style={[styles.goalBtn, dailyGoal === goal && styles.goalBtnActive]}
-                onPress={() => setDailyGoal(goal)}
-              >
-                <Text style={[styles.goalBtnText, dailyGoal === goal && styles.goalBtnTextActive]}>{goal}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* LOGOUT */}
-        <TouchableOpacity style={styles.logoutBtn} onPress={onLogout}>
-          <Feather name="log-out" size={16} color={Palette.error.text} />
-          <Text style={styles.logoutBtnText}>Đăng xuất tài khoản</Text>
+        {/* LOGOUT BUTTON */}
+        <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
+          <Feather name="log-out" size={18} color="#EF4444" />
+          <Text style={styles.logoutText}>Đăng xuất khỏi ứng dụng</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -186,317 +123,74 @@ export default function ProfileScreen({ progress, userName, userEmail, onLogout,
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Palette.canvas,
-  },
-  content: {
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.three,
-    paddingBottom: 110,
-  },
+  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
+  scrollContent: { padding: 16, gap: 16 },
 
-  // Profile Header
-  profileHeader: {
+  profileCard: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: Spacing.three,
-    paddingVertical: Spacing.four,
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 24,
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: Palette.border,
+    borderColor: '#E2E8F0',
+    gap: 14,
   },
   avatarCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: Palette.primary[500],
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#4F46E5',
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: Spacing.two,
-    shadowColor: Palette.primary[500],
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
   },
-  avatarInitials: {
-    fontFamily: Fonts.sans,
-    fontSize: 28,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  userName: {
-    fontFamily: Fonts.sans,
-    fontSize: 20,
-    fontWeight: '800',
-    color: Palette.text.primary,
-  },
-  userEmail: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: Palette.text.secondary,
-    marginTop: 2,
-  },
-  streakBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: Palette.warning.bg,
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 14,
-    marginTop: Spacing.two,
-  },
-  streakFire: {
-    fontSize: 16,
-  },
-  streakText: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    fontWeight: '800',
-    color: Palette.warning.text,
-  },
+  avatarText: { fontSize: 24, fontWeight: '800', color: '#FFFFFF' },
+  profileInfo: { flex: 1 },
+  userName: { fontSize: 18, fontWeight: '800', color: '#1E293B' },
+  userEmail: { fontSize: 13, color: '#64748B', marginTop: 2 },
 
-  // Settings Button
-  settingsBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: 12,
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: Palette.border,
-    marginBottom: Spacing.three,
-  },
-  settingsBtnText: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    fontWeight: '600',
-    color: Palette.text.secondary,
+  section: { gap: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1E293B' },
+
+  statsRow: { flexDirection: 'row', gap: 10 },
+  statBox: {
     flex: 1,
-  },
-
-  // Stats Grid
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-    marginBottom: Spacing.three,
-  },
-  statCard: {
-    width: '48%',
-    backgroundColor: Palette.surfaceWhite,
-    padding: Spacing.three,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: Palette.border,
-    gap: 4,
-  },
-  statValue: {
-    fontFamily: Fonts.sans,
-    fontSize: 18,
-    fontWeight: '800',
-    color: Palette.text.primary,
-    marginTop: 4,
-  },
-  statLabel: {
-    fontFamily: Fonts.sans,
-    fontSize: 11,
-    color: Palette.text.muted,
-  },
-
-  // Section Card
-  sectionCard: {
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 20,
-    padding: Spacing.three,
-    marginBottom: Spacing.three,
-    borderWidth: 1,
-    borderColor: Palette.border,
-  },
-  sectionTitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 15,
-    fontWeight: '800',
-    color: Palette.text.primary,
-  },
-  sectionSub: {
-    fontFamily: Fonts.sans,
-    fontSize: 11,
-    color: Palette.text.secondary,
-    marginBottom: Spacing.two,
-    marginTop: 2,
-  },
-
-  // Badges
-  badgesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-    marginTop: Spacing.two,
-  },
-  badgeCard: {
-    width: '48%',
-    backgroundColor: Palette.canvas,
-    padding: Spacing.two,
+    backgroundColor: '#FFFFFF',
+    padding: 14,
     borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
     alignItems: 'center',
-  },
-  badgeLocked: {
-    opacity: 0.4,
-  },
-  badgeIcon: {
-    fontSize: 24,
-    marginBottom: 2,
-  },
-  badgeName: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    fontWeight: '700',
-    color: Palette.text.primary,
-    textAlign: 'center',
-  },
-  badgeDesc: {
-    fontFamily: Fonts.sans,
-    fontSize: 10,
-    color: Palette.text.muted,
-    textAlign: 'center',
-    marginTop: 2,
-  },
-
-  // Leaderboard
-  leaderboardTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: Spacing.two,
-  },
-  leaderboardLoading: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: Spacing.three,
-  },
-  leaderboardLoadingText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: Palette.text.muted,
-  },
-  emptyLeaderboard: {
-    alignItems: 'center',
-    paddingVertical: Spacing.three,
-    gap: Spacing.two,
-  },
-  emptyLeaderboardText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: Palette.text.muted,
-  },
-  leaderboardList: {
     gap: 4,
   },
-  leaderboardRow: {
+  statNumber: { fontSize: 20, fontWeight: '800', color: '#1E293B' },
+  statLabel: { fontSize: 11, color: '#64748B', textAlign: 'center' },
+
+  settingItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: Spacing.two,
-    paddingVertical: 10,
-    backgroundColor: Palette.canvas,
+    justifyContent: 'space-between',
+    backgroundColor: '#FFFFFF',
+    padding: 14,
     borderRadius: 12,
-    gap: Spacing.two,
-  },
-  leaderboardRowMe: {
-    backgroundColor: Palette.primary[100],
     borderWidth: 1,
-    borderColor: Palette.primary[300],
+    borderColor: '#E2E8F0',
   },
-  rankBadge: {
-    width: 32,
+  settingLeft: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  settingTitle: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
+  settingSub: { fontSize: 12, color: '#64748B', marginTop: 2 },
+
+  logoutButton: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  rankMedal: {
-    fontSize: 18,
-  },
-  rankNumber: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    fontWeight: '800',
-    color: Palette.text.muted,
-  },
-  leaderboardName: {
-    flex: 1,
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    fontWeight: '600',
-    color: Palette.text.primary,
-  },
-  leaderboardNameMe: {
-    fontWeight: '800',
-    color: Palette.primary[500],
-  },
-  leaderboardXpBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: Palette.warning.bg,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  leaderboardXp: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    fontWeight: '800',
-    color: Palette.warning.text,
-  },
-
-  // Daily Goal
-  goalRow: {
     gap: 8,
-    marginTop: Spacing.two,
-  },
-  goalBtn: {
-    backgroundColor: Palette.canvas,
-    padding: Spacing.two,
+    backgroundColor: '#FEF2F2',
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    padding: 14,
     borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Palette.border,
+    marginTop: 8,
   },
-  goalBtnActive: {
-    backgroundColor: Palette.primary[500],
-    borderColor: Palette.primary[500],
-  },
-  goalBtnText: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    fontWeight: '600',
-    color: Palette.text.primary,
-  },
-  goalBtnTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-  },
-
-  // Logout
-  logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: Spacing.two,
-    paddingVertical: Spacing.three,
-    backgroundColor: Palette.error.bg,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#FECACA',
-  },
-  logoutBtnText: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    fontWeight: '700',
-    color: Palette.error.text,
-  },
+  logoutText: { fontSize: 14, fontWeight: '700', color: '#EF4444' },
 });

@@ -1,6 +1,5 @@
 package org.englishapp.backend.service;
 
-import org.englishapp.backend.dto.LeaderboardEntryDto;
 import org.englishapp.backend.dto.SyncRequest;
 import org.englishapp.backend.dto.SyncResponse;
 import org.englishapp.backend.dto.UserProfileDto;
@@ -14,14 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class UserService {
-
-    private static final int TOP_LIMIT = 50;
 
     private final AppUserRepository appUserRepository;
     private final UserProgressRepository userProgressRepository;
@@ -33,7 +28,6 @@ public class UserService {
 
     /**
      * Bootstrap User Profile & Progress if user record does not exist yet.
-     * Guaranteed to return a valid AppUser profile.
      */
     @Transactional
     public AppUser bootstrapUserIfAbsent(UUID userId, String defaultDisplayName, String defaultEmail) {
@@ -55,7 +49,7 @@ public class UserService {
         });
     }
 
-    /** GET /api/me — Returns complete User Profile & Progress */
+    /** GET /api/me — Returns User Profile & Learning Stats */
     @Transactional
     public UserProfileDto getUserProfile(UUID userId, String defaultDisplayName, String defaultEmail) {
         AppUser appUser = bootstrapUserIfAbsent(userId, defaultDisplayName, defaultEmail);
@@ -76,15 +70,12 @@ public class UserService {
                 appUser.getDisplayName(),
                 appUser.getRole(),
                 Boolean.TRUE.equals(appUser.getLocked()),
-                progress.getTotalXp(),
-                progress.getCurrentStreak(),
-                progress.getLongestStreak(),
                 progress.getWordsSaved(),
                 progress.getWordsLearned()
         );
     }
 
-    /** POST /api/sync/progress — Sync learning progress securely for authenticated user */
+    /** POST /api/sync/progress — Sync learning progress securely */
     @Transactional
     public SyncResponse syncProgress(UUID userId, SyncRequest req) {
         AppUser appUser = appUserRepository.findById(userId)
@@ -106,48 +97,13 @@ public class UserService {
             appUserRepository.save(appUser);
         }
 
-        progress.setTotalXp(req.getTotalXp());
-        progress.setCurrentStreak(req.getCurrentStreak());
         progress.setWordsSaved(req.getWordsSaved());
         progress.setWordsLearned(req.getWordsLearned());
         progress.setLastSyncAt(Instant.now());
 
-        if (req.getLongestStreak() > progress.getLongestStreak()) {
-            progress.setLongestStreak(req.getLongestStreak());
-        }
-
         userProgressRepository.save(progress);
 
-        long ahead = userProgressRepository.countByTotalXpGreaterThan(req.getTotalXp());
-        int rank = (int) ahead + 1;
-
-        return new SyncResponse("ok", rank);
-    }
-
-    /** GET /api/leaderboard — Returns Top 50 Users */
-    public List<LeaderboardEntryDto> getLeaderboard() {
-        List<UserProgress> top = userProgressRepository.findTopByXp(TOP_LIMIT);
-
-        AtomicInteger counter = new AtomicInteger(1);
-        return top.stream()
-                .map(u -> {
-                    AppUser user = u.getAppUser();
-                    String name = user != null && user.getDisplayName() != null ? user.getDisplayName() : "Học Viên Vocam";
-                    String role = user != null ? user.getRole() : "LEARNER";
-                    boolean locked = user != null && Boolean.TRUE.equals(user.getLocked());
-
-                    return new LeaderboardEntryDto(
-                            counter.getAndIncrement(),
-                            u.getUserId(),
-                            name,
-                            u.getTotalXp(),
-                            u.getCurrentStreak(),
-                            u.getWordsLearned(),
-                            role,
-                            locked
-                    );
-                })
-                .toList();
+        return new SyncResponse("ok");
     }
 
     /** POST /api/admin/users/{userId}/toggle-lock */
@@ -173,9 +129,5 @@ public class UserService {
 
     public long countLockedUsers() {
         return appUserRepository.countByLockedTrue();
-    }
-
-    public long sumTotalXp() {
-        return userProgressRepository.sumTotalXp();
     }
 }

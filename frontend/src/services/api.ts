@@ -19,9 +19,6 @@ export interface UserProfileDto {
   displayName: string;
   role: 'LEARNER' | 'ADMIN';
   locked: boolean;
-  totalXp: number;
-  currentStreak: number;
-  longestStreak: number;
   wordsSaved: number;
   wordsLearned: number;
 }
@@ -41,27 +38,21 @@ export interface BackendWordDto {
 
 export interface SyncPayload {
   displayName?: string;
-  totalXp: number;
-  currentStreak: number;
-  longestStreak: number;
   wordsSaved: number;
   wordsLearned: number;
 }
 
 export interface SyncResponseDto {
   status: string;
-  rank: number;
 }
 
-export interface LeaderboardEntry {
-  rank: number;
+export interface AdminUserEntry {
   userId: string;
   displayName: string;
-  totalXp: number;
-  currentStreak: number;
-  wordsLearned: number;
   role: string;
   locked: boolean;
+  wordsSaved: number;
+  wordsLearned: number;
 }
 
 /**
@@ -90,7 +81,6 @@ async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promis
   });
 
   if (res.status === 401) {
-    // Session expired
     await supabase.auth.refreshSession();
   }
 
@@ -119,9 +109,6 @@ async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promis
   return text ? JSON.parse(text) : (null as any);
 }
 
-/**
- * Helper mapper
- */
 function mapWordDtoToVocabularyWord(dto: BackendWordDto): VocabularyWord {
   return {
     id: String(dto.id),
@@ -142,21 +129,12 @@ export const api = {
     return apiClient<UserProfileDto>('/api/me');
   },
 
-  /** POST /api/sync/progress — Sync XP and streak securely */
+  /** POST /api/sync/progress — Sync learning stats securely */
   async syncProgress(payload: SyncPayload): Promise<SyncResponseDto> {
     return apiClient<SyncResponseDto>('/api/sync/progress', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-  },
-
-  /** GET /api/leaderboard — Fetch global Top 50 */
-  async fetchLeaderboard(): Promise<LeaderboardEntry[]> {
-    return apiClient<LeaderboardEntry[]>('/api/leaderboard');
-  },
-
-  async getLeaderboard(): Promise<LeaderboardEntry[]> {
-    return this.fetchLeaderboard();
   },
 
   /** GET /api/words — Fetch all 365 words */
@@ -221,7 +199,7 @@ export const api = {
   },
 
   // Admin APIs
-  async fetchAdminStats(): Promise<{ totalUsers: number; activeUsers: number; lockedUsers: number; totalWords: number; totalSystemXp: number }> {
+  async fetchAdminStats(): Promise<{ totalUsers: number; activeUsers: number; lockedUsers: number; totalWords: number }> {
     return apiClient('/api/admin/stats');
   },
 
