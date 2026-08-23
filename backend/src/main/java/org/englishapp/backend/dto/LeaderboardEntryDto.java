@@ -7,16 +7,18 @@ public class LeaderboardEntryDto {
     private int totalXp;
     private int currentStreak;
     private int wordsLearned;
+    private String status;
 
     public LeaderboardEntryDto() {}
 
-    public LeaderboardEntryDto(int rank, String deviceUuid, String displayName, int totalXp, int currentStreak, int wordsLearned) {
+    public LeaderboardEntryDto(int rank, String deviceUuid, String displayName, int totalXp, int currentStreak, int wordsLearned, String status) {
         this.rank = rank;
         this.deviceUuid = deviceUuid;
         this.displayName = displayName;
         this.totalXp = totalXp;
         this.currentStreak = currentStreak;
         this.wordsLearned = wordsLearned;
+        this.status = status;
     }
 
     public int getRank() { return rank; }
@@ -36,4 +38,7 @@ public class LeaderboardEntryDto {
 
     public int getWordsLearned() { return wordsLearned; }
     public void setWordsLearned(int wordsLearned) { this.wordsLearned = wordsLearned; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

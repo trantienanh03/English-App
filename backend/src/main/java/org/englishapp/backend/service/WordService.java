@@ -34,6 +34,43 @@ public class WordService {
                 ));
     }
 
+    public long count() {
+        return wordRepository.count();
+    }
+
+    public WordDto createWord(WordDto dto) {
+        Word word = new Word();
+        updateEntityFromDto(word, dto);
+        Word saved = wordRepository.save(word);
+        return toDto(saved);
+    }
+
+    public WordDto updateWord(Long id, WordDto dto) {
+        Word word = wordRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Word not found: " + id));
+        updateEntityFromDto(word, dto);
+        Word updated = wordRepository.save(word);
+        return toDto(updated);
+    }
+
+    public void deleteWord(Long id) {
+        if (!wordRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Word not found: " + id);
+        }
+        wordRepository.deleteById(id);
+    }
+
+    private void updateEntityFromDto(Word word, WordDto dto) {
+        if (dto.cocoClass() != null) word.setCocoClass(dto.cocoClass().toLowerCase().trim());
+        if (dto.enWord() != null) word.setEnWord(dto.enWord().trim());
+        if (dto.phonetic() != null) word.setPhonetic(dto.phonetic().trim());
+        if (dto.pos() != null) word.setPos(dto.pos().trim());
+        if (dto.definition() != null) word.setDefinition(dto.definition().trim());
+        if (dto.translation() != null) word.setTranslation(dto.translation().trim());
+        if (dto.exampleEn() != null) word.setExampleEn(dto.exampleEn().trim());
+        if (dto.exampleVn() != null) word.setExampleVn(dto.exampleVn().trim());
+    }
+
     private WordDto toDto(Word w) {
         return new WordDto(
                 w.getId(),

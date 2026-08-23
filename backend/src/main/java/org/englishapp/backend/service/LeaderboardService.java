@@ -63,9 +63,29 @@ public class LeaderboardService {
                         u.getDisplayName(),
                         u.getTotalXp(),
                         u.getCurrentStreak(),
-                        u.getWordsLearned()
+                        u.getWordsLearned(),
+                        u.getStatus() != null ? u.getStatus() : "ACTIVE"
                 ))
                 .toList();
+    }
+
+    public long countUsers() {
+        return userProgressRepository.count();
+    }
+
+    public long sumTotalXp() {
+        return userProgressRepository.sumTotalXp();
+    }
+
+    @Transactional
+    public String toggleUserLock(String deviceUuid) {
+        UserProgress progress = userProgressRepository.findByDeviceUuid(deviceUuid)
+                .orElseThrow(() -> new RuntimeException("User not found: " + deviceUuid));
+        String currentStatus = progress.getStatus();
+        String newStatus = "LOCKED".equalsIgnoreCase(currentStatus) ? "ACTIVE" : "LOCKED";
+        progress.setStatus(newStatus);
+        userProgressRepository.save(progress);
+        return newStatus;
     }
 
     // Count how many users have strictly more XP → their position is rank+1

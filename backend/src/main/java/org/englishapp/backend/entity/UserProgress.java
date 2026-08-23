@@ -32,6 +32,9 @@ public class UserProgress {
     @Column(name = "last_sync_at")
     private Instant lastSyncAt;
 
+    @Column(name = "status", nullable = false, length = 20)
+    private String status = "ACTIVE";
+
     @Column(name = "created_at")
     private Instant createdAt = Instant.now();
 
@@ -68,6 +71,9 @@ public class UserProgress {
 
     public Instant getLastSyncAt() { return lastSyncAt; }
     public void setLastSyncAt(Instant lastSyncAt) { this.lastSyncAt = lastSyncAt; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

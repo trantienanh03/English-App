@@ -19,4 +19,7 @@ public interface UserProgressRepository extends JpaRepository<UserProgress, Long
 
     /** Count users with more XP than :xp — used for efficient rank calculation */
     long countByTotalXpGreaterThan(int xp);
+
+    @Query("SELECT COALESCE(SUM(u.totalXp), 0) FROM UserProgress u")
+    long sumTotalXp();
 }
