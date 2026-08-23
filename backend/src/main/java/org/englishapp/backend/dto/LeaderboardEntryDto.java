@@ -1,31 +1,35 @@
 package org.englishapp.backend.dto;
 
+import java.util.UUID;
+
 public class LeaderboardEntryDto {
     private int rank;
-    private String deviceUuid;
+    private UUID userId;
     private String displayName;
     private int totalXp;
     private int currentStreak;
     private int wordsLearned;
-    private String status;
+    private String role;
+    private boolean locked;
 
     public LeaderboardEntryDto() {}
 
-    public LeaderboardEntryDto(int rank, String deviceUuid, String displayName, int totalXp, int currentStreak, int wordsLearned, String status) {
+    public LeaderboardEntryDto(int rank, UUID userId, String displayName, int totalXp, int currentStreak, int wordsLearned, String role, boolean locked) {
         this.rank = rank;
-        this.deviceUuid = deviceUuid;
+        this.userId = userId;
         this.displayName = displayName;
         this.totalXp = totalXp;
         this.currentStreak = currentStreak;
         this.wordsLearned = wordsLearned;
-        this.status = status;
+        this.role = role;
+        this.locked = locked;
     }
 
     public int getRank() { return rank; }
     public void setRank(int rank) { this.rank = rank; }
 
-    public String getDeviceUuid() { return deviceUuid; }
-    public void setDeviceUuid(String deviceUuid) { this.deviceUuid = deviceUuid; }
+    public UUID getUserId() { return userId; }
+    public void setUserId(UUID userId) { this.userId = userId; }
 
     public String getDisplayName() { return displayName; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }
@@ -39,6 +43,9 @@ public class LeaderboardEntryDto {
     public int getWordsLearned() { return wordsLearned; }
     public void setWordsLearned(int wordsLearned) { this.wordsLearned = wordsLearned; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
+    public boolean isLocked() { return locked; }
+    public void setLocked(boolean locked) { this.locked = locked; }
 }

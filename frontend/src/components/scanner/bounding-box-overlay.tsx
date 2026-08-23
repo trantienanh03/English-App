@@ -77,7 +77,7 @@ export const BoundingBoxOverlay: React.FC<Props> = ({
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     pointerEvents: 'box-none',
   },
   box: {

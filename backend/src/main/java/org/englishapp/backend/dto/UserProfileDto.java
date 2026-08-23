@@ -1,17 +1,25 @@
 package org.englishapp.backend.dto;
 
-public class SyncRequest {
+import java.util.UUID;
+
+public class UserProfileDto {
+    private UUID userId;
     private String displayName;
+    private String role;
+    private boolean locked;
     private int totalXp;
     private int currentStreak;
     private int longestStreak;
     private int wordsSaved;
     private int wordsLearned;
 
-    public SyncRequest() {}
+    public UserProfileDto() {}
 
-    public SyncRequest(String displayName, int totalXp, int currentStreak, int longestStreak, int wordsSaved, int wordsLearned) {
+    public UserProfileDto(UUID userId, String displayName, String role, boolean locked, int totalXp, int currentStreak, int longestStreak, int wordsSaved, int wordsLearned) {
+        this.userId = userId;
         this.displayName = displayName;
+        this.role = role;
+        this.locked = locked;
         this.totalXp = totalXp;
         this.currentStreak = currentStreak;
         this.longestStreak = longestStreak;
@@ -19,8 +27,17 @@ public class SyncRequest {
         this.wordsLearned = wordsLearned;
     }
 
+    public UUID getUserId() { return userId; }
+    public void setUserId(UUID userId) { this.userId = userId; }
+
     public String getDisplayName() { return displayName; }
     public void setDisplayName(String displayName) { this.displayName = displayName; }
+
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
+    public boolean isLocked() { return locked; }
+    public void setLocked(boolean locked) { this.locked = locked; }
 
     public int getTotalXp() { return totalXp; }
     public void setTotalXp(int totalXp) { this.totalXp = totalXp; }

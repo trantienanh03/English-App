@@ -70,7 +70,10 @@ function computeUnlockedBadges(
   });
 }
 
+import AdminNavigator from './admin/admin-navigator';
+
 export default function MainContainer({ userName, userEmail, onLogout }: MainContainerProps) {
+  const [userRole, setUserRole] = useState<'LEARNER' | 'ADMIN'>('LEARNER');
   const [activeTab, setActiveTab] = useState<'home' | 'learn' | 'scan' | 'cards' | 'profile'>('home');
   const [showQuizModal, setShowQuizModal] = useState<boolean>(false);
   const [showSearch, setShowSearch] = useState<boolean>(false);
@@ -84,12 +87,21 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
   const [wordOfTheDay, setWordOfTheDay] = useState<VocabularyWord | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // ─── Init — restore all persisted state from AsyncStorage ─────────────────
+  // ─── Init — fetch profile & restore state ──────────────────────────────
   useEffect(() => {
     const init = async () => {
       try {
         initDatabase();
-        await initDeviceUuid();
+        
+        // Fetch role from GET /api/me
+        try {
+          const profile = await api.fetchMe();
+          if (profile?.role === 'ADMIN') {
+            setUserRole('ADMIN');
+          }
+        } catch (err) {
+          // Dev fallback
+        }
 
         // 1. Restore user progress
         const savedProgress = await loadUserProgress();
@@ -365,6 +377,10 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
         return null;
     }
   };
+
+  if (userRole === 'ADMIN') {
+    return <AdminNavigator adminEmail={userEmail} onLogout={onLogout} />;
+  }
 
   return (
     <View style={styles.container}>

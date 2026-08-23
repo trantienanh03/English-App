@@ -1,9 +1,11 @@
 package org.englishapp.backend.controller;
 
 import org.englishapp.backend.dto.LeaderboardEntryDto;
-import org.englishapp.backend.service.LeaderboardService;
+import org.englishapp.backend.service.UserService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -11,17 +13,15 @@ import java.util.List;
 @RequestMapping("/api/leaderboard")
 public class LeaderboardController {
 
-    private final LeaderboardService leaderboardService;
+    private final UserService userService;
 
-    public LeaderboardController(LeaderboardService leaderboardService) {
-        this.leaderboardService = leaderboardService;
+    public LeaderboardController(UserService userService) {
+        this.userService = userService;
     }
 
-    /**
-     * Returns the top 50 users globally, sorted by XP descending.
-     */
+    /** Returns top 50 users for global leaderboard */
     @GetMapping
     public ResponseEntity<List<LeaderboardEntryDto>> getLeaderboard() {
-        return ResponseEntity.ok(leaderboardService.getLeaderboard());
+        return ResponseEntity.ok(userService.getLeaderboard());
     }
 }

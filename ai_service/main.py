@@ -118,6 +118,8 @@ class ContextSentenceResponse(BaseModel):
 class MultiPredictionResponse(BaseModel):
     success: bool
     total_detected: int
+    image_width: int
+    image_height: int
     inference_time_ms: float
     predictions: List[DetectedObject]
     contextual_sentence: Optional[ContextSentenceResponse] = None
@@ -221,6 +223,7 @@ async def predict_multi_objects(
     try:
         image_bytes = await file.read()
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        img_width, img_height = image.size
 
         results = model(image, conf=confidence_threshold)
         predictions: List[DetectedObject] = []
@@ -257,6 +260,8 @@ async def predict_multi_objects(
         return MultiPredictionResponse(
             success=True,
             total_detected=len(predictions),
+            image_width=img_width,
+            image_height=img_height,
             inference_time_ms=inference_time_ms,
             predictions=predictions,
             contextual_sentence=context_res

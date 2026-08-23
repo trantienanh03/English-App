@@ -134,10 +134,10 @@ export default function ProfileScreen({ progress, userName, userEmail, onLogout,
           ) : (
             <View style={styles.leaderboardList}>
               {leaderboard.slice(0, 10).map((item) => {
-                const isMe = item.deviceUuid === currentUuid;
+                const isMe = item.userId === currentUuid;
                 const medalEmoji = item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : item.rank === 3 ? '🥉' : null;
                 return (
-                  <View key={item.rank + item.deviceUuid} style={[styles.leaderboardRow, isMe && styles.leaderboardRowMe]}>
+                  <View key={item.rank + (item.userId || item.displayName)} style={[styles.leaderboardRow, isMe && styles.leaderboardRowMe]}>
                     <View style={styles.rankBadge}>
                       {medalEmoji ? (
                         <Text style={styles.rankMedal}>{medalEmoji}</Text>

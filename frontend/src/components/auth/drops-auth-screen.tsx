@@ -281,7 +281,7 @@ export default function DropsAuthScreen({
                 value={name}
                 onChangeText={setName}
                 placeholder="Nhập tên của bạn"
-                placeholderTextColor={Variables.text.placeholder}
+                placeholderTextColor={Variables.text.muted}
                 autoCapitalize="words"
               />
             </View>
@@ -297,7 +297,7 @@ export default function DropsAuthScreen({
               value={email}
               onChangeText={setEmail}
               placeholder="your@email.com"
-              placeholderTextColor={Variables.text.placeholder}
+              placeholderTextColor={Variables.text.muted}
               keyboardType="email-address"
               autoCapitalize="none"
             />
@@ -313,7 +313,7 @@ export default function DropsAuthScreen({
               value={password}
               onChangeText={setPassword}
               placeholder="Ít nhất 6 ký tự"
-              placeholderTextColor={Variables.text.placeholder}
+              placeholderTextColor={Variables.text.muted}
               secureTextEntry={!showPassword}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
@@ -392,7 +392,7 @@ export default function DropsAuthScreen({
                 value={resetEmail}
                 onChangeText={setResetEmail}
                 placeholder="your@email.com"
-                placeholderTextColor={Variables.text.placeholder}
+                placeholderTextColor={Variables.text.muted}
                 keyboardType="email-address"
                 autoCapitalize="none"
               />

@@ -46,15 +46,15 @@ export async function syncWithBackend(
 
   // Push user progress to leaderboard server
   const unsyncedEvents = getUnsyncedEvents();
-  const flashcards = getLocalFlashcards();
+  const flashcards = await getLocalFlashcards();
 
   const payload: SyncPayload = {
-    deviceUuid,
     displayName,
     totalXp: currentProgress.xp,
     currentStreak: currentProgress.streak,
     longestStreak: currentProgress.streak,
-    wordsLearned: flashcards.length,
+    wordsSaved: flashcards.length,
+    wordsLearned: flashcards.filter(c => c.repetitions >= 2).length,
   };
 
   const response = await api.syncProgress(payload);

@@ -2,20 +2,20 @@ package org.englishapp.backend.entity;
 
 import jakarta.persistence.*;
 import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Table(name = "user_progress")
 public class UserProgress {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;
 
-    @Column(name = "device_uuid", nullable = false, unique = true, length = 36)
-    private String deviceUuid;
-
-    @Column(name = "display_name", nullable = false, length = 100)
-    private String displayName = "Người dùng";
+    @OneToOne(fetch = FetchType.LAZY)
+    @MapsId
+    @JoinColumn(name = "user_id")
+    private AppUser appUser;
 
     @Column(name = "total_xp", nullable = false)
     private Integer totalXp = 0;
@@ -26,14 +26,14 @@ public class UserProgress {
     @Column(name = "longest_streak", nullable = false)
     private Integer longestStreak = 0;
 
+    @Column(name = "words_saved", nullable = false)
+    private Integer wordsSaved = 0;
+
     @Column(name = "words_learned", nullable = false)
     private Integer wordsLearned = 0;
 
     @Column(name = "last_sync_at")
     private Instant lastSyncAt;
-
-    @Column(name = "status", nullable = false, length = 20)
-    private String status = "ACTIVE";
 
     @Column(name = "created_at")
     private Instant createdAt = Instant.now();
@@ -43,19 +43,20 @@ public class UserProgress {
 
     public UserProgress() {}
 
+    public UserProgress(UUID userId) {
+        this.userId = userId;
+    }
+
     @PreUpdate
     public void onUpdate() {
         this.updatedAt = Instant.now();
     }
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public UUID getUserId() { return userId; }
+    public void setUserId(UUID userId) { this.userId = userId; }
 
-    public String getDeviceUuid() { return deviceUuid; }
-    public void setDeviceUuid(String deviceUuid) { this.deviceUuid = deviceUuid; }
-
-    public String getDisplayName() { return displayName; }
-    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public AppUser getAppUser() { return appUser; }
+    public void setAppUser(AppUser appUser) { this.appUser = appUser; }
 
     public Integer getTotalXp() { return totalXp; }
     public void setTotalXp(Integer totalXp) { this.totalXp = totalXp; }
@@ -66,14 +67,14 @@ public class UserProgress {
     public Integer getLongestStreak() { return longestStreak; }
     public void setLongestStreak(Integer longestStreak) { this.longestStreak = longestStreak; }
 
+    public Integer getWordsSaved() { return wordsSaved; }
+    public void setWordsSaved(Integer wordsSaved) { this.wordsSaved = wordsSaved; }
+
     public Integer getWordsLearned() { return wordsLearned; }
     public void setWordsLearned(Integer wordsLearned) { this.wordsLearned = wordsLearned; }
 
     public Instant getLastSyncAt() { return lastSyncAt; }
     public void setLastSyncAt(Instant lastSyncAt) { this.lastSyncAt = lastSyncAt; }
-
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
