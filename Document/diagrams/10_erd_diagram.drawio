@@ -1,76 +1,176 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mxfile host="drawio" version="26.0.0">
-  <diagram name="ERD Diagram" id="erd-10">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <diagram name="ERD Diagram" id="erd-vocam-v2-12tables">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1900" pageHeight="1400" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
-        <!-- Tables -->
-        <!-- USERS -->
-        <mxCell id="tbl_users" value="USERS&#xa;--&#xa;* id : uuid [PK]&#xa;* email : varchar [UK]&#xa;  password_hash : varchar&#xa;  display_name : varchar&#xa;  avatar_url : text&#xa;  is_active : boolean&#xa;  role : varchar&#xa;  created_at : timestamptz" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="40" y="40" width="220" height="170" as="geometry" />
+        <!-- Title -->
+        <mxCell id="title" value="Biểu đồ Quan hệ Thực thể (ERD) — Cơ sở dữ liệu Vocam (12 bảng)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=18;fontStyle=1;fontColor=#1A237E;" vertex="1" parent="1">
+          <mxGeometry x="100" y="20" width="1700" height="40" as="geometry" />
         </mxCell>
 
-        <!-- REFRESH_TOKENS -->
-        <mxCell id="tbl_tokens" value="REFRESH_TOKENS&#xa;--&#xa;* id : uuid [PK]&#xa;+ user_id : uuid [FK]&#xa;  token_hash : varchar&#xa;  device_info : varchar&#xa;  is_revoked : boolean&#xa;  expires_at : timestamptz&#xa;  created_at : timestamptz" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#e91e63;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="320" y="40" width="220" height="170" as="geometry" />
+        <!-- ══════════════════════════════════════════════════════ -->
+        <!-- ROW 1: user_profiles | words | lessons                -->
+        <!-- ══════════════════════════════════════════════════════ -->
+
+        <!-- user_profiles -->
+        <mxCell id="tbl_up" value="user_profiles&#xa;────────────&#xa;* id : uuid [PK] ← Supabase Auth UID&#xa;  display_name : varchar(100)&#xa;  avatar_url : text&#xa;  role : varchar [LEARNER | ADMIN]&#xa;  status : varchar [ACTIVE | LOCKED]&#xa;  created_at : timestamptz&#xa;  updated_at : timestamptz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;align=left;spacingLeft=12;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="320" height="160" as="geometry" />
         </mxCell>
 
-        <!-- DECKS -->
-        <mxCell id="tbl_decks" value="DECKS&#xa;--&#xa;* id : uuid [PK]&#xa;+ user_id : uuid [FK]&#xa;  name : varchar&#xa;  description : text&#xa;  is_public : boolean&#xa;  created_at : timestamptz" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="40" y="260" width="220" height="140" as="geometry" />
+        <!-- words -->
+        <mxCell id="tbl_w" value="words&#xa;────────────&#xa;* id : bigint [PK, auto-increment]&#xa;* coco_class : varchar [UK] ← YOLO label&#xa;  en_word : varchar(100)&#xa;  phonetic : varchar(100) [IPA]&#xa;  pos : varchar(50) [Noun|Verb|Adj|Adv]&#xa;  definition : text&#xa;  translation : text&#xa;  example_en : text&#xa;  example_vn : text&#xa;  image_url : text ← Supabase Storage URL&#xa;  created_at : timestamptz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;align=left;spacingLeft=12;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="80" width="330" height="220" as="geometry" />
         </mxCell>
 
-        <!-- WORDS -->
-        <mxCell id="tbl_words" value="WORDS&#xa;--&#xa;* id : bigint [PK]&#xa;* coco_class : varchar [UK]&#xa;  en_word : varchar&#xa;  phonetic : varchar&#xa;  pos : varchar&#xa;  definition : text&#xa;  translation : text&#xa;  example_en : text" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="600" y="40" width="220" height="170" as="geometry" />
+        <!-- lessons -->
+        <mxCell id="tbl_l" value="lessons&#xa;────────────&#xa;* id : bigint [PK, auto-increment]&#xa;  title : varchar(200)&#xa;  description : text&#xa;  topic : varchar(100)&#xa;  difficulty : varchar [EASY|MEDIUM|HARD]&#xa;  status : varchar [DRAFT | PUBLISHED]&#xa;  created_by : uuid [FK → user_profiles]&#xa;  created_at : timestamptz&#xa;  updated_at : timestamptz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;align=left;spacingLeft=12;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="80" width="320" height="190" as="geometry" />
         </mxCell>
 
-        <!-- USER_PROGRESS -->
-        <mxCell id="tbl_prog" value="USER_PROGRESS&#xa;--&#xa;* id : uuid [PK]&#xa;* device_uuid : varchar [UK]&#xa;  display_name : varchar&#xa;  total_xp : integer&#xa;  current_streak : integer&#xa;  longest_streak : integer&#xa;  words_learned : integer&#xa;  last_sync_at : timestamptz" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e5f5;strokeColor=#9c27b0;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="40" y="440" width="220" height="170" as="geometry" />
+        <!-- badges -->
+        <mxCell id="tbl_b" value="badges&#xa;────────────&#xa;* id : bigint [PK, auto-increment]&#xa;  name : varchar(100)&#xa;  description : text&#xa;  icon : varchar(10) [emoji]&#xa;  condition_type : varchar&#xa;    [STREAK|SCAN|WORDS_SAVED|QUIZ_PERFECT]&#xa;  condition_value : integer&#xa;  created_at : timestamptz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D6B656;align=left;spacingLeft=12;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="80" width="330" height="170" as="geometry" />
         </mxCell>
 
-        <!-- FLASHCARDS -->
-        <mxCell id="tbl_flash" value="FLASHCARDS&#xa;--&#xa;* id : uuid [PK]&#xa;+ user_id : uuid [FK]&#xa;+ word_id : bigint [FK]&#xa;  image_path : text&#xa;  ease_factor : decimal&#xa;  interval_days : integer&#xa;  repetitions : integer&#xa;  next_review_at : timestamptz&#xa;  is_synced : boolean" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#fbc02d;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="320" y="260" width="230" height="200" as="geometry" />
+        <!-- ══════════════════════════════════════════════════════ -->
+        <!-- ROW 2: flashcards | user_progress | lesson_words      -->
+        <!-- ══════════════════════════════════════════════════════ -->
+
+        <!-- flashcards -->
+        <mxCell id="tbl_f" value="flashcards&#xa;────────────&#xa;* id : uuid [PK]&#xa;+ user_id : uuid [FK → user_profiles]&#xa;+ word_id : bigint [FK → words]&#xa;  ease_factor : decimal(4,2) [default 2.5]&#xa;  interval_days : integer [default 1]&#xa;  repetitions : integer [default 0]&#xa;  next_review_at : timestamptz&#xa;  created_at : timestamptz&#xa;  updated_at : timestamptz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;align=left;spacingLeft=12;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="310" width="320" height="200" as="geometry" />
         </mxCell>
 
-        <!-- REVIEW_LOGS -->
-        <mxCell id="tbl_logs" value="REVIEW_LOGS&#xa;--&#xa;* id : uuid [PK]&#xa;+ flashcard_id : uuid [FK]&#xa;  quality : smallint&#xa;  reviewed_at : timestamptz&#xa;  new_interval : integer&#xa;  new_ease_factor : decimal" style="swipeable;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff3e0;strokeColor=#ef6c00;align=left;spacingLeft=10;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="600" y="260" width="220" height="150" as="geometry" />
+        <!-- user_progress -->
+        <mxCell id="tbl_prog" value="user_progress&#xa;────────────&#xa;* id : uuid [PK]&#xa;* user_id : uuid [UK, FK → user_profiles]&#xa;  total_xp : integer [default 0]&#xa;  level : integer [default 1]&#xa;  current_streak : integer [default 0]&#xa;  longest_streak : integer [default 0]&#xa;  words_learned : integer [default 0]&#xa;  last_study_at : timestamptz&#xa;  last_sync_at : timestamptz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;align=left;spacingLeft=12;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="370" width="330" height="195" as="geometry" />
         </mxCell>
 
-        <!-- Relationships -->
-        <!-- USERS 1 * REFRESH_TOKENS -->
-        <mxCell id="rel_usr_tok" value="1 : N (has)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#e91e63;" edge="1" parent="1" source="tbl_users" target="tbl_tokens">
+        <!-- lesson_words (junction) -->
+        <mxCell id="tbl_lw" value="lesson_words&#xa;────────────&#xa;* lesson_id : bigint [FK → lessons]&#xa;* word_id : bigint [FK → words]&#xa;  [PK: (lesson_id, word_id)]&#xa;  sort_order : integer&#xa;  created_at : timestamptz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;align=left;spacingLeft=12;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="340" width="300" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- user_badges (junction) -->
+        <mxCell id="tbl_ub" value="user_badges&#xa;────────────&#xa;* user_id : uuid [FK → user_profiles]&#xa;* badge_id : bigint [FK → badges]&#xa;  [PK: (user_id, badge_id)]&#xa;  unlocked_at : timestamptz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE6CC;strokeColor=#D6B656;align=left;spacingLeft=12;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="320" width="300" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════════ -->
+        <!-- ROW 3: user_lesson_progress | quiz_questions          -->
+        <!-- ══════════════════════════════════════════════════════ -->
+
+        <!-- user_lesson_progress -->
+        <mxCell id="tbl_ulp" value="user_lesson_progress&#xa;────────────&#xa;* id : uuid [PK]&#xa;+ user_id : uuid [FK → user_profiles]&#xa;+ lesson_id : bigint [FK → lessons]&#xa;  progress_pct : integer [0-100]&#xa;  is_completed : boolean [default false]&#xa;  last_studied_at : timestamptz&#xa;  created_at : timestamptz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;align=left;spacingLeft=12;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="590" width="320" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- quiz_questions -->
+        <mxCell id="tbl_qq" value="quiz_questions&#xa;────────────&#xa;* id : bigint [PK, auto-increment]&#xa;+ lesson_id : bigint [FK → lessons]&#xa;+ word_id : bigint [FK → words]&#xa;  question_type : varchar [MCQ | FILL_BLANK]&#xa;  question_text : text&#xa;  correct_answer : text&#xa;  options : jsonb [choices array]&#xa;  created_at : timestamptz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;align=left;spacingLeft=12;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="640" width="330" height="190" as="geometry" />
+        </mxCell>
+
+        <!-- learning_events -->
+        <mxCell id="tbl_le" value="learning_events&#xa;────────────&#xa;* id : uuid [PK]&#xa;+ user_id : uuid [FK → user_profiles]&#xa;  event_type : varchar&#xa;    [SCAN | WORD_SAVED | LESSON | QUIZ | REVIEW]&#xa;  word_id : bigint [FK → words, nullable]&#xa;  xp_earned : integer [default 0]&#xa;  metadata : jsonb [extra data]&#xa;  occurred_at : timestamptz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;align=left;spacingLeft=12;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="820" y="550" width="330" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- notification_settings -->
+        <mxCell id="tbl_ns" value="notification_settings&#xa;────────────&#xa;* id : uuid [PK]&#xa;* user_id : uuid [UK, FK → user_profiles]&#xa;  is_enabled : boolean [default true]&#xa;  reminder_hour : smallint [0-23]&#xa;  reminder_minute : smallint [0-59]&#xa;  updated_at : timestamptz" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;align=left;spacingLeft=12;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1210" y="520" width="320" height="160" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════════ -->
+        <!-- RELATIONSHIPS                                          -->
+        <!-- ══════════════════════════════════════════════════════ -->
+
+        <!-- user_profiles 1:1 user_progress -->
+        <mxCell id="rel_up_prog" value="1 : 1&#xa;has" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#B85450;strokeWidth=2;startArrow=ERone;endArrow=ERone;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_up" target="tbl_prog">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
-        <!-- USERS 1 * DECKS -->
-        <mxCell id="rel_usr_deck" value="1 : N (creates)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#0288d1;" edge="1" parent="1" source="tbl_users" target="tbl_decks">
+        <!-- user_profiles 1:N flashcards -->
+        <mxCell id="rel_up_f" value="1 : N&#xa;saves" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#D6B656;strokeWidth=2;startArrow=ERone;endArrow=ERmanyToOne;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_up" target="tbl_f">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
-        <!-- USERS 1 * FLASHCARDS -->
-        <mxCell id="rel_usr_flash" value="1 : N (owns)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#fbc02d;" edge="1" parent="1" source="tbl_users" target="tbl_flash">
-          <mxGeometry relative="1" as="geometry">
-            <Array as="points">
-              <mxPoint x="150" y="240" />
-              <mxPoint x="360" y="240" />
-            </Array>
-          </mxGeometry>
-        </mxCell>
-
-        <!-- WORDS 1 * FLASHCARDS -->
-        <mxCell id="rel_word_flash" value="1 : N (referenced by)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#2e7d32;" edge="1" parent="1" source="tbl_words" target="tbl_flash">
+        <!-- words 1:N flashcards -->
+        <mxCell id="rel_w_f" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#D6B656;strokeWidth=2;startArrow=ERone;endArrow=ERmanyToOne;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_w" target="tbl_f">
           <mxGeometry relative="1" as="geometry" />
         </mxCell>
 
-        <!-- FLASHCARDS 1 * REVIEW_LOGS -->
-        <mxCell id="rel_flash_log" value="1 : N (has logs)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#ef6c00;" edge="1" parent="1" source="tbl_flash" target="tbl_logs">
+        <!-- lessons N:M words (via lesson_words) -->
+        <mxCell id="rel_l_lw" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#6C8EBF;strokeWidth=2;startArrow=ERone;endArrow=ERmanyToOne;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_l" target="tbl_lw">
           <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_w_lw" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#6C8EBF;strokeWidth=2;startArrow=ERone;endArrow=ERmanyToOne;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_w" target="tbl_lw">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- user_profiles N:M badges (via user_badges) -->
+        <mxCell id="rel_up_ub" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#D6B656;strokeWidth=2;startArrow=ERone;endArrow=ERmanyToOne;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_up" target="tbl_ub">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_b_ub" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#D6B656;strokeWidth=2;startArrow=ERone;endArrow=ERmanyToOne;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_b" target="tbl_ub">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- user_profiles 1:N user_lesson_progress -->
+        <mxCell id="rel_up_ulp" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#9673A6;strokeWidth=2;startArrow=ERone;endArrow=ERmanyToOne;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_up" target="tbl_ulp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- lessons 1:N user_lesson_progress -->
+        <mxCell id="rel_l_ulp" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#6C8EBF;strokeWidth=2;startArrow=ERone;endArrow=ERmanyToOne;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_l" target="tbl_ulp">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- lessons 1:N quiz_questions -->
+        <mxCell id="rel_l_qq" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#82B366;strokeWidth=2;startArrow=ERone;endArrow=ERmanyToOne;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_l" target="tbl_qq">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- words 1:N quiz_questions -->
+        <mxCell id="rel_w_qq" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#82B366;strokeWidth=2;startArrow=ERone;endArrow=ERmanyToOne;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_w" target="tbl_qq">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- user_profiles 1:N learning_events -->
+        <mxCell id="rel_up_le" value="1 : N&#xa;logs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#B85450;strokeWidth=2;startArrow=ERone;endArrow=ERmanyToOne;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_up" target="tbl_le">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- user_profiles 1:1 notification_settings -->
+        <mxCell id="rel_up_ns" value="1 : 1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;html=1;fontSize=10;fontStyle=1;strokeColor=#6C8EBF;strokeWidth=2;startArrow=ERone;endArrow=ERone;startFill=0;endFill=0;" edge="1" parent="1" source="tbl_up" target="tbl_ns">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ══════════════════════════════════════════════════════ -->
+        <!-- SUPABASE AUTH LINK NOTE                               -->
+        <!-- ══════════════════════════════════════════════════════ -->
+        <mxCell id="supa_auth_box" value="🔑 Supabase Auth&#xa;(auth.users)&#xa;― email, password_hash&#xa;― Google OAuth info&#xa;― Session tokens&#xa;― id (UUID) →" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="1560" y="80" width="220" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rel_auth_up" value="Supabase Auth ID&#xa;liên kết với&#xa;user_profiles.id" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;fontStyle=2;strokeColor=#1565C0;strokeWidth=2;dashed=1;" edge="1" parent="1" source="supa_auth_box" target="tbl_up">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- LEGEND -->
+        <mxCell id="legend" value="Chú giải loại quan hệ" style="swimlane;startSize=25;collapsible=0;rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="820" width="400" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_1n" value="1 : N — Một bản ghi liên kết nhiều bản ghi" style="text;html=1;fillColor=none;fontSize=11;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="30" width="380" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_11" value="1 : 1 — Một bản ghi liên kết một bản ghi" style="text;html=1;fillColor=none;fontSize=11;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="58" width="380" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_junc" value="Bảng nối (Junction): lesson_words, user_badges" style="text;html=1;fillColor=none;fontSize=11;fontStyle=2;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="86" width="380" height="25" as="geometry" />
         </mxCell>
 
       </root>

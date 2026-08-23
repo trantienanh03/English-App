@@ -1,151 +1,206 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mxfile host="drawio" version="26.0.0">
-  <diagram name="Sequence Auth JWT" id="seq-auth-04">
-    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+  <diagram name="Sequence Auth JWT" id="seq-auth-vocam-v2">
+    <mxGraphModel dx="1400" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="900" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
 
-        <!-- Lifelines -->
-        <mxCell id="p_user" value="User&#xa;(Nguoi dung)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
-          <mxGeometry x="80" y="40" width="30" height="60" as="geometry" />
+        <!-- Title -->
+        <mxCell id="title" value="Biểu đồ Tuần tự — Đăng nhập &amp; Xác thực JWT (Supabase Auth + Spring Security)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontStyle=1;fontColor=#1A237E;" vertex="1" parent="1">
+          <mxGeometry x="60" y="15" width="1540" height="35" as="geometry" />
         </mxCell>
-        <mxCell id="line_user" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_user">
+
+        <!-- ══════════════ LIFELINES ══════════════ -->
+        <mxCell id="p_user" value="👤 Người học&#xa;(Learner)" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fillColor=#64B5F6;strokeColor=#1976D2;fontStyle=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="60" y="65" width="50" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="line_user" style="edgeStyle=none;dashed=1;html=1;endArrow=none;strokeColor=#424242;" edge="1" parent="1" source="p_user">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="95" y="640" as="targetPoint" />
+            <mxPoint x="85" y="810" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="p_app" value="Mobile App&#xa;(React Native)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1f5fe;strokeColor=#0288d1;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="220" y="50" width="140" height="50" as="geometry" />
+        <mxCell id="p_app" value="📱 Mobile App&#xa;(React Native / Expo)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#A5D6A7;strokeColor=#388E3C;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="230" y="70" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="line_app" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_app">
+        <mxCell id="line_app" style="edgeStyle=none;dashed=1;html=1;endArrow=none;strokeColor=#388E3C;" edge="1" parent="1" source="p_app">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="290" y="640" as="targetPoint" />
+            <mxPoint x="310" y="810" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="p_store" value="AsyncStorage&#xa;(Local Storage)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff9c4;strokeColor=#fbc02d;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="430" y="50" width="140" height="50" as="geometry" />
+        <mxCell id="p_supa_auth" value="🔑 Supabase Auth&#xa;(Identity Service)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1565C0;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="490" y="70" width="160" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="line_store" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_store">
+        <mxCell id="line_supa" style="edgeStyle=none;dashed=1;html=1;endArrow=none;strokeColor=#1565C0;" edge="1" parent="1" source="p_supa_auth">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="500" y="640" as="targetPoint" />
+            <mxPoint x="570" y="810" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="p_api" value="Spring Boot API&#xa;(AuthController)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="640" y="50" width="140" height="50" as="geometry" />
+        <mxCell id="p_async" value="💾 AsyncStorage&#xa;(Local Cache)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9C4;strokeColor=#F9A825;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="755" y="70" width="150" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="line_api" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_api">
+        <mxCell id="line_async" style="edgeStyle=none;dashed=1;html=1;endArrow=none;strokeColor=#F9A825;" edge="1" parent="1" source="p_async">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="710" y="640" as="targetPoint" />
+            <mxPoint x="830" y="810" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="p_db" value="PostgreSQL DB&#xa;(users, refresh_tokens)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#d1c4e9;strokeColor=#512da8;fontStyle=1;fontSize=11;" vertex="1" parent="1">
-          <mxGeometry x="840" y="40" width="120" height="60" as="geometry" />
+        <mxCell id="p_spring" value="⚙️ Spring Boot&#xa;JwtFilter (Spring Security)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C5CAE9;strokeColor=#3949AB;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="70" width="170" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="line_db" style="edgeStyle=none;dashed=1;html=1;endArrow=none;" edge="1" parent="1" source="p_db">
+        <mxCell id="line_spring" style="edgeStyle=none;dashed=1;html=1;endArrow=none;strokeColor=#3949AB;" edge="1" parent="1" source="p_spring">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="900" y="640" as="targetPoint" />
+            <mxPoint x="1095" y="810" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <!-- Messages -->
-        <mxCell id="m1" value="1. Nhap email + password" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;" edge="1" parent="1">
+        <mxCell id="p_db" value="🗄️ PostgreSQL&#xa;(Supabase DB)" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#D1C4E9;strokeColor=#512DA8;fontStyle=1;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1280" y="60" width="140" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="line_db" style="edgeStyle=none;dashed=1;html=1;endArrow=none;strokeColor=#512DA8;" edge="1" parent="1" source="p_db">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="95" y="140" as="sourcePoint" />
-            <mxPoint x="290" y="140" as="targetPoint" />
+            <mxPoint x="1350" y="810" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="m2" value="2. POST /api/auth/login (email, password)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#1976d2;" edge="1" parent="1">
+        <!-- ══════════════════════════════════════════════════ -->
+        <!-- SECTION A: ĐĂNG NHẬP (Email + Password)           -->
+        <!-- ══════════════════════════════════════════════════ -->
+        <mxCell id="sec_a" value="A. Luồng Đăng nhập (Email + Password) — Supabase Auth xử lý" style="text;html=1;fillColor=#E3F2FD;strokeColor=#1565C0;rounded=1;fontSize=12;fontStyle=1;fontColor=#0D47A1;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="160" width="680" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m1" value="1. Nhập email + mật khẩu → nhấn Đăng nhập" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;strokeColor=#388E3C;strokeWidth=2;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="290" y="175" as="sourcePoint" />
-            <mxPoint x="710" y="175" as="targetPoint" />
+            <mxPoint x="85" y="210" as="sourcePoint" />
+            <mxPoint x="310" y="210" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="m3" value="3. SELECT user WHERE email = ?" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#512da8;" edge="1" parent="1">
+        <mxCell id="m2" value="2. signInWithPassword({ email, password })" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;strokeColor=#1565C0;strokeWidth=2;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="710" y="205" as="sourcePoint" />
-            <mxPoint x="900" y="205" as="targetPoint" />
+            <mxPoint x="310" y="240" as="sourcePoint" />
+            <mxPoint x="570" y="240" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="m4" value="4. User Entity (with password_hash)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#512da8;" edge="1" parent="1">
+        <mxCell id="m3" value="3. Xác minh thông tin đăng nhập trong DB Supabase Auth" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;fontStyle=2;strokeColor=#512DA8;strokeWidth=1;dashed=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="900" y="235" as="sourcePoint" />
-            <mxPoint x="710" y="235" as="targetPoint" />
+            <mxPoint x="570" y="270" as="sourcePoint" />
+            <mxPoint x="1350" y="270" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="m5" value="5. BCrypt.verify(password, hash)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;curved=1;" edge="1" parent="1">
+        <mxCell id="m4" value="4. Tạo JWT Access Token { sub, role, email, exp }" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=9;fontStyle=2;strokeColor=#512DA8;dashed=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="710" y="255" as="sourcePoint" />
-            <mxPoint x="710" y="275" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="745" y="255" />
-              <mxPoint x="745" y="275" />
-            </Array>
+            <mxPoint x="1350" y="300" as="sourcePoint" />
+            <mxPoint x="570" y="300" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <!-- Alt Frame: Success vs Fail -->
-        <mxCell id="frame_alt" value="alt [Xac thuc thanh cong]" style="swimlane;startSize=20;collapsible=0;rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#388e3c;fontStyle=1;fontSize=10;" vertex="1" parent="1">
-          <mxGeometry x="260" y="290" width="670" height="190" as="geometry" />
-        </mxCell>
-
-        <mxCell id="m6_sign" value="6. Sign JWT accessToken (15m) &amp; refreshToken (30d)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;curved=1;strokeColor=#2e7d32;" edge="1" parent="1">
+        <mxCell id="m5" value="5. { access_token, user } ← trả về App" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;strokeColor=#1565C0;strokeWidth=2;dashed=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="710" y="325" as="sourcePoint" />
-            <mxPoint x="710" y="345" as="targetPoint" />
-            <Array as="points">
-              <mxPoint x="745" y="325" />
-              <mxPoint x="745" y="345" />
-            </Array>
+            <mxPoint x="570" y="330" as="sourcePoint" />
+            <mxPoint x="310" y="330" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="m7_save_token" value="7. INSERT refresh_token hash" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#512da8;" edge="1" parent="1">
+        <mxCell id="m6" value="6. Lưu JWT Token vào AsyncStorage (cache phiên)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;strokeColor=#F9A825;strokeWidth=2;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="710" y="370" as="sourcePoint" />
-            <mxPoint x="900" y="370" as="targetPoint" />
+            <mxPoint x="310" y="360" as="sourcePoint" />
+            <mxPoint x="830" y="360" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="m8_res_ok" value="8. 200 OK (accessToken, refreshToken, user)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#2e7d32;fontStyle=1;" edge="1" parent="1">
+        <mxCell id="m7" value="7. Chuyển đến màn hình chính (Đăng nhập thành công)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;strokeColor=#388E3C;strokeWidth=2;dashed=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="710" y="405" as="sourcePoint" />
-            <mxPoint x="290" y="405" as="targetPoint" />
+            <mxPoint x="310" y="390" as="sourcePoint" />
+            <mxPoint x="85" y="390" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="m9_store" value="9. setItem(accessToken, refreshToken)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;" edge="1" parent="1">
+        <!-- ══════════════════════════════════════════════════ -->
+        <!-- SECTION B: GỌI API BẢO VỆ → SPRING SECURITY       -->
+        <!-- ══════════════════════════════════════════════════ -->
+        <mxCell id="sec_b" value="B. Luồng Gọi API được Bảo vệ — Spring Security JwtFilter Xác minh" style="text;html=1;fillColor=#E8EAF6;strokeColor=#3949AB;rounded=1;fontSize=12;fontStyle=1;fontColor=#1A237E;align=left;spacingLeft=8;" vertex="1" parent="1">
+          <mxGeometry x="60" y="430" width="1340" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m8" value="8. Thực hiện thao tác (VD: Lưu flashcard, Đồng bộ XP)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;strokeColor=#388E3C;strokeWidth=2;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="290" y="440" as="sourcePoint" />
-            <mxPoint x="500" y="440" as="targetPoint" />
+            <mxPoint x="85" y="480" as="sourcePoint" />
+            <mxPoint x="310" y="480" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <!-- Refresh Section Note -->
-        <mxCell id="note_refresh" value="Khi accessToken het han (Sau 15 phut) — Auto Refresh Flow" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;darkOpacity=0.05;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=10;fontStyle=1;" vertex="1" parent="1">
-          <mxGeometry x="270" y="500" width="650" height="30" as="geometry" />
-        </mxCell>
-
-        <mxCell id="m10_ref" value="10. POST /api/auth/refresh (refreshToken)" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#1976d2;" edge="1" parent="1">
+        <mxCell id="m9" value="9. Lấy JWT từ AsyncStorage" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;strokeColor=#F9A825;strokeWidth=2;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="290" y="550" as="sourcePoint" />
-            <mxPoint x="710" y="550" as="targetPoint" />
+            <mxPoint x="310" y="510" as="sourcePoint" />
+            <mxPoint x="830" y="510" as="targetPoint" />
           </mxGeometry>
         </mxCell>
 
-        <mxCell id="m11_new_token" value="11. 200 OK (newAccessToken)" style="edgeStyle=orthogonalEdgeStyle;dashed=1;html=1;fontSize=10;strokeColor=#1976d2;fontStyle=1;" edge="1" parent="1">
+        <mxCell id="m9r" value="JWT Token" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#F9A825;dashed=1;" edge="1" parent="1">
           <mxGeometry relative="1" as="geometry">
-            <mxPoint x="710" y="590" as="sourcePoint" />
-            <mxPoint x="290" y="590" as="targetPoint" />
+            <mxPoint x="830" y="535" as="sourcePoint" />
+            <mxPoint x="310" y="535" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m10" value="10. POST /api/sync/progress&#xa;    Header: Authorization: Bearer &lt;JWT_ACCESS_TOKEN&gt;" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;strokeColor=#3949AB;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="310" y="570" as="sourcePoint" />
+            <mxPoint x="1095" y="570" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- JwtFilter box -->
+        <mxCell id="jwt_box" value="JwtFilter xử lý:" style="swimlane;startSize=20;rounded=1;whiteSpace=wrap;html=1;fillColor=#E8EAF6;strokeColor=#3949AB;fontSize=10;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="590" width="260" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="jb1" value="① Trích xuất Token từ Header" style="text;html=1;fillColor=none;fontSize=9;align=left;spacingLeft=5;" vertex="1" parent="jwt_box">
+          <mxGeometry x="10" y="25" width="240" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="jb2" value="② Xác minh chữ ký (Supabase JWT Secret)" style="text;html=1;fillColor=none;fontSize=9;align=left;spacingLeft=5;" vertex="1" parent="jwt_box">
+          <mxGeometry x="10" y="48" width="240" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="jb3" value="③ Kiểm tra thời hạn (exp claim)" style="text;html=1;fillColor=none;fontSize=9;align=left;spacingLeft=5;" vertex="1" parent="jwt_box">
+          <mxGeometry x="10" y="71" width="240" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="jb4" value="④ Trích xuất role → LEARNER / ADMIN" style="text;html=1;fillColor=none;fontSize=9;align=left;spacingLeft=5;" vertex="1" parent="jwt_box">
+          <mxGeometry x="10" y="94" width="240" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="jb5" value="⑤ Set SecurityContextHolder (Authentication)" style="text;html=1;fillColor=none;fontSize=9;align=left;spacingLeft=5;fontStyle=1;" vertex="1" parent="jwt_box">
+          <mxGeometry x="10" y="117" width="240" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="m11ok" value="11a. Token hợp lệ → Cho phép truy cập Service" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;strokeColor=#388E3C;strokeWidth=2;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1095" y="770" as="sourcePoint" />
+            <mxPoint x="1350" y="770" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m12" value="12. Đọc/Ghi dữ liệu nghiệp vụ" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;strokeColor=#512DA8;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1095" y="790" as="sourcePoint" />
+            <mxPoint x="1350" y="790" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="m11err" value="11b. Token không hợp lệ / hết hạn → 401 Unauthorized" style="edgeStyle=orthogonalEdgeStyle;html=1;fontSize=10;fontStyle=1;strokeColor=#D32F2F;strokeWidth=2;dashed=1;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="1095" y="755" as="sourcePoint" />
+            <mxPoint x="310" y="755" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Note -->
+        <mxCell id="important_note" value="⚠️ QUAN TRỌNG:&#xa;Spring Boot KHÔNG tự sinh JWT.&#xa;Chỉ xác minh JWT do Supabase Auth cấp.&#xa;Không lưu Refresh Token trong DB riêng." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFCCCC;strokeColor=#D32F2F;fontSize=11;fontStyle=1;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="800" y="650" width="290" height="100" as="geometry" />
         </mxCell>
 
       </root>
