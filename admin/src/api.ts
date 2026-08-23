@@ -55,6 +55,10 @@ export async function getLeaderboard(): Promise<any[]> {
   return apiFetch('/api/leaderboard');
 }
 
+export async function toggleUserLock(deviceUuid: string): Promise<{ deviceUuid: string; status: string }> {
+  return apiFetch(`/api/admin/users/${deviceUuid}/toggle-lock`, { method: 'POST' });
+}
+
 /* ─── Words ────────────────────────────────────────────────────────────────── */
 export async function getAllWords(): Promise<any[]> {
   return apiFetch('/api/words');
@@ -71,3 +75,32 @@ export async function updateWord(id: number, data: any): Promise<any> {
 export async function deleteWord(id: number): Promise<void> {
   return apiFetch(`/api/admin/words/${id}`, { method: 'DELETE' });
 }
+
+/* ─── Supabase Storage Upload ────────────────────────────────────────── */
+export async function uploadVocabularyImage(file: File): Promise<string> {
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+    throw new Error('Chưa cấu hình Supabase URL/Anon Key');
+  }
+  const ext = file.name.split('.').pop() || 'png';
+  const fileName = `word_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
+  const filePath = `vocab/${fileName}`;
+
+  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/vocabulary-images/${filePath}`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${_token || SUPABASE_ANON_KEY}`,
+      'Content-Type': file.type || 'image/jpeg',
+    },
+    body: file,
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Upload failed: ${errText}`);
+  }
+
+  // Public URL
+  return `${SUPABASE_URL}/storage/v1/object/public/vocabulary-images/${filePath}`;
+}
+

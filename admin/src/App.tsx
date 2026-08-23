@@ -15,6 +15,7 @@ interface Word {
   translation: string;
   exampleEn: string;
   exampleVn: string;
+  imageUrl?: string;
 }
 
 interface LeaderboardEntry {
@@ -24,9 +25,10 @@ interface LeaderboardEntry {
   totalXp: number;
   currentStreak: number;
   wordsLearned: number;
+  status?: string;
 }
 
-type Page = 'dashboard' | 'words' | 'users';
+type Page = 'dashboard' | 'words' | 'users' | 'lessons';
 
 const DIFFICULTY_COLORS: Record<string, string> = {
   Noun: 'badge-learner',
@@ -333,6 +335,32 @@ function WordsPage() {
               <label>Câu ví dụ tiếng Việt</label>
               <textarea value={editWord.exampleVn || ''} onChange={e => setEditWord(p => ({ ...p, exampleVn: e.target.value }))} placeholder="vd: Cô ấy uống nước từ cái cốc." />
             </div>
+            <div className="form-group">
+              <label>Hình ảnh minh họa (Supabase Storage)</label>
+              {editWord.imageUrl && (
+                <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <img src={editWord.imageUrl} alt="preview" style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8 }} />
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', wordBreak: 'break-all' }}>{editWord.imageUrl}</span>
+                </div>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try {
+                    setSaving(true);
+                    const url = await api.uploadVocabularyImage(file);
+                    setEditWord(p => ({ ...p, imageUrl: url }));
+                  } catch (err: any) {
+                    alert('Lỗi tải ảnh: ' + err.message);
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+              />
+            </div>
             <div className="modal-footer">
               <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Hủy</button>
               <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
@@ -366,6 +394,15 @@ function UsersPage() {
     e.deviceUuid?.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleToggleLock = async (deviceUuid: string) => {
+    try {
+      const res = await api.toggleUserLock(deviceUuid);
+      setEntries(prev => prev.map(e => e.deviceUuid === deviceUuid ? { ...e, status: res.status } : e));
+    } catch (err: any) {
+      alert('Lỗi đổi trạng thái: ' + err.message);
+    }
+  };
+
   if (loading) return <div className="loading-bar" />;
 
   return (
@@ -384,10 +421,12 @@ function UsersPage() {
           <tr>
             <th>Hạng</th>
             <th>Tên hiển thị</th>
+            <th>Trạng thái</th>
             <th>Tổng XP</th>
             <th>Streak hiện tại</th>
             <th>Từ đã học</th>
             <th>Device UUID</th>
+            <th style={{ textAlign: 'right' }}>Thao tác</th>
           </tr>
         </thead>
         <tbody>
@@ -395,17 +434,104 @@ function UsersPage() {
             <tr key={e.deviceUuid}>
               <td>{e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : `#${e.rank}`}</td>
               <td style={{ fontWeight: 600 }}>{e.displayName || 'Ẩn danh'}</td>
+              <td>
+                <span className={`badge ${e.status === 'LOCKED' ? 'badge-hard' : 'badge-success'}`}>
+                  {e.status === 'LOCKED' ? '🔒 Đã khóa' : '🟢 Hoạt động'}
+                </span>
+              </td>
               <td><span className="badge badge-learner">{e.totalXp} XP</span></td>
               <td>🔥 {e.currentStreak} ngày</td>
               <td>{e.wordsLearned} từ</td>
               <td style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)' }}>
                 {e.deviceUuid.slice(0, 16)}...
               </td>
+              <td style={{ textAlign: 'right' }}>
+                <button
+                  className={`btn ${e.status === 'LOCKED' ? 'btn-ghost' : 'btn-danger'}`}
+                  style={{ fontSize: 12, padding: '4px 10px' }}
+                  onClick={() => handleToggleLock(e.deviceUuid)}
+                >
+                  {e.status === 'LOCKED' ? '🔓 Mở khóa' : '🔒 Khóa'}
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
       {filtered.length === 0 && <div className="empty-state">Chưa có dữ liệu người dùng</div>}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   Lessons Page
+══════════════════════════════════════════════════════════ */
+interface LessonItem {
+  id: string;
+  title: string;
+  topic: string;
+  wordCount: number;
+  status: 'PUBLISHED' | 'DRAFT';
+}
+
+function LessonsPage() {
+  const [lessons, setLessons] = useState<LessonItem[]>([
+    { id: 'l1', title: 'Từ vựng Học đường & Văn phòng', topic: 'School & Office', wordCount: 15, status: 'PUBLISHED' },
+    { id: 'l2', title: 'Động vật quanh ta', topic: 'Animals', wordCount: 12, status: 'PUBLISHED' },
+    { id: 'l3', title: 'Phương tiện Giao thông', topic: 'Vehicles', wordCount: 10, status: 'PUBLISHED' },
+    { id: 'l4', title: 'Đồ dùng Nhà bếp & Thực phẩm', topic: 'Kitchen & Food', wordCount: 18, status: 'DRAFT' },
+    { id: 'l5', title: 'Thể thao & Giải trí', topic: 'Sports', wordCount: 14, status: 'DRAFT' },
+  ]);
+
+  const toggleStatus = (id: string) => {
+    setLessons(prev => prev.map(l => l.id === id ? {
+      ...l,
+      status: l.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'
+    } : l));
+  };
+
+  return (
+    <div className="table-card">
+      <div className="table-header">
+        <div className="table-title">📚 Quản lý bài học ({lessons.length} chủ đề)</div>
+        <button className="btn btn-primary" onClick={() => alert('Đã thêm bài học nháp mới')}>+ Tạo bài học mới</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Mã bài</th>
+            <th>Tên bài học</th>
+            <th>Chủ đề</th>
+            <th>Số từ vựng</th>
+            <th>Trạng thái</th>
+            <th style={{ textAlign: 'right' }}>Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          {lessons.map(l => (
+            <tr key={l.id}>
+              <td><code>{l.id}</code></td>
+              <td style={{ fontWeight: 600 }}>{l.title}</td>
+              <td>{l.topic}</td>
+              <td>{l.wordCount} từ</td>
+              <td>
+                <span className={`badge ${l.status === 'PUBLISHED' ? 'badge-success' : 'badge-medium'}`}>
+                  {l.status === 'PUBLISHED' ? '✅ Đã xuất bản' : '📝 Đang soạn thảo'}
+                </span>
+              </td>
+              <td style={{ textAlign: 'right' }}>
+                <button
+                  className={`btn ${l.status === 'PUBLISHED' ? 'btn-ghost' : 'btn-primary'}`}
+                  style={{ fontSize: 12, padding: '4px 10px' }}
+                  onClick={() => toggleStatus(l.id)}
+                >
+                  {l.status === 'PUBLISHED' ? 'Chuyển Nháp' : 'Xuất bản'}
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -435,6 +561,7 @@ export default function App() {
     dashboard: '📊 Tổng quan',
     words: '📖 Quản lý từ vựng',
     users: '👥 Người dùng',
+    lessons: '📚 Quản lý bài học',
   };
 
   return (
