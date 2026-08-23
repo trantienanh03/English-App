@@ -5,6 +5,7 @@ import org.englishapp.backend.service.UserService;
 import org.englishapp.backend.service.WordService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 import java.util.Map;
 import java.util.UUID;
@@ -32,15 +33,9 @@ public class AdminController {
         ));
     }
 
-    /** POST /api/admin/words — create or update canonical word */
-    @PostMapping("/words")
-    public ResponseEntity<WordDto> createWord(@RequestBody WordDto dto) {
-        return ResponseEntity.ok(wordService.createWord(dto));
-    }
-
     /** PUT /api/admin/words/{id} — update canonical word content/image */
     @PutMapping("/words/{id}")
-    public ResponseEntity<WordDto> updateWord(@PathVariable Long id, @RequestBody WordDto dto) {
+    public ResponseEntity<WordDto> updateWord(@PathVariable Long id, @Valid @RequestBody WordDto dto) {
         return ResponseEntity.ok(wordService.updateWord(id, dto));
     }
 

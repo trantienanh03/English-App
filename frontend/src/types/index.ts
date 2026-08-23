@@ -4,12 +4,18 @@ export interface VocabularyWord {
   phonetic: string;
   vn: string;
   pos: 'Noun' | 'Verb' | 'Adjective' | 'Adverb' | string;
+  definition?: string;        // English definition (e.g. "A small domesticated furry animal")
   sentence: string;
   sentenceVn?: string;
   difficulty: 'easy' | 'medium' | 'hard';
   imageUrl?: string;
   captured?: boolean; // scanned via object scanner
-  cocoClass?: string; // YOLO detection class name
+  detectionLabel?: string;
+  flashcardId?: string;
+  easinessFactor?: number;
+  repetitions?: number;
+  intervalDays?: number;
+  nextReviewAt?: string;
 }
 
 export interface Lesson {
@@ -22,26 +28,6 @@ export interface Lesson {
   wordCount: number;
   progress: number; // 0 to 100%
   words: VocabularyWord[];
-}
-
-export interface UserProgress {
-  streak: number;
-  xp: number;
-  level: number;
-  nextLevelXp: number;
-  wordsLearned: number;     // total flashcards saved by the user
-  scanCount: number;        // total objects successfully scanned
-  weeklyXp: { day: string; xp: number; active: boolean }[];
-  badges: Badge[];
-}
-
-export interface Badge {
-  id: string;
-  name: string;
-  description: string;
-  icon: string;
-  unlocked: boolean;
-  unlockedAt?: string;
 }
 
 export interface QuizQuestion {
@@ -60,10 +46,4 @@ export interface AppUser {
   avatar?: string;
   provider: 'google' | 'password';
   createdAt: string;
-}
-
-export interface OnboardingData {
-  level: string;
-  goals: string[];
-  dailyTime: string;
 }

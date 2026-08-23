@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Animated, Easing, StyleSheet, ViewStyle } from 'react-native';
 
 interface DotsLoaderProps {
@@ -19,8 +19,8 @@ export default function DotsLoader({
   gap = 8,
   style,
 }: DotsLoaderProps) {
-  const dot1Y = useRef(new Animated.Value(0)).current;
-  const dot2Y = useRef(new Animated.Value(0)).current;
+  const [dot1Y] = useState(() => new Animated.Value(0));
+  const [dot2Y] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     const makeBounce = (anim: Animated.Value) =>

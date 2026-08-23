@@ -21,7 +21,7 @@ interface SearchScreenProps {
   lessons: Lesson[];
   onClose: () => void;
   onStartLesson: (lessonId: string) => void;
-  onSaveWord?: (word: VocabularyWord) => void;
+  onSaveWord?: (word: VocabularyWord) => void | Promise<void>;
 }
 
 type FilterTab = 'all' | 'words' | 'lessons';
@@ -68,7 +68,7 @@ export default function SearchScreen({
 
   const showWords = activeFilter === 'all' || activeFilter === 'words';
   const showLessons = activeFilter === 'all' || activeFilter === 'lessons';
-  const hasResults = matchedWords.length > 0 || matchedLessons.length > 0;
+  const hasResults = (showWords && matchedWords.length > 0) || (showLessons && matchedLessons.length > 0);
 
   // Highlight matched substring in a string
   const highlight = (text: string): React.ReactNode => {
@@ -226,7 +226,11 @@ export default function SearchScreen({
           <LessonDetailScreen
             lesson={selectedLesson}
             onClose={() => setSelectedLesson(null)}
-            onStartLesson={onStartLesson}
+            onStartLesson={(lessonId) => {
+              setSelectedLesson(null);
+              onClose();
+              onStartLesson(lessonId);
+            }}
             onSaveWord={onSaveWord}
           />
         )}

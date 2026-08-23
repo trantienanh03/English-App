@@ -1,6 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { VocabularyWord } from '@/types';
+import { getContainedBoxLayout, sortBoxesForHitTesting } from './bounding-box-math';
+
+export { getContainedBoxLayout } from './bounding-box-math';
 
 export interface BoundingBoxItem {
   id: string; // Unique instance identifier e.g. "person_0"
@@ -43,57 +46,26 @@ export const BoundingBoxOverlay: React.FC<Props> = ({
   const imgW = imageWidth || 1920;
   const imgH = imageHeight || 1080;
 
-  // Aspect Contain Scaling & Offsets Calculation
-  let scale = 1;
-  let offsetX = 0;
-  let offsetY = 0;
-
-  if (cWidth > 0 && cHeight > 0) {
-    const containerAspect = cWidth / cHeight;
-    const imageAspect = imgW / imgH;
-
-    if (containerAspect > imageAspect) {
-      scale = cHeight / imgH;
-      offsetX = (cWidth - imgW * scale) / 2;
-      offsetY = 0;
-    } else {
-      scale = cWidth / imgW;
-      offsetX = 0;
-      offsetY = (cHeight - imgH * scale) / 2;
-    }
-  }
-
   // Sort detections by area descending so smallest box is rendered ON TOP and receives taps first!
-  const sortedDetections = [...detections].sort((a, b) => {
-    const areaA = (a.box.x2 - a.box.x1) * (a.box.y2 - a.box.y1);
-    const areaB = (b.box.x2 - b.box.x1) * (b.box.y2 - b.box.y1);
-    if (areaA !== areaB) {
-      return areaB - areaA; // Larger first, smaller last (on top)
-    }
-    return a.confidence - b.confidence;
-  });
+  const sortedDetections = sortBoxesForHitTesting(detections);
 
   return (
     <View style={styles.container} onLayout={onLayout} pointerEvents="box-none">
       {cWidth > 0 && cHeight > 0 && sortedDetections.map((item) => {
         const isSelected = selectedId === item.id || selectedLabel === item.label;
-        const left = offsetX + item.box.x1 * scale;
-        const top = offsetY + item.box.y1 * scale;
-        const width = (item.box.x2 - item.box.x1) * scale;
-        const height = (item.box.y2 - item.box.y1) * scale;
+        const position = getContainedBoxLayout(cWidth, cHeight, imgW, imgH, item.box);
+        if (!position) return null;
 
         return (
           <TouchableOpacity
             key={item.id}
             activeOpacity={0.8}
+            hitSlop={8}
             onPress={() => onSelectBox(item)}
             style={[
               styles.box,
               {
-                left: Math.max(0, left),
-                top: Math.max(0, top),
-                width: Math.max(width, 40),
-                height: Math.max(height, 30),
+                ...position,
                 borderColor: isSelected ? '#F59E0B' : '#10B981',
                 backgroundColor: isSelected ? 'rgba(245, 158, 11, 0.35)' : 'rgba(16, 185, 129, 0.15)',
                 borderWidth: isSelected ? 3 : 2,

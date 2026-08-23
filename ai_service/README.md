@@ -9,8 +9,8 @@
 
 ```text
 ai_service/
-├── models/             ← Chứa file trọng số mô hình đã fine-tune (best.pt)
-│   └── .gitkeep
+├── models/             ← Chứa trọng số fine-tune best.pt nếu có
+├── yolov8m-worldv2.pt  ← Mô hình YOLO-World mặc định
 ├── scripts/            ← Các kịch bản huấn luyện & xuất mô hình
 │   └── fine_tune.py    ← Script Fine-Tuning YOLO trên Google Colab / GPU
 ├── main.py             ← Server FastAPI cung cấp REST API (/predict, /health)
@@ -47,7 +47,7 @@ python main.py
 Server sẽ lắng nghe tại `http://localhost:8000`.
 - 📖 Tài liệu API tương tác (Swagger UI): `http://localhost:8000/docs`
 - 🟢 Endpoint kiểm tra health check: `GET http://localhost:8000/health`
-- 🎯 Endpoint dự đoán ảnh: `POST http://localhost:8000/predict`
+- 🎯 Endpoint dự đoán ảnh: `POST http://localhost:8000/predict-multi`
 
 ---
 
@@ -88,9 +88,9 @@ Chạy các ô lệnh trong Colab:
 
 ---
 
-## 📡 3. Cấu trúc Trả về của API `/predict`
+## 📡 3. Cấu trúc Trả về của API `/predict-multi`
 
-Khi gửi ảnh dạng `multipart/form-data` tới `POST /predict`, server trả về định dạng JSON:
+Khi gửi ảnh dạng `multipart/form-data` tới `POST /predict-multi`, server trả về định dạng JSON:
 
 ```json
 {

@@ -41,7 +41,7 @@ export const Palette = {
   },
 
   // ── Semantic — Phản hồi & trạng thái ────────────────────
-  /** Câu đúng, từ đã thuộc, streak active */
+  /** Câu đúng, từ đã thuộc */
   success: {
     text: '#1E6B3A',
     bg: '#E8F5EC',
@@ -51,7 +51,7 @@ export const Palette = {
     text: '#B03535',
     bg: '#FDF0F0',
   },
-  /** Streak warning, cần ôn hôm nay — nâu mật ong */
+  /** Cảnh báo, cần ôn hôm nay — nâu mật ong */
   warning: {
     text: '#8B6314',
     bg: '#FBF5E8',

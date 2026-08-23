@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { scheduleSM2ReviewNotification } from '@/utils/notification';
+import { cancelReviewNotification, hasScheduledReviewNotification, scheduleReviewNotification } from '@/utils/notification';
 
 interface ProfileScreenProps {
   userName: string;
@@ -29,13 +29,25 @@ export default function ProfileScreen({
   dueCardsCount,
   onLogout,
 }: ProfileScreenProps) {
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+  useEffect(() => { void hasScheduledReviewNotification().then(setNotificationsEnabled); }, []);
 
   const handleToggleNotifications = async (value: boolean) => {
-    setNotificationsEnabled(value);
-    if (value) {
-      await scheduleSM2ReviewNotification(dueCardsCount, 3600);
-      Alert.alert('Đã bật thông báo', 'Vocam sẽ nhắc nhở bạn khi có từ vựng cần ôn tập!');
+    try {
+      if (value) {
+        const identifier = await scheduleReviewNotification(dueCardsCount, 3600);
+        setNotificationsEnabled(Boolean(identifier));
+        Alert.alert(identifier ? 'Đã bật thông báo' : 'Không thể bật thông báo', identifier
+          ? 'Vocam sẽ nhắc bạn về các thẻ đang đến hạn.'
+          : dueCardsCount === 0 ? 'Hiện không có thẻ đến hạn để lên lịch.' : 'Quyền thông báo chưa được cấp.');
+      } else {
+        await cancelReviewNotification();
+        setNotificationsEnabled(false);
+      }
+    } catch {
+      setNotificationsEnabled(false);
+      Alert.alert('Không thể cập nhật thông báo', 'Vui lòng kiểm tra cài đặt hệ thống rồi thử lại.');
     }
   };
 

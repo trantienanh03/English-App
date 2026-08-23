@@ -12,8 +12,8 @@ public class Word {
     private Long id;
 
     // YOLO detection class name, e.g. "cup", "cat", "laptop" (Canonical Label — Protected)
-    @Column(name = "coco_class", nullable = false, unique = true, length = 50)
-    private String cocoClass;
+    @Column(name = "detection_label", nullable = false, unique = true, length = 100)
+    private String detectionLabel;
 
     @Column(name = "en_word", nullable = false, length = 100)
     private String enWord;
@@ -47,8 +47,8 @@ public class Word {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getCocoClass() { return cocoClass; }
-    public void setCocoClass(String cocoClass) { this.cocoClass = cocoClass; }
+    public String getDetectionLabel() { return detectionLabel; }
+    public void setDetectionLabel(String detectionLabel) { this.detectionLabel = detectionLabel; }
 
     public String getEnWord() { return enWord; }
     public void setEnWord(String enWord) { this.enWord = enWord; }

@@ -1,106 +1,68 @@
-/* ─── API Client ───────────────────────────────────────────────────────────── */
-const BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8080';
-const SUPABASE_URL = (import.meta as any).env?.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-let _token: string | null = null;
+let token: string | null = sessionStorage.getItem('vocam_admin_token');
 
-export function setToken(t: string) { _token = t; }
-export function clearToken() { _token = null; }
-export function getToken() { return _token; }
-
-async function apiFetch(path: string, opts: RequestInit = {}): Promise<any> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(opts.headers as any),
-  };
-  if (_token) headers['Authorization'] = `Bearer ${_token}`;
-
-  const res = await fetch(`${BASE_URL}${path}`, { ...opts, headers });
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `HTTP ${res.status}`);
-  }
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
+export function setToken(value: string | null) {
+  token = value;
+  if (value) sessionStorage.setItem('vocam_admin_token', value);
+  else sessionStorage.removeItem('vocam_admin_token');
 }
+export function getToken() { return token; }
 
-/* ─── Supabase Auth ────────────────────────────────────────────────────────── */
-export async function supabaseLogin(email: string, password: string): Promise<{ access_token: string; user: any }> {
-  const res = await fetch(
-    `${SUPABASE_URL}/auth/v1/token?grant_type=password`,
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SUPABASE_ANON_KEY,
-      },
-      body: JSON.stringify({ email, password }),
-    }
-  );
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error_description || 'Login failed');
-  }
-  return res.json();
-}
-
-/* ─── Stats ────────────────────────────────────────────────────────────────── */
-export async function getStats(): Promise<{ users: number; words: number; totalXp: number }> {
-  return apiFetch('/api/admin/stats');
-}
-
-/* ─── Users / Leaderboard ──────────────────────────────────────────────────── */
-export async function getLeaderboard(): Promise<any[]> {
-  return apiFetch('/api/leaderboard');
-}
-
-export async function toggleUserLock(deviceUuid: string): Promise<{ deviceUuid: string; status: string }> {
-  return apiFetch(`/api/admin/users/${deviceUuid}/toggle-lock`, { method: 'POST' });
-}
-
-/* ─── Words ────────────────────────────────────────────────────────────────── */
-export async function getAllWords(): Promise<any[]> {
-  return apiFetch('/api/words');
-}
-
-export async function createWord(data: any): Promise<any> {
-  return apiFetch('/api/admin/words', { method: 'POST', body: JSON.stringify(data) });
-}
-
-export async function updateWord(id: number, data: any): Promise<any> {
-  return apiFetch(`/api/admin/words/${id}`, { method: 'PUT', body: JSON.stringify(data) });
-}
-
-export async function deleteWord(id: number): Promise<void> {
-  return apiFetch(`/api/admin/words/${id}`, { method: 'DELETE' });
-}
-
-/* ─── Supabase Storage Upload ────────────────────────────────────────── */
-export async function uploadVocabularyImage(file: File): Promise<string> {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-    throw new Error('Chưa cấu hình Supabase URL/Anon Key');
-  }
-  const ext = file.name.split('.').pop() || 'png';
-  const fileName = `word_${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${ext}`;
-  const filePath = `vocab/${fileName}`;
-
-  const res = await fetch(`${SUPABASE_URL}/storage/v1/object/vocabulary-images/${filePath}`, {
-    method: 'POST',
+async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${BASE_URL}${path}`, {
+    ...options,
     headers: {
-      'apikey': SUPABASE_ANON_KEY,
-      'Authorization': `Bearer ${_token || SUPABASE_ANON_KEY}`,
-      'Content-Type': file.type || 'image/jpeg',
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
     },
-    body: file,
   });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Upload failed: ${errText}`);
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(body || `HTTP ${response.status}`);
   }
-
-  // Public URL
-  return `${SUPABASE_URL}/storage/v1/object/public/vocabulary-images/${filePath}`;
+  const body = await response.text();
+  return body ? JSON.parse(body) as T : undefined as T;
 }
 
+export async function login(email: string, password: string) {
+  const response = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', apikey: SUPABASE_ANON_KEY },
+    body: JSON.stringify({ email, password }),
+  });
+  if (!response.ok) throw new Error('Email hoặc mật khẩu không đúng.');
+  return response.json() as Promise<{ access_token: string }>;
+}
+
+export interface AdminUser {
+  userId: string;
+  displayName: string;
+  role: string;
+  locked: boolean;
+  wordsSaved: number;
+  wordsLearned: number;
+}
+
+export interface Word {
+  id: number;
+  detectionLabel: string;
+  enWord: string;
+  phonetic: string;
+  pos: string;
+  definition: string;
+  translation: string;
+  exampleEn: string;
+  exampleVn: string;
+  imageUrl?: string;
+}
+
+export const getMe = () => apiFetch<{ role: string }>('/api/me');
+export const getStats = () => apiFetch<{ totalUsers: number; activeUsers: number; lockedUsers: number; totalWords: number }>('/api/admin/stats');
+export const getUsers = () => apiFetch<AdminUser[]>('/api/admin/users');
+export const toggleUserLock = (userId: string) => apiFetch<{ userId: string; status: string }>(`/api/admin/users/${userId}/toggle-lock`, { method: 'POST' });
+export const getWords = () => apiFetch<Word[]>('/api/words');
+export const updateWord = (id: number, data: Partial<Word>) => apiFetch<Word>(`/api/admin/words/${id}`, { method: 'PUT', body: JSON.stringify(data) });

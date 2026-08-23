@@ -1,609 +1,117 @@
-import { useState, useEffect, useCallback } from 'react';
-import './index.css';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import type { FormEvent } from 'react';
 import * as api from './api';
+import './App.css';
 
-/* ══════════════════════════════════════════════════════════
-   Types
-══════════════════════════════════════════════════════════ */
-interface Word {
-  id: number;
-  cocoClass: string;
-  enWord: string;
-  phonetic: string;
-  pos: string;
-  definition: string;
-  translation: string;
-  exampleEn: string;
-  exampleVn: string;
-  imageUrl?: string;
-}
+type Tab = 'overview' | 'users' | 'words';
 
-interface LeaderboardEntry {
-  rank: number;
-  deviceUuid: string;
-  displayName: string;
-  totalXp: number;
-  currentStreak: number;
-  wordsLearned: number;
-  status?: string;
-}
-
-type Page = 'dashboard' | 'words' | 'users' | 'lessons';
-
-const DIFFICULTY_COLORS: Record<string, string> = {
-  Noun: 'badge-learner',
-  Verb: 'badge-success',
-  Adjective: 'badge-medium',
-  Adverb: 'badge-hard',
-};
-
-/* ══════════════════════════════════════════════════════════
-   Login Screen
-══════════════════════════════════════════════════════════ */
-function LoginScreen({ onLogin }: { onLogin: (token: string, email: string) => void }) {
-  const [email, setEmail] = useState('admin@vocam.app');
+export default function App() {
+  const [authenticated, setAuthenticated] = useState(Boolean(api.getToken()));
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleLogin = async () => {
-    if (!email || !password) { setError('Vui lòng nhập đầy đủ thông tin.'); return; }
-    setLoading(true); setError('');
-    try {
-      const data = await api.supabaseLogin(email, password);
-      api.setToken(data.access_token);
-      onLogin(data.access_token, email);
-    } catch (e: any) {
-      setError(e.message || 'Đăng nhập thất bại.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="login-wrapper">
-      <div className="login-card">
-        <div className="login-logo">Vocam Admin</div>
-        <div className="login-sub">Quản trị hệ thống học từ vựng</div>
-        {error && <div className="login-error">{error}</div>}
-        <div className="form-group">
-          <label>Email quản trị viên</label>
-          <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="admin@vocam.app" />
-        </div>
-        <div className="form-group">
-          <label>Mật khẩu</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} placeholder="••••••••" />
-        </div>
-        <button className="login-btn" onClick={handleLogin} disabled={loading}>
-          {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-        </button>
-      </div>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════
-   Dashboard Page
-══════════════════════════════════════════════════════════ */
-function DashboardPage() {
-  const [stats, setStats] = useState<{ users: number; words: number; totalXp: number } | null>(null);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        const [lb] = await Promise.all([api.getLeaderboard()]);
-        const totalXp = lb.reduce((sum: number, e: any) => sum + e.totalXp, 0);
-        setStats({ users: lb.length, words: 0, totalXp });
-        setLeaderboard(lb);
-
-        // Fetch word count
-        const words = await api.getAllWords();
-        setStats(s => s ? { ...s, words: words.length } : s);
-      } catch {
-        setStats({ users: 0, words: 0, totalXp: 0 });
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
-
-  if (loading) return <div className="loading-bar" />;
-
-  return (
-    <>
-      <div className="stats-grid">
-        <div className="stat-card">
-          <div className="stat-icon">👥</div>
-          <div className="stat-value">{stats?.users ?? 0}</div>
-          <div className="stat-label">Người dùng</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">📚</div>
-          <div className="stat-value">{stats?.words ?? 0}</div>
-          <div className="stat-label">Mục từ vựng</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">⚡</div>
-          <div className="stat-value">{(stats?.totalXp ?? 0).toLocaleString()}</div>
-          <div className="stat-label">Tổng XP toàn hệ thống</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-icon">🏆</div>
-          <div className="stat-value">{leaderboard[0]?.displayName?.split(' ')[0] ?? '—'}</div>
-          <div className="stat-label">Người dẫn đầu</div>
-        </div>
-      </div>
-
-      <div className="table-card">
-        <div className="table-header">
-          <div className="table-title">🏅 Bảng xếp hạng Top 50</div>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Hạng</th>
-              <th>Tên</th>
-              <th>Tổng XP</th>
-              <th>Streak</th>
-              <th>Từ đã học</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leaderboard.map(e => (
-              <tr key={e.rank}>
-                <td>
-                  {e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : `#${e.rank}`}
-                </td>
-                <td style={{ fontWeight: 600 }}>{e.displayName || 'Ẩn danh'}</td>
-                <td><span className="badge badge-learner">{e.totalXp} XP</span></td>
-                <td>🔥 {e.currentStreak} ngày</td>
-                <td>{e.wordsLearned} từ</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {leaderboard.length === 0 && <div className="empty-state">Chưa có dữ liệu người dùng</div>}
-      </div>
-    </>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════
-   Words Page
-══════════════════════════════════════════════════════════ */
-const EMPTY_WORD: Partial<Word> = {
-  cocoClass: '', enWord: '', phonetic: '', pos: 'Noun',
-  definition: '', translation: '', exampleEn: '', exampleVn: '',
-};
-
-function WordsPage() {
-  const [words, setWords] = useState<Word[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [editWord, setEditWord] = useState<Partial<Word>>(EMPTY_WORD);
-  const [saving, setSaving] = useState(false);
-  const [page, setPage] = useState(1);
-  const PAGE_SIZE = 25;
+  const [error, setError] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>('overview');
+  const [stats, setStats] = useState<Awaited<ReturnType<typeof api.getStats>> | null>(null);
+  const [users, setUsers] = useState<api.AdminUser[]>([]);
+  const [words, setWords] = useState<api.Word[]>([]);
+  const [query, setQuery] = useState('');
+  const [editing, setEditing] = useState<api.Word | null>(null);
+  const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
-    try { setWords(await api.getAllWords()); }
-    catch { /* Backend unavailable */ }
-    finally { setLoading(false); }
+    if (!api.getToken()) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const me = await api.getMe();
+      if (me.role !== 'ADMIN') throw new Error('Tài khoản không có quyền quản trị.');
+      const [nextStats, nextUsers, nextWords] = await Promise.all([api.getStats(), api.getUsers(), api.getWords()]);
+      setStats(nextStats);
+      setUsers(nextUsers);
+      setWords(nextWords);
+      setAuthenticated(true);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'Không thể tải dữ liệu.');
+      api.setToken(null);
+      setAuthenticated(false);
+    } finally { setBusy(false); }
   }, []);
-
-  useEffect(() => { load(); }, [load]);
-
-  const filtered = words.filter(w =>
-    w.enWord?.toLowerCase().includes(search.toLowerCase()) ||
-    w.cocoClass?.toLowerCase().includes(search.toLowerCase()) ||
-    w.translation?.toLowerCase().includes(search.toLowerCase())
-  );
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  const openCreate = () => { setEditWord(EMPTY_WORD); setShowModal(true); };
-  const openEdit = (w: Word) => { setEditWord({ ...w }); setShowModal(true); };
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      if ((editWord as Word).id) {
-        await api.updateWord((editWord as Word).id, editWord);
-      } else {
-        await api.createWord(editWord);
-      }
-      setShowModal(false);
-      await load();
-    } catch (e: any) {
-      alert('Lỗi: ' + e.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleDelete = async (w: Word) => {
-    if (!window.confirm(`Xóa từ "${w.enWord}"?`)) return;
-    try {
-      await api.deleteWord(w.id);
-      setWords(prev => prev.filter(x => x.id !== w.id));
-    } catch (e: any) {
-      alert('Lỗi xóa: ' + e.message);
-    }
-  };
-
-  if (loading) return <div className="loading-bar" />;
-
-  return (
-    <>
-      <div className="table-card">
-        <div className="table-header">
-          <div className="table-title">📖 Quản lý từ vựng ({words.length} mục)</div>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <input
-              className="table-search"
-              placeholder="🔍 Tìm kiếm từ..."
-              value={search}
-              onChange={e => { setSearch(e.target.value); setPage(1); }}
-            />
-            <button className="btn btn-primary" onClick={openCreate}>+ Thêm từ mới</button>
-          </div>
-        </div>
-
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Từ tiếng Anh</th>
-              <th>Phiên âm</th>
-              <th>Loại từ</th>
-              <th>Nghĩa tiếng Việt</th>
-              <th>Nhãn YOLO</th>
-              <th style={{ textAlign: 'right' }}>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginated.map((w, i) => (
-              <tr key={w.id}>
-                <td style={{ color: 'var(--text-muted)' }}>{(page - 1) * PAGE_SIZE + i + 1}</td>
-                <td style={{ fontWeight: 700 }}>{w.enWord}</td>
-                <td style={{ fontStyle: 'italic', color: 'var(--text-secondary)' }}>{w.phonetic}</td>
-                <td><span className={`badge ${DIFFICULTY_COLORS[w.pos] || 'badge-learner'}`}>{w.pos}</span></td>
-                <td>{w.translation}</td>
-                <td><code style={{ fontSize: 11, background: 'var(--canvas)', padding: '2px 6px', borderRadius: 4 }}>{w.cocoClass}</code></td>
-                <td style={{ textAlign: 'right' }}>
-                  <button className="btn btn-ghost" style={{ marginRight: 6 }} onClick={() => openEdit(w)}>✏️</button>
-                  <button className="btn btn-danger" onClick={() => handleDelete(w)}>🗑️</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {filtered.length === 0 && <div className="empty-state">Không tìm thấy từ nào</div>}
-
-        {totalPages > 1 && (
-          <div className="pagination">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-              <button key={p} className={`page-btn ${p === page ? 'active' : ''}`} onClick={() => setPage(p)}>{p}</button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Word Form Modal */}
-      {showModal && (
-        <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="modal-card">
-            <div className="modal-title">{(editWord as Word).id ? '✏️ Chỉnh sửa từ' : '➕ Thêm từ mới'}</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 16px' }}>
-              <div className="form-group">
-                <label>Nhãn YOLO (coco_class)</label>
-                <input value={editWord.cocoClass || ''} onChange={e => setEditWord(p => ({ ...p, cocoClass: e.target.value }))} placeholder="vd: cup" />
-              </div>
-              <div className="form-group">
-                <label>Từ tiếng Anh</label>
-                <input value={editWord.enWord || ''} onChange={e => setEditWord(p => ({ ...p, enWord: e.target.value }))} placeholder="vd: Cup" />
-              </div>
-              <div className="form-group">
-                <label>Phiên âm IPA</label>
-                <input value={editWord.phonetic || ''} onChange={e => setEditWord(p => ({ ...p, phonetic: e.target.value }))} placeholder="vd: /kʌp/" />
-              </div>
-              <div className="form-group">
-                <label>Loại từ</label>
-                <select value={editWord.pos || 'Noun'} onChange={e => setEditWord(p => ({ ...p, pos: e.target.value }))}>
-                  <option>Noun</option><option>Verb</option><option>Adjective</option><option>Adverb</option>
-                </select>
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Định nghĩa tiếng Anh</label>
-              <textarea value={editWord.definition || ''} onChange={e => setEditWord(p => ({ ...p, definition: e.target.value }))} placeholder="vd: A small open container for drinking" />
-            </div>
-            <div className="form-group">
-              <label>Nghĩa tiếng Việt</label>
-              <input value={editWord.translation || ''} onChange={e => setEditWord(p => ({ ...p, translation: e.target.value }))} placeholder="vd: cái cốc, tách uống" />
-            </div>
-            <div className="form-group">
-              <label>Câu ví dụ tiếng Anh</label>
-              <textarea value={editWord.exampleEn || ''} onChange={e => setEditWord(p => ({ ...p, exampleEn: e.target.value }))} placeholder="vd: She drank water from the cup." />
-            </div>
-            <div className="form-group">
-              <label>Câu ví dụ tiếng Việt</label>
-              <textarea value={editWord.exampleVn || ''} onChange={e => setEditWord(p => ({ ...p, exampleVn: e.target.value }))} placeholder="vd: Cô ấy uống nước từ cái cốc." />
-            </div>
-            <div className="form-group">
-              <label>Hình ảnh minh họa (Supabase Storage)</label>
-              {editWord.imageUrl && (
-                <div style={{ marginBottom: 8, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <img src={editWord.imageUrl} alt="preview" style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 8 }} />
-                  <span style={{ fontSize: 11, color: 'var(--text-muted)', wordBreak: 'break-all' }}>{editWord.imageUrl}</span>
-                </div>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  try {
-                    setSaving(true);
-                    const url = await api.uploadVocabularyImage(file);
-                    setEditWord(p => ({ ...p, imageUrl: url }));
-                  } catch (err: any) {
-                    alert('Lỗi tải ảnh: ' + err.message);
-                  } finally {
-                    setSaving(false);
-                  }
-                }}
-              />
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-ghost" onClick={() => setShowModal(false)}>Hủy</button>
-              <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-                {saving ? 'Đang lưu...' : '✅ Lưu'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════
-   Users Page (Leaderboard)
-══════════════════════════════════════════════════════════ */
-function UsersPage() {
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
 
   useEffect(() => {
-    api.getLeaderboard()
-      .then(setEntries)
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+    const timer = window.setTimeout(() => void load(), 0);
+    return () => window.clearTimeout(timer);
+  }, [load]);
 
-  const filtered = entries.filter(e =>
-    e.displayName?.toLowerCase().includes(search.toLowerCase()) ||
-    e.deviceUuid?.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const handleToggleLock = async (deviceUuid: string) => {
+  const submitLogin = async (event: FormEvent) => {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
     try {
-      const res = await api.toggleUserLock(deviceUuid);
-      setEntries(prev => prev.map(e => e.deviceUuid === deviceUuid ? { ...e, status: res.status } : e));
-    } catch (err: any) {
-      alert('Lỗi đổi trạng thái: ' + err.message);
-    }
+      const session = await api.login(email, password);
+      api.setToken(session.access_token);
+      await load();
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Đăng nhập thất bại.'); }
+    finally { setBusy(false); }
   };
 
-  if (loading) return <div className="loading-bar" />;
+  const filteredWords = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    return words.filter(word => !normalized || [word.enWord, word.translation, word.detectionLabel].some(value => value?.toLowerCase().includes(normalized)));
+  }, [query, words]);
 
-  return (
-    <div className="table-card">
-      <div className="table-header">
-        <div className="table-title">👥 Danh sách người dùng ({entries.length})</div>
-        <input
-          className="table-search"
-          placeholder="🔍 Tìm người dùng..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Hạng</th>
-            <th>Tên hiển thị</th>
-            <th>Trạng thái</th>
-            <th>Tổng XP</th>
-            <th>Streak hiện tại</th>
-            <th>Từ đã học</th>
-            <th>Device UUID</th>
-            <th style={{ textAlign: 'right' }}>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filtered.map(e => (
-            <tr key={e.deviceUuid}>
-              <td>{e.rank === 1 ? '🥇' : e.rank === 2 ? '🥈' : e.rank === 3 ? '🥉' : `#${e.rank}`}</td>
-              <td style={{ fontWeight: 600 }}>{e.displayName || 'Ẩn danh'}</td>
-              <td>
-                <span className={`badge ${e.status === 'LOCKED' ? 'badge-hard' : 'badge-success'}`}>
-                  {e.status === 'LOCKED' ? '🔒 Đã khóa' : '🟢 Hoạt động'}
-                </span>
-              </td>
-              <td><span className="badge badge-learner">{e.totalXp} XP</span></td>
-              <td>🔥 {e.currentStreak} ngày</td>
-              <td>{e.wordsLearned} từ</td>
-              <td style={{ fontFamily: 'monospace', fontSize: 11, color: 'var(--text-muted)' }}>
-                {e.deviceUuid.slice(0, 16)}...
-              </td>
-              <td style={{ textAlign: 'right' }}>
-                <button
-                  className={`btn ${e.status === 'LOCKED' ? 'btn-ghost' : 'btn-danger'}`}
-                  style={{ fontSize: 12, padding: '4px 10px' }}
-                  onClick={() => handleToggleLock(e.deviceUuid)}
-                >
-                  {e.status === 'LOCKED' ? '🔓 Mở khóa' : '🔒 Khóa'}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {filtered.length === 0 && <div className="empty-state">Chưa có dữ liệu người dùng</div>}
-    </div>
+  if (!authenticated) return (
+    <main className="login-page"><form className="login-card" onSubmit={submitLogin}>
+      <h1>Vocam Admin</h1><p>Đăng nhập bằng tài khoản ADMIN.</p>
+      {error && <div className="error-msg">{error}</div>}
+      <input value={email} onChange={e => setEmail(e.target.value)} type="email" placeholder="Email" required />
+      <input value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="Mật khẩu" required minLength={6} />
+      <button disabled={busy}>{busy ? 'Đang xác thực...' : 'Đăng nhập'}</button>
+    </form></main>
   );
-}
 
-/* ══════════════════════════════════════════════════════════
-   Lessons Page
-══════════════════════════════════════════════════════════ */
-interface LessonItem {
-  id: string;
-  title: string;
-  topic: string;
-  wordCount: number;
-  status: 'PUBLISHED' | 'DRAFT';
-}
+  const toggleLock = async (user: api.AdminUser) => {
+    try {
+      const result = await api.toggleUserLock(user.userId);
+      setUsers(previous => previous.map(item => item.userId === user.userId ? { ...item, locked: result.status === 'LOCKED' } : item));
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Không thể cập nhật người dùng.'); }
+  };
 
-function LessonsPage() {
-  const [lessons, setLessons] = useState<LessonItem[]>([
-    { id: 'l1', title: 'Từ vựng Học đường & Văn phòng', topic: 'School & Office', wordCount: 15, status: 'PUBLISHED' },
-    { id: 'l2', title: 'Động vật quanh ta', topic: 'Animals', wordCount: 12, status: 'PUBLISHED' },
-    { id: 'l3', title: 'Phương tiện Giao thông', topic: 'Vehicles', wordCount: 10, status: 'PUBLISHED' },
-    { id: 'l4', title: 'Đồ dùng Nhà bếp & Thực phẩm', topic: 'Kitchen & Food', wordCount: 18, status: 'DRAFT' },
-    { id: 'l5', title: 'Thể thao & Giải trí', topic: 'Sports', wordCount: 14, status: 'DRAFT' },
-  ]);
-
-  const toggleStatus = (id: string) => {
-    setLessons(prev => prev.map(l => l.id === id ? {
-      ...l,
-      status: l.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'
-    } : l));
+  const saveWord = async () => {
+    if (!editing) return;
+    setBusy(true);
+    try {
+      const updated = await api.updateWord(editing.id, editing);
+      setWords(previous => previous.map(word => word.id === updated.id ? updated : word));
+      setEditing(null);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Không thể cập nhật từ vựng.'); }
+    finally { setBusy(false); }
   };
 
   return (
-    <div className="table-card">
-      <div className="table-header">
-        <div className="table-title">📚 Quản lý bài học ({lessons.length} chủ đề)</div>
-        <button className="btn btn-primary" onClick={() => alert('Đã thêm bài học nháp mới')}>+ Tạo bài học mới</button>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Mã bài</th>
-            <th>Tên bài học</th>
-            <th>Chủ đề</th>
-            <th>Số từ vựng</th>
-            <th>Trạng thái</th>
-            <th style={{ textAlign: 'right' }}>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {lessons.map(l => (
-            <tr key={l.id}>
-              <td><code>{l.id}</code></td>
-              <td style={{ fontWeight: 600 }}>{l.title}</td>
-              <td>{l.topic}</td>
-              <td>{l.wordCount} từ</td>
-              <td>
-                <span className={`badge ${l.status === 'PUBLISHED' ? 'badge-success' : 'badge-medium'}`}>
-                  {l.status === 'PUBLISHED' ? '✅ Đã xuất bản' : '📝 Đang soạn thảo'}
-                </span>
-              </td>
-              <td style={{ textAlign: 'right' }}>
-                <button
-                  className={`btn ${l.status === 'PUBLISHED' ? 'btn-ghost' : 'btn-primary'}`}
-                  style={{ fontSize: 12, padding: '4px 10px' }}
-                  onClick={() => toggleStatus(l.id)}
-                >
-                  {l.status === 'PUBLISHED' ? 'Chuyển Nháp' : 'Xuất bản'}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════════════════════════
-   Root App
-══════════════════════════════════════════════════════════ */
-export default function App() {
-  const [token, setToken] = useState<string | null>(null);
-  const [adminEmail, setAdminEmail] = useState('');
-  const [page, setPage] = useState<Page>('dashboard');
-
-  const handleLogin = (t: string, email: string) => {
-    setToken(t);
-    setAdminEmail(email);
-  };
-
-  const handleLogout = () => {
-    api.clearToken();
-    setToken(null);
-    setAdminEmail('');
-  };
-
-  if (!token) return <LoginScreen onLogin={handleLogin} />;
-
-  const pageTitle: Record<Page, string> = {
-    dashboard: '📊 Tổng quan',
-    words: '📖 Quản lý từ vựng',
-    users: '👥 Người dùng',
-    lessons: '📚 Quản lý bài học',
-  };
-
-  return (
-    <div className="app">
-      {/* Sidebar */}
-      <div className="sidebar">
-        <div className="sidebar-logo">
-          <h1>Vocam</h1>
-          <p>Admin Dashboard</p>
-        </div>
-        <nav className="sidebar-nav">
-          {(['dashboard', 'words', 'users'] as Page[]).map(p => (
-            <div
-              key={p}
-              className={`nav-item ${page === p ? 'active' : ''}`}
-              onClick={() => setPage(p)}
-            >
-              <span>{p === 'dashboard' ? '📊' : p === 'words' ? '📖' : '👥'}</span>
-              <span>{p === 'dashboard' ? 'Tổng quan' : p === 'words' ? 'Từ vựng' : 'Người dùng'}</span>
-            </div>
-          ))}
-        </nav>
-        <div className="sidebar-footer">
-          <button className="logout-btn" onClick={handleLogout}>🚪 Đăng xuất</button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="main">
-        <div className="topbar">
-          <div className="topbar-title">{pageTitle[page]}</div>
-          <div className="topbar-user">
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>{adminEmail}</span>
-            <div className="avatar-chip">{adminEmail[0]?.toUpperCase() || 'A'}</div>
-          </div>
-        </div>
-        <div className="content">
-          {page === 'dashboard' && <DashboardPage />}
-          {page === 'words' && <WordsPage />}
-          {page === 'users' && <UsersPage />}
-        </div>
-      </div>
+    <div className="app-shell">
+      <aside className="sidebar"><h2>Vocam</h2>
+        {(['overview', 'users', 'words'] as Tab[]).map(item => <button key={item} className={tab === item ? 'active' : ''} onClick={() => setTab(item)}>{item === 'overview' ? 'Tổng quan' : item === 'users' ? 'Người dùng' : 'Từ vựng'}</button>)}
+        <button onClick={() => { api.setToken(null); setAuthenticated(false); }}>Đăng xuất</button>
+      </aside>
+      <main className="main-content">
+        {error && <div className="error-msg">{error}</div>}
+        {tab === 'overview' && <><h1>Tổng quan</h1><div className="stats-grid">
+          <div className="stat-card"><strong>{stats?.totalUsers ?? 0}</strong><span>Người dùng</span></div>
+          <div className="stat-card"><strong>{stats?.activeUsers ?? 0}</strong><span>Đang hoạt động</span></div>
+          <div className="stat-card"><strong>{stats?.lockedUsers ?? 0}</strong><span>Đã khóa</span></div>
+          <div className="stat-card"><strong>{stats?.totalWords ?? 0}</strong><span>Nhãn canonical</span></div>
+        </div></>}
+        {tab === 'users' && <><h1>Quản lý người dùng</h1><table><thead><tr><th>Tên</th><th>Vai trò</th><th>Đã lưu</th><th>Đã thuộc</th><th>Trạng thái</th><th /></tr></thead><tbody>
+          {users.map(user => <tr key={user.userId}><td>{user.displayName}</td><td>{user.role}</td><td>{user.wordsSaved}</td><td>{user.wordsLearned}</td><td>{user.locked ? 'Đã khóa' : 'Hoạt động'}</td><td><button onClick={() => void toggleLock(user)}>{user.locked ? 'Mở khóa' : 'Khóa'}</button></td></tr>)}
+        </tbody></table></>}
+        {tab === 'words' && <><h1>Từ vựng canonical</h1><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Tìm nhãn, từ hoặc nghĩa..." /><table><thead><tr><th>Nhãn</th><th>Từ</th><th>Nghĩa</th><th /></tr></thead><tbody>
+          {filteredWords.map(word => <tr key={word.id}><td>{word.detectionLabel}</td><td>{word.enWord}</td><td>{word.translation}</td><td><button onClick={() => setEditing(word)}>Sửa</button></td></tr>)}
+        </tbody></table></>}
+      </main>
+      {editing && <div className="modal-overlay"><div className="modal"><h2>{editing.detectionLabel}</h2>
+        {(['enWord', 'phonetic', 'translation', 'definition', 'exampleEn', 'exampleVn', 'imageUrl'] as const).map(field => <label key={field}>{field}<input value={editing[field] || ''} onChange={e => setEditing({ ...editing, [field]: e.target.value })} /></label>)}
+        <div><button onClick={() => setEditing(null)}>Hủy</button><button disabled={busy} onClick={() => void saveWord()}>Lưu</button></div>
+      </div></div>}
     </div>
   );
 }

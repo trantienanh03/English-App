@@ -25,12 +25,12 @@ public class WordService {
                 .toList();
     }
 
-    public WordDto findByCocoClass(String cocoClass) {
-        return wordRepository.findByCocoClass(cocoClass.toLowerCase().trim())
+    public WordDto findByDetectionLabel(String detectionLabel) {
+        return wordRepository.findByDetectionLabel(normalizeLabel(detectionLabel))
                 .map(this::toDto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "No vocabulary found for class: " + cocoClass
+                        "No vocabulary found for detector label: " + detectionLabel
                 ));
     }
 
@@ -40,9 +40,10 @@ public class WordService {
 
     public WordDto createWord(WordDto dto) {
         Word word = new Word();
-        if (dto.getCocoClass() != null) {
-            word.setCocoClass(dto.getCocoClass().toLowerCase().trim());
+        if (dto.getDetectionLabel() == null || dto.getDetectionLabel().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "detectionLabel is required");
         }
+        word.setDetectionLabel(normalizeLabel(dto.getDetectionLabel()));
         updateEntityFromDto(word, dto);
         Word saved = wordRepository.save(word);
         return toDto(saved);
@@ -69,10 +70,10 @@ public class WordService {
         if (dto.getImageUrl() != null) word.setImageUrl(dto.getImageUrl().trim());
     }
 
-    private WordDto toDto(Word w) {
+    public WordDto toDto(Word w) {
         return new WordDto(
                 w.getId(),
-                w.getCocoClass(),
+                w.getDetectionLabel(),
                 w.getEnWord(),
                 w.getPhonetic(),
                 w.getPos(),
@@ -82,5 +83,9 @@ public class WordService {
                 w.getExampleVn(),
                 w.getImageUrl()
         );
+    }
+
+    private String normalizeLabel(String label) {
+        return label.toLowerCase().trim().replaceAll("\\s+", " ");
     }
 }

@@ -28,8 +28,14 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final UserService userService;
 
-    @Value("${supabase.jwt.secret:super-secret-jwt-key-for-supabase-development-mode-environment}")
+    @Value("${supabase.jwt.secret}")
     private String jwtSecret;
+
+    @Value("${supabase.jwt.issuer}")
+    private String jwtIssuer;
+
+    @Value("${supabase.jwt.audience:authenticated}")
+    private String jwtAudience;
 
     public JwtFilter(UserService userService) {
         this.userService = userService;
@@ -70,7 +76,7 @@ public class JwtFilter extends OncePerRequestFilter {
             } catch (Exception e) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json");
-                response.getWriter().write("{\"code\":\"INVALID_TOKEN\",\"message\":\"" + e.getMessage() + "\"}");
+                response.getWriter().write("{\"code\":\"INVALID_TOKEN\",\"message\":\"The access token is invalid or expired.\"}");
                 return;
             }
         }
@@ -82,6 +88,8 @@ public class JwtFilter extends OncePerRequestFilter {
         SecretKey key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
         return Jwts.parser()
                 .verifyWith(key)
+                .requireIssuer(jwtIssuer)
+                .requireAudience(jwtAudience)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload();

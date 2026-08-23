@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
-import OnboardingScreen, { OnboardingData } from '@/components/onboarding/onboarding-screen';
+import * as Linking from 'expo-linking';
+import OnboardingScreen from '@/components/onboarding/onboarding-screen';
 import SignupScreen from '@/components/auth/signup-screen';
 import LoginScreen from '@/components/auth/login-screen';
 import MainContainer from '@/components/main-container';
 import DotsLoader from '@/components/ui/dots-loader';
+import RecoveryPasswordScreen from '@/components/auth/recovery-password-screen';
 import { Palette } from '@/constants/theme';
 import { supabase } from '@/lib/supabase';
 
-type Screen = 'onboarding' | 'login' | 'signup' | 'dashboard';
+type Screen = 'onboarding' | 'login' | 'signup' | 'recovery' | 'dashboard';
 
 export default function HomeScreen() {
   const [isBooting, setIsBooting] = useState(true);
   const [currentScreen, setCurrentScreen] = useState<Screen>('onboarding');
-  const [userOnboardingData, setUserOnboardingData] = useState<OnboardingData | null>(null);
   const [userName, setUserName] = useState<string>('');
   const [userEmail, setUserEmail] = useState<string>('');
 
@@ -35,7 +36,46 @@ export default function HomeScreen() {
       }
     };
 
-    checkSession();
+    void checkSession();
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setCurrentScreen('recovery');
+        return;
+      }
+      if (session?.user) {
+        const email = session.user.email || '';
+        setUserEmail(email);
+        setUserName(session.user.user_metadata?.display_name || email.split('@')[0] || 'Học Viên Vocam');
+        setCurrentScreen('dashboard');
+      } else {
+        setCurrentScreen('login');
+      }
+    });
+
+    const handleRecoveryLink = async (url: string | null) => {
+      if (!url || !url.includes('reset-password')) return;
+      const parsed = Linking.parse(url);
+      const code = typeof parsed.queryParams?.code === 'string' ? parsed.queryParams.code : null;
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (!error) setCurrentScreen('recovery');
+        return;
+      }
+      const fragment = url.split('#')[1] || '';
+      const params = new URLSearchParams(fragment);
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      if (accessToken && refreshToken) {
+        const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+        if (!error) setCurrentScreen('recovery');
+      }
+    };
+    void Linking.getInitialURL().then(handleRecoveryLink);
+    const linkListener = Linking.addEventListener('url', event => void handleRecoveryLink(event.url));
+    return () => {
+      listener.subscription.unsubscribe();
+      linkListener.remove();
+    };
   }, []);
 
   const handleLogout = async () => {
@@ -72,8 +112,7 @@ export default function HomeScreen() {
     return (
       <OnboardingScreen
         onLoginPress={() => setCurrentScreen('login')}
-        onComplete={(data) => {
-          setUserOnboardingData(data);
+        onComplete={() => {
           setCurrentScreen('signup');
         }}
       />
@@ -91,6 +130,10 @@ export default function HomeScreen() {
         onLoginPress={() => setCurrentScreen('login')}
       />
     );
+  }
+
+  if (currentScreen === 'recovery') {
+    return <RecoveryPasswordScreen onComplete={() => setCurrentScreen('login')} />;
   }
 
   return (

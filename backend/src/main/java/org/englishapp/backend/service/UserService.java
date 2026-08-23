@@ -1,13 +1,10 @@
 package org.englishapp.backend.service;
 
-import org.englishapp.backend.dto.SyncRequest;
-import org.englishapp.backend.dto.SyncResponse;
 import org.englishapp.backend.dto.UserEntryDto;
 import org.englishapp.backend.dto.UserProfileDto;
 import org.englishapp.backend.entity.AppUser;
-import org.englishapp.backend.entity.UserProgress;
 import org.englishapp.backend.repository.AppUserRepository;
-import org.englishapp.backend.repository.UserProgressRepository;
+import org.englishapp.backend.repository.SavedFlashcardRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,11 +18,11 @@ import java.util.UUID;
 public class UserService {
 
     private final AppUserRepository appUserRepository;
-    private final UserProgressRepository userProgressRepository;
+    private final SavedFlashcardRepository savedFlashcardRepository;
 
-    public UserService(AppUserRepository appUserRepository, UserProgressRepository userProgressRepository) {
+    public UserService(AppUserRepository appUserRepository, SavedFlashcardRepository savedFlashcardRepository) {
         this.appUserRepository = appUserRepository;
-        this.userProgressRepository = userProgressRepository;
+        this.savedFlashcardRepository = savedFlashcardRepository;
     }
 
     /**
@@ -41,66 +38,35 @@ public class UserService {
                         : "Học Viên Vocam";
 
             AppUser newUser = new AppUser(userId, name, "LEARNER");
-            AppUser savedUser = appUserRepository.save(newUser);
-
-            UserProgress newProgress = new UserProgress(userId);
-            newProgress.setAppUser(savedUser);
-            userProgressRepository.save(newProgress);
-
-            return savedUser;
+            return appUserRepository.save(newUser);
         });
     }
 
     /** GET /api/me — Returns User Profile & Learning Stats */
     @Transactional
-    public UserProfileDto getUserProfile(UUID userId, String defaultDisplayName, String defaultEmail) {
-        AppUser appUser = bootstrapUserIfAbsent(userId, defaultDisplayName, defaultEmail);
+    public UserProfileDto getUserProfile(UUID userId) {
+        AppUser appUser = appUserRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authenticated user is not registered"));
 
         if (Boolean.TRUE.equals(appUser.getLocked())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "ACCOUNT_LOCKED");
         }
 
-        UserProgress progress = userProgressRepository.findByUserId(userId)
-                .orElseGet(() -> {
-                    UserProgress p = new UserProgress(userId);
-                    p.setAppUser(appUser);
-                    return userProgressRepository.save(p);
-                });
+        int wordsSaved = Math.toIntExact(savedFlashcardRepository.countByUserId(userId));
+        // wordsLearned: cards đạt thuộc thành thạo = repetitions >= 2 AND intervalDays >= 6
+        int wordsLearned = Math.toIntExact(savedFlashcardRepository
+                .countByUserIdAndRepetitionsGreaterThanEqualAndIntervalDaysGreaterThanEqual(userId, 2, 6));
+        int dueCards = Math.toIntExact(savedFlashcardRepository.countByUserIdAndNextReviewAtLessThanEqual(userId, Instant.now()));
 
         return new UserProfileDto(
                 appUser.getUserId(),
                 appUser.getDisplayName(),
                 appUser.getRole(),
                 Boolean.TRUE.equals(appUser.getLocked()),
-                progress.getWordsSaved(),
-                progress.getWordsLearned()
+                wordsSaved,
+                wordsLearned,
+                dueCards
         );
-    }
-
-    /** POST /api/sync/progress — Sync learning stats */
-    @Transactional
-    public SyncResponse syncProgress(UUID userId, SyncRequest req) {
-        AppUser appUser = appUserRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId));
-
-        if (Boolean.TRUE.equals(appUser.getLocked())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "ACCOUNT_LOCKED");
-        }
-
-        UserProgress progress = userProgressRepository.findByUserId(userId)
-                .orElseGet(() -> {
-                    UserProgress p = new UserProgress(userId);
-                    p.setAppUser(appUser);
-                    return p;
-                });
-
-        progress.setWordsSaved(req.getWordsSaved());
-        progress.setWordsLearned(req.getWordsLearned());
-        progress.setLastSyncAt(Instant.now());
-
-        userProgressRepository.save(progress);
-
-        return new SyncResponse("ok");
     }
 
     /** POST /api/admin/users/{userId}/toggle-lock */
@@ -121,9 +87,11 @@ public class UserService {
     public List<UserEntryDto> getAllUsers() {
         return appUserRepository.findAll().stream()
                 .map(u -> {
-                    UserProgress p = userProgressRepository.findByUserId(u.getUserId()).orElse(null);
-                    int saved = p != null ? p.getWordsSaved() : 0;
-                    int learned = p != null ? p.getWordsLearned() : 0;
+                    int saved = Math.toIntExact(savedFlashcardRepository.countByUserId(u.getUserId()));
+                    // wordsLearned: repetitions >= 2 AND intervalDays >= 6
+                    int learned = Math.toIntExact(savedFlashcardRepository
+                            .countByUserIdAndRepetitionsGreaterThanEqualAndIntervalDaysGreaterThanEqual(
+                                    u.getUserId(), 2, 6));
                     return new UserEntryDto(
                             u.getUserId(),
                             u.getDisplayName(),

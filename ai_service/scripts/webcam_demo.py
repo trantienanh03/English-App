@@ -10,21 +10,13 @@ import os
 import sys
 import time
 import cv2
+from pathlib import Path
 from ultralytics import YOLO
 
-# Danh sách từ vựng Objects365
-EXPANDED_VOCABULARY = [
-    "person", "glasses", "sunglasses", "hat", "cap", "shoes", "sneakers",
-    "watch", "wallet", "backpack", "handbag", "suitcase", "umbrella",
-    "calculator", "cell phone", "mobile phone", "laptop", "computer", "display", "mouse", "keyboard",
-    "headphone", "speaker", "remote", "tv", "camera", "tablet",
-    "book", "notebook", "pen", "pencil", "eraser", "ruler", "scissors", "stapler", "paper",
-    "cup", "mug", "glass", "water bottle", "thermos", "bottle", "plate", "bowl", "fork", "knife", "spoon",
-    "chair", "couch", "bed", "dining table", "desk", "mirror", "clock", "picture frame", "vase",
-    "potted plant", "flower", "lamp", "trash can", "fan",
-    "toothbrush", "toothpaste", "soap", "towel", "hair dryer", "razor",
-    "toy", "teddy bear", "ball", "car", "motorcycle", "bicycle"
-]
+LABEL_FILE = Path(__file__).resolve().parents[1] / "canonical-labels.txt"
+EXPANDED_VOCABULARY = [line.strip() for line in LABEL_FILE.read_text(encoding="utf-8").splitlines() if line.strip()]
+if len(EXPANDED_VOCABULARY) != 365 or len(set(EXPANDED_VOCABULARY)) != 365:
+    raise RuntimeError("canonical-labels.txt must contain 365 unique labels")
 
 def run_webcam_realtime(model_path="models/best.pt", conf_threshold=0.35):
     print("=" * 65)

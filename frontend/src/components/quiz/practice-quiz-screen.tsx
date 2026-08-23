@@ -9,14 +9,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { VocabularyWord } from '@/types';
-import { mockQuizzes } from '@/data/mock-data';
 import { playSoundEffect } from '@/utils/audio';
 
 interface PracticeQuizScreenProps {
   lessonTitle?: string;
   words?: VocabularyWord[];
   onClose: () => void;
-  onQuizComplete?: (percentage: number) => void;
+  onQuizComplete?: (percentage: number) => void | Promise<void>;
 }
 
 interface QuizQuestionItem {
@@ -45,16 +44,13 @@ export default function PracticeQuizScreen({
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
   const [wrongAnswers, setWrongAnswers] = useState<WrongAnswerItem[]>([]);
+  const [savingResult, setSavingResult] = useState(false);
+  const [resultError, setResultError] = useState<string | null>(null);
 
   // Dynamically generate quiz questions specifically for the selected Lesson's words!
   const questions: QuizQuestionItem[] = useMemo(() => {
     if (!words || words.length === 0) {
-      return mockQuizzes.map((q, idx) => ({
-        id: `default_${idx}`,
-        question: q.question,
-        options: q.options || [],
-        answer: q.answer,
-      }));
+      return [];
     }
 
     const allVn = words.map(w => w.vn);
@@ -87,11 +83,11 @@ export default function PracticeQuizScreen({
     });
   }, [words]);
 
-  const currentQuiz = questions[currentIndex % questions.length];
+  const currentQuiz = questions.length ? questions[currentIndex % questions.length] : null;
   const totalQuestions = questions.length;
 
   const handleSelectOption = (opt: string) => {
-    if (isAnswered) return;
+    if (isAnswered || !currentQuiz) return;
     setSelectedOption(opt);
     setIsAnswered(true);
 
@@ -114,20 +110,25 @@ export default function PracticeQuizScreen({
     }
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentIndex < totalQuestions - 1) {
       setCurrentIndex(prev => prev + 1);
       setSelectedOption(null);
       setIsAnswered(false);
       setIsCorrect(false);
     } else {
-      setQuizFinished(true);
-      const finalScore = score + (isCorrect ? 1 : 0);
-      const percentage = Math.round((finalScore / totalQuestions) * 100);
-      if (onQuizComplete) {
-        onQuizComplete(percentage);
+      const percentage = totalQuestions ? Math.round((score / totalQuestions) * 100) : 0;
+      setSavingResult(true);
+      setResultError(null);
+      try {
+        await onQuizComplete?.(percentage);
+        setQuizFinished(true);
+        playSoundEffect('success');
+      } catch {
+        setResultError('Không thể lưu tiến độ bài học. Kiểm tra mạng và thử lại.');
+      } finally {
+        setSavingResult(false);
       }
-      playSoundEffect('success');
     }
   };
 
@@ -139,6 +140,7 @@ export default function PracticeQuizScreen({
     setScore(0);
     setQuizFinished(false);
     setWrongAnswers([]);
+    setResultError(null);
   };
 
   const percentageScore = Math.round((score / totalQuestions) * 100);
@@ -157,7 +159,11 @@ export default function PracticeQuizScreen({
           </View>
         </View>
 
-        {!quizFinished ? (
+        {totalQuestions === 0 ? (
+          <View style={styles.content}>
+            <Text style={styles.questionText}>Bài học này chưa có từ vựng để tạo câu hỏi.</Text>
+          </View>
+        ) : !quizFinished ? (
           <ScrollView contentContainerStyle={styles.content}>
             {/* PROGRESS BAR */}
             <View style={styles.progressBarBg}>
@@ -167,14 +173,14 @@ export default function PracticeQuizScreen({
 
             {/* QUESTION CARD */}
             <View style={styles.questionCard}>
-              <Text style={styles.questionText}>{currentQuiz.question}</Text>
+              <Text style={styles.questionText}>{currentQuiz?.question}</Text>
             </View>
 
             {/* OPTIONS LIST */}
             <View style={styles.optionsContainer}>
-              {(currentQuiz.options || []).map((opt: string, i: number) => {
+              {(currentQuiz?.options || []).map((opt: string, i: number) => {
                 const isSelected = selectedOption === opt;
-                const isAnswer = opt === currentQuiz.answer;
+                const isAnswer = opt === currentQuiz?.answer;
 
                 let btnStyle: any = styles.optionBtn;
                 let textStyle: any = styles.optionText;
@@ -204,11 +210,12 @@ export default function PracticeQuizScreen({
 
             {/* NEXT BUTTON */}
             {isAnswered && (
-              <TouchableOpacity style={styles.nextBtn} onPress={handleNext}>
-                <Text style={styles.nextBtnText}>{currentIndex === totalQuestions - 1 ? 'Xem kết quả Quiz' : 'Câu tiếp theo'}</Text>
+              <TouchableOpacity style={styles.nextBtn} onPress={() => void handleNext()} disabled={savingResult}>
+                <Text style={styles.nextBtnText}>{savingResult ? 'Đang lưu tiến độ...' : currentIndex === totalQuestions - 1 ? 'Xem kết quả Quiz' : 'Câu tiếp theo'}</Text>
                 <Feather name="arrow-right" size={18} color="#FFFFFF" />
               </TouchableOpacity>
             )}
+            {resultError && <Text style={styles.resultError}>{resultError}</Text>}
           </ScrollView>
         ) : (
           /* QUIZ FINISHED RESULTS SCREEN */
@@ -289,6 +296,7 @@ const styles = StyleSheet.create({
 
   nextBtn: { backgroundColor: '#4F46E5', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 14, borderRadius: 12, marginTop: 12 },
   nextBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
+  resultError: { color: '#B91C1C', fontSize: 13, textAlign: 'center' },
 
   resultsContent: { padding: 20 },
   resultCard: { backgroundColor: '#FFFFFF', padding: 24, borderRadius: 20, borderWidth: 1, borderColor: '#E2E8F0', alignItems: 'center', gap: 12 },

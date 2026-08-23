@@ -13,17 +13,20 @@ import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { VocabularyWord } from '@/types';
 import { playAudio, playSoundEffect } from '@/utils/audio';
+import { ReviewRating } from '@/services/api';
 
 interface FlashcardDeckScreenProps {
   words: VocabularyWord[];
-  onUpdateDifficulty: (id: string, difficulty: 'easy' | 'medium' | 'hard') => void;
-  onRemoveWord: (id: string) => void;
+  dueWords: VocabularyWord[];
+  onReview: (flashcardId: string, rating: ReviewRating) => Promise<void>;
+  onRemoveWord: (flashcardId: string) => Promise<void>;
   onStartQuiz: () => void;
 }
 
 export default function FlashcardDeckScreen({
   words,
-  onUpdateDifficulty,
+  dueWords,
+  onReview,
   onRemoveWord,
   onStartQuiz,
 }: FlashcardDeckScreenProps) {
@@ -36,9 +39,11 @@ export default function FlashcardDeckScreen({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [sessionFinished, setSessionFinished] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // In 'session' mode, show cards due today or all cards if review explicitly requested
-  const sessionWords = words;
+  const sessionWords = dueWords;
   const filteredWords = activeMode === 'session'
     ? sessionWords
     : words.filter(w => {
@@ -73,11 +78,33 @@ export default function FlashcardDeckScreen({
     }
   };
 
-  const handleRate = (difficulty: 'easy' | 'medium' | 'hard') => {
-    if (!currentCard) return;
-    onUpdateDifficulty(currentCard.id, difficulty);
-    playSoundEffect('correct');
-    handleNextCard();
+  const handleRate = async (rating: ReviewRating) => {
+    if (!currentCard?.flashcardId || isSubmitting) return;
+    setIsSubmitting(true);
+    setActionError(null);
+    try {
+      await onReview(currentCard.flashcardId, rating);
+      playSoundEffect('correct');
+      if (filteredWords.length <= 1) setSessionFinished(true);
+      else if (currentIndex >= filteredWords.length - 1) setCurrentIndex(0);
+    } catch {
+      setActionError('Không thể lưu kết quả ôn tập. Kiểm tra mạng và thử lại.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRemoveCard = async (flashcardId: string) => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setActionError(null);
+    try {
+      await onRemoveWord(flashcardId);
+    } catch {
+      setActionError('Không thể xóa thẻ từ. Kiểm tra mạng và thử lại.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetSession = () => {
@@ -142,7 +169,7 @@ export default function FlashcardDeckScreen({
             {filteredWords.length === 0 ? (
               <View style={styles.emptyState}>
                 <Feather name="inbox" size={48} color={Palette.text.muted} />
-                <Text style={styles.emptyText}>Không tìm thấy thẻ phù hợp bộ lọc.</Text>
+                <Text style={styles.emptyText}>Không có thẻ nào đến hạn ôn hôm nay.</Text>
               </View>
             ) : sessionFinished ? (
               <View style={styles.finishedCard}>
@@ -220,18 +247,19 @@ export default function FlashcardDeckScreen({
                 </TouchableOpacity>
 
                 {/* SM-2 RATING ACTION BUTTONS */}
+                {actionError && <Text style={{ color: Palette.error.text, textAlign: 'center' }}>{actionError}</Text>}
                 <View style={styles.ratingBar}>
-                  <TouchableOpacity style={[styles.rateBtn, styles.rateBtnAgain]} onPress={() => handleRate('hard')}>
+                  <TouchableOpacity disabled={isSubmitting} style={[styles.rateBtn, styles.rateBtnAgain]} onPress={() => void handleRate('AGAIN')}>
                     <Text style={styles.rateEmoji}>🔴</Text>
                     <Text style={styles.rateLabel}>Chưa thuộc</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={[styles.rateBtn, styles.rateBtnGood]} onPress={() => handleRate('medium')}>
+                  <TouchableOpacity disabled={isSubmitting} style={[styles.rateBtn, styles.rateBtnGood]} onPress={() => void handleRate('GOOD')}>
                     <Text style={styles.rateEmoji}>🟡</Text>
                     <Text style={styles.rateLabel}>Tạm nhớ</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity style={[styles.rateBtn, styles.rateBtnEasy]} onPress={() => handleRate('easy')}>
+                  <TouchableOpacity disabled={isSubmitting} style={[styles.rateBtn, styles.rateBtnEasy]} onPress={() => void handleRate('EASY')}>
                     <Text style={styles.rateEmoji}>🟢</Text>
                     <Text style={styles.rateLabel}>Rất thuộc</Text>
                   </TouchableOpacity>
@@ -278,12 +306,13 @@ export default function FlashcardDeckScreen({
               )}
             </View>
 
+            {actionError && <Text style={{ color: Palette.error.text, textAlign: 'center' }}>{actionError}</Text>}
             <ScrollView contentContainerStyle={styles.libraryGrid} showsVerticalScrollIndicator={false}>
               {filteredWords.map((word) => (
                 <View key={word.id} style={styles.libraryCard}>
                   <View style={styles.libCardTop}>
                     <Text style={styles.libWord}>{word.word}</Text>
-                    <TouchableOpacity onPress={() => onRemoveWord(word.id)}>
+                    <TouchableOpacity disabled={isSubmitting} onPress={() => word.flashcardId && void handleRemoveCard(word.flashcardId)}>
                       <Feather name="trash-2" size={14} color={Palette.error.text} />
                     </TouchableOpacity>
                   </View>

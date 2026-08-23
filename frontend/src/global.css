@@ -50,11 +50,11 @@ html, body {
   --secondary-600: #184F4A;
 
   /* --- Semantic — Phản hồi & trạng thái --- */
-  --success-text: #1E6B3A;     /* Câu đúng, từ đã thuộc, streak active */
+  --success-text: #1E6B3A;     /* Câu đúng, từ đã thuộc */
   --success-bg: #E8F5EC;
   --error-text: #B03535;       /* Câu sai, từ cần ôn gấp — đỏ muted */
   --error-bg: #FDF0F0;
-  --warning-text: #8B6314;     /* Streak warning — nâu mật ong */
+  --warning-text: #8B6314;     /* Cảnh báo ôn tập — nâu mật ong */
   --warning-bg: #FBF5E8;
   --info-text: #3A5A8C;        /* Tooltip, badge thông tin — xanh đậm dịu */
   --info-bg: #EEF2F8;

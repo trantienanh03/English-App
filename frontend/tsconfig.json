@@ -6,6 +6,7 @@
     "jsx": "react-jsx",
     "moduleResolution": "bundler",
     "strict": true,
+    "types": ["node"],
     "paths": {
       "@/*": [
         "./src/*"

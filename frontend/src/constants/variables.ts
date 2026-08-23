@@ -39,13 +39,13 @@ export const Variables = {
 
   // ── Semantic — Phản hồi & trạng thái ─────────────────────
   semantic: {
-    /** Câu đúng, từ đã thuộc, streak active */
+    /** Câu đúng, từ đã thuộc */
     successText: '#1E6B3A',
     successBg: '#E8F5EC',
     /** Câu sai, từ cần ôn gấp — đỏ muted, không chói */
     errorText: '#B03535',
     errorBg: '#FDF0F0',
-    /** Streak warning, cần ôn hôm nay — nâu mật ong */
+    /** Cảnh báo, cần ôn hôm nay — nâu mật ong */
     warningText: '#8B6314',
     warningBg: '#FBF5E8',
     /** Tooltip, badge thông tin, liên kết — xanh đậm dịu */

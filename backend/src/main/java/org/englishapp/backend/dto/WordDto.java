@@ -1,12 +1,16 @@
 package org.englishapp.backend.dto;
 
+import jakarta.validation.constraints.Size;
+
 public class WordDto {
     private Long id;
-    private String cocoClass;
+    private String detectionLabel;
+    @Size(min = 1, max = 100)
     private String enWord;
     private String phonetic;
     private String pos;
     private String definition;
+    @Size(min = 1, max = 200)
     private String translation;
     private String exampleEn;
     private String exampleVn;
@@ -14,9 +18,9 @@ public class WordDto {
 
     public WordDto() {}
 
-    public WordDto(Long id, String cocoClass, String enWord, String phonetic, String pos, String definition, String translation, String exampleEn, String exampleVn, String imageUrl) {
+    public WordDto(Long id, String detectionLabel, String enWord, String phonetic, String pos, String definition, String translation, String exampleEn, String exampleVn, String imageUrl) {
         this.id = id;
-        this.cocoClass = cocoClass;
+        this.detectionLabel = detectionLabel;
         this.enWord = enWord;
         this.phonetic = phonetic;
         this.pos = pos;
@@ -30,8 +34,8 @@ public class WordDto {
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
-    public String getCocoClass() { return cocoClass; }
-    public void setCocoClass(String cocoClass) { this.cocoClass = cocoClass; }
+    public String getDetectionLabel() { return detectionLabel; }
+    public void setDetectionLabel(String detectionLabel) { this.detectionLabel = detectionLabel; }
 
     public String getEnWord() { return enWord; }
     public void setEnWord(String enWord) { this.enWord = enWord; }

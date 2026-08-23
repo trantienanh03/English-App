@@ -9,6 +9,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
@@ -25,7 +26,10 @@ public class ScanController {
 
     public ScanController(WordService wordService) {
         this.wordService = wordService;
-        this.restTemplate = new RestTemplate();
+        SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
+        requestFactory.setConnectTimeout(5_000);
+        requestFactory.setReadTimeout(45_000);
+        this.restTemplate = new RestTemplate(requestFactory);
     }
 
     /**
@@ -37,6 +41,9 @@ public class ScanController {
             @RequestParam("file") MultipartFile file,
             @RequestParam(value = "confidence", defaultValue = "0.25") float confidence
     ) {
+        if (file.isEmpty() || file.getContentType() == null || !file.getContentType().startsWith("image/")) {
+            return ResponseEntity.badRequest().body(Map.of("error", "INVALID_IMAGE", "message", "A non-empty image file is required."));
+        }
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -71,17 +78,10 @@ public class ScanController {
                     Map<String, Object> enriched = new HashMap<>(pred);
 
                     try {
-                        WordDto wordDto = wordService.findByCocoClass(label);
+                        WordDto wordDto = wordService.findByDetectionLabel(label);
                         enriched.put("wordData", wordDto);
-                    } catch (Exception e) {
-                        // Label not in 365 DB — graceful fallback without crash
-                        enriched.put("wordData", Map.of(
-                                "enWord", label,
-                                "translation", "Chưa có dữ liệu từ vựng",
-                                "pos", "Noun",
-                                "exampleEn", "I can see a " + label + ".",
-                                "exampleVn", "Tôi thấy một " + label + "."
-                        ));
+                    } catch (org.springframework.web.server.ResponseStatusException notMapped) {
+                        // Keep the detection visible, but never present fabricated vocabulary as a real DB record.
                     }
 
                     enrichedPredictions.add(enriched);
@@ -98,8 +98,8 @@ public class ScanController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Failed to process scan: " + e.getMessage()));
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(Map.of("error", "AI_SERVICE_UNAVAILABLE", "message", "The object detection service is temporarily unavailable."));
         }
     }
 }

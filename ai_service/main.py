@@ -13,6 +13,7 @@ Tác giả: Trần Tiến Anh - MSSV: 22130016
 import io
 import os
 import time
+from pathlib import Path
 from typing import List, Optional
 from fastapi import FastAPI, File, UploadFile, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -57,27 +58,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MODEL_PATH = os.getenv("MODEL_PATH", "models/best.pt")
-FALLBACK_MODEL = "yolov8m-worldv2.pt"
+BASE_DIR = Path(__file__).resolve().parent
+MODEL_PATH = os.getenv("MODEL_PATH", str(BASE_DIR / "models" / "best.pt"))
+FALLBACK_MODEL = os.getenv("FALLBACK_MODEL", str(BASE_DIR / "yolov8m-worldv2.pt"))
+CANONICAL_LABELS_PATH = Path(os.getenv("CANONICAL_LABELS_PATH", str(BASE_DIR / "canonical-labels.txt")))
 
-EXPANDED_VOCABULARY = [
-    "person", "glasses", "sunglasses", "hat", "cap", "shoes", "sneakers", "boots", "socks", 
-    "watch", "ring", "necklace", "earrings", "wallet", "purse", "backpack", "handbag", "suitcase", "umbrella", "belt",
-    "calculator", "cell phone", "mobile phone", "laptop", "computer", "display", "monitor", "mouse", "keyboard", 
-    "headphone", "earphones", "speaker", "soundbar", "remote", "game controller", "tv", "camera", "tablet", "drone", "charger",
-    "book", "notebook", "pen", "pencil", "eraser", "ruler", "scissors", "stapler", "tape", "paper", "folder", 
-    "paper clip", "marker", "highlighter", "pencil case", "globe", "sticky note", "blackboard", "whiteboard",
-    "cup", "mug", "glass", "water bottle", "thermos", "bottle", "wine glass", "plate", "bowl", "fork", "knife", "spoon", 
-    "chopsticks", "tray", "pan", "pot", "kettle", "coffee maker", "blender", "microwave", "oven", "toaster", "refrigerator", "sink", "faucet",
-    "chair", "armchair", "barstool", "couch", "sofa", "bed", "pillow", "cushion", "blanket", "curtain", "dining table", "desk", 
-    "cabinet", "shelf", "bookshelf", "drawer", "mirror", "clock", "wall clock", "painting", "picture frame", "poster", "vase", 
-    "potted plant", "flower", "lamp", "desk lamp", "trash can", "fan", "air conditioner", "heater", "vacuum cleaner", "iron", "washing machine",
-    "toothbrush", "toothpaste", "soap", "shampoo", "towel", "hair dryer", "razor", "shaver", "comb", "tissue", "toilet", "bath tub",
-    "toy", "teddy bear", "doll", "ball", "basketball", "football", "tennis racket", "skateboard", "guitar", "piano", "violin",
-    "bicycle", "motorcycle", "car", "bus", "truck", "train", "airplane", "boat", "traffic light", "stop sign", "street sign", "bench", "street light",
-    "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra", "giraffe",
-    "banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog", "pizza", "donut", "cake", "bread", "fruit", "vegetable"
-]
+def load_canonical_labels() -> List[str]:
+    labels = [line.strip().lower() for line in CANONICAL_LABELS_PATH.read_text(encoding="utf-8").splitlines() if line.strip()]
+    if len(labels) != 365 or len(set(labels)) != 365:
+        raise RuntimeError(f"Expected 365 unique canonical labels, found {len(set(labels))}")
+    return labels
+
+EXPANDED_VOCABULARY = load_canonical_labels()
 
 model = None
 
@@ -94,6 +86,10 @@ def load_ai_model():
             print(f"✨ Khởi tạo thành công từ vựng mở rộng cho YOLO-World")
         except Exception as e:
             print(f"⚠️ Cảnh báo thiết lập custom vocabulary: {e}")
+    model_labels = [str(value).strip().lower() for value in model.names.values()]
+    if model_labels != EXPANDED_VOCABULARY:
+        model = None
+        raise RuntimeError("The loaded detector class list does not exactly match the 365 canonical labels")
 
 # Schemas
 class BoundingBox(BaseModel):
@@ -215,7 +211,7 @@ async def predict_multi_objects(
     if model is None:
         raise HTTPException(status_code=500, detail="Mô hình AI chưa được nạp!")
 
-    if not file.content_type.startswith("image/"):
+    if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File tải lên phải là hình ảnh")
 
     start_time = time.time()
@@ -233,7 +229,9 @@ async def predict_multi_objects(
             boxes = result.boxes
             for box in boxes:
                 cls_id = int(box.cls[0])
-                label_en = model.names[cls_id]
+                label_en = str(model.names[cls_id]).strip().lower()
+                if label_en not in EXPANDED_VOCABULARY:
+                    continue
                 conf = float(box.conf[0])
                 coords = box.xyxy[0].tolist()
 
@@ -267,8 +265,10 @@ async def predict_multi_objects(
             contextual_sentence=context_res
         )
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Lỗi xử lý AI Multi-Object: {str(e)}")
+    except HTTPException:
+        raise
+    except Exception:
+        raise HTTPException(status_code=503, detail="Dịch vụ nhận diện tạm thời không khả dụng")
 
 if __name__ == "__main__":
     import uvicorn

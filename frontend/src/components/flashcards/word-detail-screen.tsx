@@ -7,6 +7,7 @@ import {
   ScrollView,
   Image,
   Modal,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -17,7 +18,7 @@ import { playAudio } from '@/utils/audio';
 interface WordDetailScreenProps {
   word: VocabularyWord;
   onClose: () => void;
-  onSaveToFlashcards?: (word: VocabularyWord) => void;
+  onSaveToFlashcards?: (word: VocabularyWord) => void | Promise<void>;
   onUpdateDifficulty?: (id: string, difficulty: 'easy' | 'medium' | 'hard') => void;
 }
 
@@ -40,13 +41,28 @@ export default function WordDetailScreen({
 }: WordDetailScreenProps) {
   const [showDifficultyPicker, setShowDifficultyPicker] = useState(false);
   const [currentDifficulty, setCurrentDifficulty] = useState(word.difficulty);
+  const [saving, setSaving] = useState(false);
 
   const diffCfg = DIFFICULTY_CONFIG[currentDifficulty] ?? DIFFICULTY_CONFIG.medium;
 
   const handleSetDifficulty = (d: 'easy' | 'medium' | 'hard') => {
+    if (!onUpdateDifficulty) return;
     setCurrentDifficulty(d);
-    onUpdateDifficulty?.(word.id, d);
+    onUpdateDifficulty(word.id, d);
     setShowDifficultyPicker(false);
+  };
+
+  const handleSave = async () => {
+    if (!onSaveToFlashcards || saving) return;
+    setSaving(true);
+    try {
+      await onSaveToFlashcards(word);
+      Alert.alert('Đã lưu', `“${word.word}” đã được lưu vào Sổ từ.`);
+    } catch {
+      Alert.alert('Không thể lưu từ', 'Vui lòng kiểm tra kết nối rồi thử lại.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -58,8 +74,8 @@ export default function WordDetailScreen({
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Chi tiết từ vựng</Text>
         {onSaveToFlashcards && (
-          <TouchableOpacity style={styles.saveBtn} onPress={() => onSaveToFlashcards(word)}>
-            <Feather name="bookmark" size={20} color={Palette.primary[500]} />
+          <TouchableOpacity style={styles.saveBtn} onPress={() => void handleSave()} disabled={saving}>
+            <Feather name={saving ? 'clock' : 'bookmark'} size={20} color={Palette.primary[500]} />
           </TouchableOpacity>
         )}
       </View>
@@ -89,13 +105,14 @@ export default function WordDetailScreen({
             </TouchableOpacity>
           </View>
 
-          {/* Difficulty badge — tappable */}
+          {/* Difficulty is editable only when a real persistence callback is provided. */}
           <TouchableOpacity
             style={[styles.diffBadge, { backgroundColor: diffCfg.bg }]}
             onPress={() => setShowDifficultyPicker(true)}
+            disabled={!onUpdateDifficulty}
           >
             <Text style={[styles.diffText, { color: diffCfg.text }]}>{diffCfg.label}</Text>
-            <Feather name="chevron-down" size={12} color={diffCfg.text} />
+            {onUpdateDifficulty && <Feather name="chevron-down" size={12} color={diffCfg.text} />}
           </TouchableOpacity>
         </View>
 
@@ -115,7 +132,7 @@ export default function WordDetailScreen({
             <Text style={styles.sectionTitle}>Câu ví dụ</Text>
           </View>
           <View style={styles.sentenceBox}>
-            <Text style={styles.sentenceEn}>"{word.sentence}"</Text>
+            <Text style={styles.sentenceEn}>“{word.sentence}”</Text>
             {word.sentenceVn && (
               <Text style={styles.sentenceVn}>{word.sentenceVn}</Text>
             )}
@@ -124,7 +141,7 @@ export default function WordDetailScreen({
           {/* Extra example sentences */}
           {EXAMPLE_SENTENCES.map((ex, i) => (
             <View key={i} style={[styles.sentenceBox, styles.sentenceBoxAlt]}>
-              <Text style={styles.sentenceEn}>"{ex.en}"</Text>
+              <Text style={styles.sentenceEn}>“{ex.en}”</Text>
               <Text style={styles.sentenceVn}>{ex.vn}</Text>
             </View>
           ))}
@@ -137,7 +154,7 @@ export default function WordDetailScreen({
             <Text style={[styles.sectionTitle, { color: Palette.warning.text }]}>Mẹo ghi nhớ</Text>
           </View>
           <Text style={styles.tipText}>
-            Hãy liên kết từ "{word.word}" với một hình ảnh hoặc cảm xúc cụ thể. Đọc to phiên âm {word.phonetic} mỗi lần ôn tập giúp não bộ ghi nhớ lâu hơn.
+            Hãy liên kết từ “{word.word}” với một hình ảnh hoặc cảm xúc cụ thể. Đọc to phiên âm {word.phonetic} mỗi lần ôn tập giúp não bộ ghi nhớ lâu hơn.
           </Text>
         </View>
 
@@ -167,7 +184,7 @@ export default function WordDetailScreen({
       </ScrollView>
 
       {/* DIFFICULTY PICKER MODAL */}
-      <Modal visible={showDifficultyPicker} transparent animationType="fade">
+      <Modal visible={showDifficultyPicker && Boolean(onUpdateDifficulty)} transparent animationType="fade">
         <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowDifficultyPicker(false)}>
           <View style={styles.pickerCard}>
             <Text style={styles.pickerTitle}>Đánh giá độ khó</Text>

@@ -14,6 +14,10 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Variables } from '@/constants/variables';
 import DotsLoader from '@/components/ui/dots-loader';
 import { supabase } from '@/lib/supabase';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
+
+WebBrowser.maybeCompleteAuthSession();
 
 interface DropsAuthScreenProps {
   initialMode?: 'login' | 'signup';
@@ -90,6 +94,11 @@ export default function DropsAuthScreen({
           return;
         }
 
+        if (!data.session) {
+          setError('Tài khoản đã được tạo. Vui lòng xác nhận email rồi đăng nhập.');
+          setAuthMode('login');
+          return;
+        }
         const userName = data.user?.user_metadata?.display_name || name;
         onAuthSuccess(userName, email.trim());
       } else {
@@ -109,7 +118,7 @@ export default function DropsAuthScreen({
           'Học Viên Vocam';
         onAuthSuccess(userName, data.user?.email || email.trim());
       }
-    } catch (err: any) {
+    } catch {
       setError('Đã xảy ra lỗi kết nối. Vui lòng thử lại.');
     } finally {
       setLoading(false);
@@ -148,15 +157,39 @@ export default function DropsAuthScreen({
   const handleGoogleOAuth = async () => {
     setGoogleLoading(true);
     try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      const redirectTo = Linking.createURL('auth/callback');
+      const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: 'vocam://auth/callback',
+          redirectTo,
+          skipBrowserRedirect: true,
           queryParams: { access_type: 'offline', prompt: 'consent' },
         },
       });
       if (oauthError) {
         Alert.alert('Lỗi đăng nhập Google', oauthError.message);
+        return;
+      }
+      if (!data.url) throw new Error('OAuth URL is missing');
+      const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+      if (result.type === 'success') {
+        const parsed = Linking.parse(result.url);
+        const code = typeof parsed.queryParams?.code === 'string' ? parsed.queryParams.code : null;
+        if (code) {
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) throw exchangeError;
+        } else {
+          const fragment = result.url.split('#')[1] || '';
+          const params = new URLSearchParams(fragment);
+          const accessToken = params.get('access_token');
+          const refreshToken = params.get('refresh_token');
+          if (!accessToken || !refreshToken) throw new Error('OAuth session is missing');
+          const { error: sessionError } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken });
+          if (sessionError) throw sessionError;
+        }
+        const { data: sessionData } = await supabase.auth.getSession();
+        const user = sessionData.session?.user;
+        if (user) onAuthSuccess(user.user_metadata?.display_name || user.email?.split('@')[0], user.email);
       }
     } catch {
       Alert.alert('Lỗi', 'Không thể mở đăng nhập Google.');
@@ -173,9 +206,11 @@ export default function DropsAuthScreen({
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.headerRow}>
-          <TouchableOpacity onPress={onClose || (() => onAuthSuccess())} style={styles.iconBtn}>
-            <Feather name="x" size={24} color={Variables.text.primary} />
-          </TouchableOpacity>
+          {onClose ? (
+            <TouchableOpacity onPress={onClose} style={styles.iconBtn}>
+              <Feather name="x" size={24} color={Variables.text.primary} />
+            </TouchableOpacity>
+          ) : <View style={styles.iconBtn} />}
 
           <TouchableOpacity
             style={styles.topRightLink}
@@ -189,7 +224,7 @@ export default function DropsAuthScreen({
         <View style={styles.landingHero}>
           <Text style={styles.heroTitle}>Bắt đầu học với Vocam</Text>
           <Text style={styles.heroSubtitle}>
-            Theo dõi tiến độ học, cá nhân hoá trải nghiệm và nhận huy hiệu thành tích.
+            Theo dõi tiến độ bài học và ôn từ đúng hạn với phương pháp SM-2.
           </Text>
         </View>
 

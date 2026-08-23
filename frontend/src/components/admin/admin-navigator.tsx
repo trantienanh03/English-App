@@ -30,6 +30,7 @@ export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorP
   const [words, setWords] = useState<BackendWordDto[]>([]);
   const [users, setUsers] = useState<AdminUserEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
   const [editWord, setEditWord] = useState<Partial<BackendWordDto> | null>(null);
@@ -37,24 +38,26 @@ export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorP
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [s, w, u] = await Promise.all([
-        api.fetchAdminStats().catch(() => ({ totalUsers: 0, activeUsers: 0, lockedUsers: 0, totalWords: 365 })),
-        api.fetchAllWordDtos().catch(() => []),
-        api.fetchAdminUsers().catch(() => []),
+        api.fetchAdminStats(),
+        api.fetchAllWordDtos(),
+        api.fetchAdminUsers(),
       ]);
       setStats(s);
       setWords(w);
       setUsers(u);
-    } catch (e: any) {
-      console.warn('Error loading admin data:', e);
+    } catch {
+      setLoadError('Không thể tải dữ liệu quản trị. Kiểm tra kết nối rồi thử lại.');
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    loadData();
+    const timer = setTimeout(() => void loadData(), 0);
+    return () => clearTimeout(timer);
   }, [loadData]);
 
   const handleToggleLock = async (user: AdminUserEntry) => {
@@ -79,7 +82,7 @@ export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorP
         const filename = `word_${editWord.id || Date.now()}_${Date.now()}.jpg`;
         const blob = await (await fetch(uri)).blob();
 
-        const { data, error } = await supabase.storage
+        const { error } = await supabase.storage
           .from('vocabulary-images')
           .upload(`vocab/${filename}`, blob, { contentType: 'image/jpeg', upsert: true });
 
@@ -113,7 +116,7 @@ export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorP
 
   const filteredWords = words.filter(w =>
     w.enWord?.toLowerCase().includes(search.toLowerCase()) ||
-    w.cocoClass?.toLowerCase().includes(search.toLowerCase()) ||
+    w.detectionLabel?.toLowerCase().includes(search.toLowerCase()) ||
     w.translation?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -162,6 +165,13 @@ export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorP
         <View style={styles.loadingBox}>
           <ActivityIndicator size="large" color="#4F46E5" />
         </View>
+      ) : loadError ? (
+        <View style={styles.loadingBox}>
+          <Text style={styles.loadError}>{loadError}</Text>
+          <TouchableOpacity style={styles.retryBtn} onPress={() => void loadData()}>
+            <Text style={styles.retryText}>Thử lại</Text>
+          </TouchableOpacity>
+        </View>
       ) : (
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* DASHBOARD TAB */}
@@ -182,7 +192,7 @@ export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorP
                   <Text style={styles.statLbl}>Đã khóa</Text>
                 </View>
                 <View style={styles.statCard}>
-                  <Text style={[styles.statVal, { color: '#6366F1' }]}>{stats?.totalWords ?? 365}</Text>
+                  <Text style={[styles.statVal, { color: '#6366F1' }]}>{stats?.totalWords ?? 0}</Text>
                   <Text style={styles.statLbl}>Từ Canonical</Text>
                 </View>
               </View>
@@ -205,7 +215,7 @@ export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorP
                 <View key={w.id} style={styles.wordCard}>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.wordTitle}>{w.enWord} <Text style={styles.wordPhonetic}>{w.phonetic}</Text></Text>
-                    <Text style={styles.wordSub}>{w.translation} • <Text style={styles.cocoBadge}>{w.cocoClass}</Text></Text>
+                    <Text style={styles.wordSub}>{w.translation} • <Text style={styles.cocoBadge}>{w.detectionLabel}</Text></Text>
                   </View>
                   <TouchableOpacity style={styles.editBtn} onPress={() => setEditWord(w)}>
                     <Feather name="edit-2" size={16} color="#4F46E5" />
@@ -245,7 +255,7 @@ export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorP
             <Text style={styles.modalTitle}>✏️ Cập nhật Từ vựng Canonical</Text>
             {editWord && (
               <ScrollView>
-                <Text style={styles.inputLbl}>Nhãn YOLO (Cố định): <Text style={{ fontWeight: 'bold' }}>{editWord.cocoClass}</Text></Text>
+                <Text style={styles.inputLbl}>Nhãn nhận diện (Cố định): <Text style={{ fontWeight: 'bold' }}>{editWord.detectionLabel}</Text></Text>
                 
                 <Text style={styles.inputLbl}>Từ tiếng Anh</Text>
                 <TextInput style={styles.input} value={editWord.enWord} onChangeText={t => setEditWord(p => ({ ...p!, enWord: t }))} />
@@ -258,6 +268,24 @@ export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorP
 
                 <Text style={styles.inputLbl}>Định nghĩa</Text>
                 <TextInput style={styles.input} value={editWord.definition} onChangeText={t => setEditWord(p => ({ ...p!, definition: t }))} />
+
+                <Text style={styles.inputLbl}>Câu ví dụ tiếng Anh</Text>
+                <TextInput
+                  style={[styles.input, { minHeight: 60 }]}
+                  value={editWord.exampleEn}
+                  onChangeText={t => setEditWord(p => ({ ...p!, exampleEn: t }))}
+                  multiline
+                  placeholder="e.g. The cat is sleeping on the sofa."
+                />
+
+                <Text style={styles.inputLbl}>Câu ví dụ tiếng Việt</Text>
+                <TextInput
+                  style={[styles.input, { minHeight: 60 }]}
+                  value={editWord.exampleVn}
+                  onChangeText={t => setEditWord(p => ({ ...p!, exampleVn: t }))}
+                  multiline
+                  placeholder="e.g. Con mèo đang ngủ trên ghế sofa."
+                />
 
                 <Text style={styles.inputLbl}>Ảnh minh họa (Supabase Storage)</Text>
                 {editWord.imageUrl ? (
@@ -324,6 +352,9 @@ const styles = StyleSheet.create({
   lockBtnText: { color: '#FFFFFF', fontSize: 12, fontWeight: '700' },
 
   loadingBox: { flex: 1, justifyContent: 'center', alignItems: 'center', marginTop: 100 },
+  loadError: { color: '#B91C1C', textAlign: 'center', marginBottom: 12 },
+  retryBtn: { backgroundColor: '#4F46E5', borderRadius: 8, paddingHorizontal: 18, paddingVertical: 10 },
+  retryText: { color: '#FFFFFF', fontWeight: '700' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   modalCard: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 20, maxHeight: '80%' },
   modalTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B', marginBottom: 16 },

@@ -1,38 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  Platform,
-  ActivityIndicator,
-} from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
-import { UserProgress, VocabularyWord, Lesson, Badge } from '@/types';
-import { mockLessons, mockUserProgress } from '@/data/mock-data';
-import {
-  initDatabase,
-  initDeviceUuid,
-  getLocalFlashcards,
-  saveLocalFlashcard,
-  deleteLocalFlashcard,
-  updateFlashcardSM2,
-  saveUserProgress,
-  loadUserProgress,
-  saveBadges,
-  loadBadges,
-  getScanCount,
-  saveLessonProgress,
-  loadAllLessonProgress,
-  cacheWordsBulk,
-  clearUserLocalData,
-  LocalFlashcard,
-} from '@/db/database';
-import { syncProgressWithServer } from '@/services/sync-service';
-import { api } from '@/services/api';
+import { Lesson, VocabularyWord } from '@/types';
+import { api, ReviewRating, UserProfileDto } from '@/services/api';
+import * as Notifications from 'expo-notifications';
 
+import AdminNavigator from './admin/admin-navigator';
 import DashboardScreen from './dashboard/dashboard-screen';
 import FlashcardDeckScreen from './flashcards/flashcard-deck-screen';
 import ObjectScannerScreen from './scanner/object-scanner-screen';
@@ -40,7 +14,6 @@ import LessonGridScreen from './lessons/lesson-grid-screen';
 import LessonDetailScreen from './lessons/lesson-detail-screen';
 import PracticeQuizScreen from './quiz/practice-quiz-screen';
 import ProfileScreen from './profile/profile-screen';
-import SettingsScreen from './profile/settings-screen';
 import SearchScreen from './ui/search-screen';
 
 interface MainContainerProps {
@@ -49,547 +22,170 @@ interface MainContainerProps {
   onLogout: () => void;
 }
 
-// ─── Badge auto-unlock rules ─────────────────────────────────────────────────
-function computeUnlockedBadges(
-  progress: UserProgress,
-  scanCount: number,
-  quizPerfect: boolean
-): Badge[] {
-  return progress.badges.map(badge => {
-    if (badge.unlocked) return badge; // already unlocked — keep date
-    let shouldUnlock = false;
-    if (badge.id === 'b1') shouldUnlock = progress.streak >= 3;
-    if (badge.id === 'b2') shouldUnlock = scanCount >= 3;
-    if (badge.id === 'b3') shouldUnlock = progress.wordsLearned >= 15;
-    if (badge.id === 'b4') shouldUnlock = quizPerfect;
-
-    if (shouldUnlock) {
-      return { ...badge, unlocked: true, unlockedAt: new Date().toISOString().slice(0, 10) };
-    }
-    return badge;
-  });
-}
-
-import AdminNavigator from './admin/admin-navigator';
+type Tab = 'home' | 'learn' | 'scan' | 'cards' | 'profile';
 
 export default function MainContainer({ userName, userEmail, onLogout }: MainContainerProps) {
-  const [userRole, setUserRole] = useState<'LEARNER' | 'ADMIN'>('LEARNER');
-  const [activeTab, setActiveTab] = useState<'home' | 'learn' | 'scan' | 'cards' | 'profile'>('home');
-  const [showQuizModal, setShowQuizModal] = useState<boolean>(false);
-  const [showSearch, setShowSearch] = useState<boolean>(false);
-  const [showSettings, setShowSettings] = useState<boolean>(false);
-  const [showStreak, setShowStreak] = useState<boolean>(false);
-  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
-
-  const [userProgress, setUserProgress] = useState<UserProgress>(mockUserProgress);
-  const [allCanonicalWords, setAllCanonicalWords] = useState<VocabularyWord[]>([]);
+  const [profile, setProfile] = useState<UserProfileDto | null>(null);
+  const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [allWords, setAllWords] = useState<VocabularyWord[]>([]);
   const [savedWords, setSavedWords] = useState<VocabularyWord[]>([]);
-  const [lessons, setLessons] = useState<Lesson[]>(mockLessons);
-  const [wordOfTheDay, setWordOfTheDay] = useState<VocabularyWord | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [dueWords, setDueWords] = useState<VocabularyWord[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
+  const [showQuiz, setShowQuiz] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  // ─── Init — fetch profile & restore state ──────────────────────────────
-  useEffect(() => {
-    const init = async () => {
-      try {
-        initDatabase();
-        
-        // Fetch role from GET /api/me
-        try {
-          const profile = await api.fetchMe();
-          if (profile?.role === 'ADMIN') {
-            setUserRole('ADMIN');
-          }
-        } catch (err) {
-          // Dev fallback
-        }
-
-        // 1. Restore user progress
-        const savedProgress = await loadUserProgress();
-        const savedBadges = await loadBadges();
-
-        let restoredProgress: UserProgress = mockUserProgress;
-        if (savedProgress) {
-          restoredProgress = {
-            ...savedProgress,
-            badges: savedBadges ?? savedProgress.badges,
-          };
-        }
-
-        // 2. Restore flashcards
-        const localCards = await getLocalFlashcards();
-        if (localCards.length > 0) {
-          const mapped: VocabularyWord[] = localCards.map((c: LocalFlashcard) => ({
-            id: c.id,
-            word: c.en_word,
-            phonetic: c.phonetic || '',
-            vn: c.translation,
-            pos: c.pos || 'Noun',
-            sentence: c.example_en || '',
-            sentenceVn: c.example_vn || '',
-            difficulty: c.ease_factor < 2.0 ? 'hard' : c.ease_factor < 2.6 ? 'medium' : 'easy',
-            cocoClass: c.coco_class,
-          }));
-          setSavedWords(mapped);
-          restoredProgress = { ...restoredProgress, wordsLearned: mapped.length };
-        }
-
-        // 3. Restore lesson progress
-        const lessonProgressMap = await loadAllLessonProgress();
-        if (Object.keys(lessonProgressMap).length > 0) {
-          setLessons(prev =>
-            prev.map(l => ({
-              ...l,
-              progress: lessonProgressMap[l.id] ?? l.progress,
-            }))
-          );
-        }
-
-        setUserProgress(restoredProgress);
-
-        // 4. Fetch word dictionary from backend
-        try {
-          const remoteWords = await api.getAllWords();
-          if (remoteWords.length > 0) {
-            setAllCanonicalWords(remoteWords);
-            cacheWordsBulk(remoteWords);
-            const randomIdx = Math.floor(Math.random() * remoteWords.length);
-            setWordOfTheDay(remoteWords[randomIdx]);
-          }
-        } catch {
-          // Backend unavailable — skip
-        }
-
-        // 5. Background sync
-        syncProgressWithServer(userName || 'Học Viên Vocam');
-      } catch (err) {
-        console.warn('App initialization warning:', err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    init();
-  }, []);
-
-  // ─── Persist progress helper ───────────────────────────────────────────────
-  const persistProgress = useCallback(async (progress: UserProgress) => {
-    await saveUserProgress(progress);
-    syncProgressWithServer(userName || 'Học Viên Vocam');
-  }, [userName]);
-
-  // ─── Badge auto-unlock ─────────────────────────────────────────────────────
-  const checkBadges = useCallback(async (
-    progress: UserProgress,
-    quizPerfect = false
-  ): Promise<UserProgress> => {
-    const currentScanCount = await getScanCount();
-    const updatedBadges = computeUnlockedBadges(progress, currentScanCount, quizPerfect);
-
-    // Check if any new badges were unlocked
-    const newlyUnlocked = updatedBadges.filter(
-      (b, i) => b.unlocked && !progress.badges[i]?.unlocked
-    );
-
-    const updatedProgress = { ...progress, badges: updatedBadges };
-
-    if (newlyUnlocked.length > 0) {
-      await saveBadges(updatedBadges);
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const [me, words, cards, due, lessonData] = await Promise.all([
+        api.fetchMe(), api.fetchAllWords(), api.fetchFlashcards(), api.fetchFlashcards(true), api.fetchLessons(),
+      ]);
+      setProfile(me);
+      setAllWords(words);
+      setSavedWords(cards);
+      setDueWords(due);
+      setLessons(lessonData);
+    } catch (error) {
+      const message = error instanceof Error && error.message === 'NETWORK_UNAVAILABLE'
+        ? 'Không thể kết nối máy chủ. Kiểm tra mạng rồi thử lại.'
+        : 'Không thể tải dữ liệu học tập. Vui lòng thử lại.';
+      setLoadError(message);
+    } finally {
+      setLoading(false);
     }
-
-    return updatedProgress;
   }, []);
 
-  // ─── XP Handler ───────────────────────────────────────────────────────────
-  const handleAddXp = useCallback((amount: number) => {
-    setUserProgress(prev => {
-      const newXp = prev.xp + amount;
-      let newLevel = prev.level;
-      let newNextXp = prev.nextLevelXp;
-      if (newXp >= prev.nextLevelXp) {
-        newLevel += 1;
-        newNextXp += 300;
-      }
-      const updated = { ...prev, xp: newXp, level: newLevel, nextLevelXp: newNextXp };
-      // Check badges and persist (async, fire-and-forget)
-      checkBadges(updated).then(withBadges => {
-        setUserProgress(withBadges);
-        persistProgress(withBadges);
-      });
-      return updated;
-    });
-  }, [checkBadges, persistProgress]);
+  useEffect(() => {
+    const timer = setTimeout(() => void loadData(), 0);
+    return () => clearTimeout(timer);
+  }, [loadData]);
 
-  // ─── Add Word to Flashcards ───────────────────────────────────────────────
-  const handleAddWordToFlashcards = useCallback((newWord: VocabularyWord) => {
-    saveLocalFlashcard(newWord).then(async () => {
-      setSavedWords(prev => {
-        if (prev.some(w => w.word.toLowerCase() === newWord.word.toLowerCase())) {
-          return prev;
-        }
-        const updated = [newWord, ...prev];
-        setUserProgress(p => {
-          const next = { ...p, wordsLearned: updated.length };
-          checkBadges(next).then(withBadges => {
-            setUserProgress(withBadges);
-            persistProgress(withBadges);
-          });
-          return next;
-        });
-        return updated;
-      });
+  useEffect(() => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      if (response.notification.request.content.data?.destination === 'cards') setActiveTab('cards');
     });
-  }, [checkBadges, persistProgress]);
-
-  // ─── Add Word to Lesson ────────────────────────────────────────────────────
-  const handleAddWordToLesson = useCallback((lessonId: string, word: VocabularyWord) => {
-    setLessons(prev =>
-      prev.map(les => {
-        if (les.id === lessonId) {
-          return { ...les, words: [word, ...les.words], wordCount: les.words.length + 1 };
-        }
-        return les;
-      })
-    );
+    return () => subscription.remove();
   }, []);
 
-  // ─── Lesson Progress Update ────────────────────────────────────────────────
-  const handleLessonProgressUpdate = useCallback(async (lessonId: string, progress: number) => {
-    await saveLessonProgress(lessonId, progress);
-    setLessons(prev =>
-      prev.map(l => l.id === lessonId ? { ...l, progress } : l)
-    );
+  const refreshProfile = useCallback(async () => setProfile(await api.fetchMe()), []);
+
+  const handleSaveWord = useCallback(async (word: VocabularyWord) => {
+    if (!/^\d+$/.test(word.id)) throw new Error('VOCABULARY_NOT_MAPPED');
+    // Kiểm tra từ đã có trong sổ từ chưa (dựa theo vocabulary id, không phải flashcardId)
+    const alreadySaved = savedWords.some(item => item.id === word.id);
+    if (alreadySaved) throw new Error('ALREADY_SAVED');
+    const saved = await api.saveFlashcard(word.id);
+    setSavedWords(previous => [saved, ...previous.filter(item => item.flashcardId !== saved.flashcardId)]);
+    setDueWords(previous => previous.some(item => item.flashcardId === saved.flashcardId) ? previous : [saved, ...previous]);
+    await refreshProfile();
+  }, [refreshProfile, savedWords]);
+
+  const handleReview = useCallback(async (flashcardId: string, rating: ReviewRating) => {
+    const updated = await api.reviewFlashcard(flashcardId, rating);
+    setSavedWords(previous => previous.map(item => item.flashcardId === flashcardId ? updated : item));
+    setDueWords(previous => previous.filter(item => item.flashcardId !== flashcardId));
+    await refreshProfile();
+  }, [refreshProfile]);
+
+  const handleRemove = useCallback(async (flashcardId: string) => {
+    await api.deleteFlashcard(flashcardId);
+    setSavedWords(previous => previous.filter(item => item.flashcardId !== flashcardId));
+    setDueWords(previous => previous.filter(item => item.flashcardId !== flashcardId));
+    await refreshProfile();
+  }, [refreshProfile]);
+
+  const handleLessonProgress = useCallback(async (lessonId: string, score: number) => {
+    const updated = await api.saveLessonProgress(lessonId, score);
+    setLessons(previous => previous.map(lesson => lesson.id === lessonId ? updated : lesson));
+    setSelectedLesson(previous => previous?.id === lessonId ? updated : previous);
   }, []);
 
-  // ─── Difficulty / Remove ──────────────────────────────────────────────────
-  const handleUpdateWordDifficulty = useCallback((id: string, difficulty: 'easy' | 'medium' | 'hard') => {
-    updateFlashcardSM2(id, difficulty).then(() => {
-      setSavedWords(prev => prev.map(w => w.id === id ? { ...w, difficulty } : w));
-    });
-  }, []);
+  if (loading) {
+    return <View style={styles.center}><ActivityIndicator size="large" color={Palette.primary[500]} /><Text style={styles.loadingText}>Đang tải dữ liệu...</Text></View>;
+  }
 
-  const handleRemoveWord = useCallback((id: string) => {
-    deleteLocalFlashcard(id).then(() => {
-      setSavedWords(prev => {
-        const updated = prev.filter(w => w.id !== id);
-        setUserProgress(p => {
-          const next = { ...p, wordsLearned: updated.length };
-          persistProgress(next);
-          return next;
-        });
-        return updated;
-      });
-    });
-  }, [persistProgress]);
-
-  // ─── Lesson Navigation ────────────────────────────────────────────────────
-  const handleStartLesson = useCallback((lessonId: string) => {
-    const lesson = lessons.find(l => l.id === lessonId) ?? null;
-    setSelectedLesson(lesson);
-  }, [lessons]);
-
-  // ─── XP with streak check ─────────────────────────────────────────────────
-  const handleAddXpWithStreakCheck = useCallback((amount: number, quizPerfect = false) => {
-    setUserProgress(prev => {
-      const newXp = prev.xp + amount;
-      let newLevel = prev.level;
-      let newNextXp = prev.nextLevelXp;
-      if (newXp >= prev.nextLevelXp) {
-        newLevel += 1;
-        newNextXp += 300;
-      }
-      const updated = { ...prev, xp: newXp, level: newLevel, nextLevelXp: newNextXp };
-
-      checkBadges(updated, quizPerfect).then(withBadges => {
-        setUserProgress(withBadges);
-        persistProgress(withBadges);
-      });
-
-      const milestones = [3, 7, 14, 30];
-      if (milestones.includes(prev.streak)) {
-        setShowStreak(true);
-      }
-      return updated;
-    });
-  }, [checkBadges, persistProgress]);
-
-  if (isLoading) {
+  if (loadError || !profile) {
     return (
-      <View style={styles.loadingScreen}>
-        <ActivityIndicator size="large" color={Palette.primary[500]} />
-        <Text style={styles.loadingText}>Đang tải dữ liệu...</Text>
+      <View style={styles.center}>
+        <Feather name="wifi-off" size={38} color={Palette.error.text} />
+        <Text style={styles.errorText}>{loadError}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={() => void loadData()}><Text style={styles.retryText}>Thử lại</Text></TouchableOpacity>
+        <TouchableOpacity onPress={onLogout}><Text style={styles.logoutText}>Đăng xuất</Text></TouchableOpacity>
       </View>
     );
   }
 
-  const dueCardsCount = savedWords.length;
-  const wordsLearnedCount = savedWords.filter(w => w.difficulty === 'easy').length;
+  if (profile.role === 'ADMIN') return <AdminNavigator adminEmail={userEmail} onLogout={onLogout} />;
 
-  const renderActiveScreen = () => {
+  const openLesson = (lessonId: string) => setSelectedLesson(lessons.find(lesson => lesson.id === lessonId) ?? null);
+  const startLessonFromSearch = (lessonId: string) => {
+    const lesson = lessons.find(item => item.id === lessonId) ?? null;
+    setSelectedLesson(lesson);
+    setShowQuiz(Boolean(lesson));
+  };
+  const wordOfTheDay = allWords.length ? allWords[new Date().getDate() % allWords.length] : null;
+
+  const screen = (() => {
     switch (activeTab) {
-      case 'home':
-        return (
-          <DashboardScreen
-            userName={userName}
-            userEmail={userEmail}
-            wordsSavedCount={savedWords.length}
-            wordsLearnedCount={wordsLearnedCount}
-            dueCardsCount={dueCardsCount}
-            lessons={lessons}
-            wordOfTheDay={wordOfTheDay}
-            onNavigate={(tab) => setActiveTab(tab as any)}
-            onSelectLesson={handleStartLesson}
-            onOpenWordDetail={() => setActiveTab('cards')}
-          />
-        );
-      case 'learn':
-        return (
-          <LessonGridScreen
-            lessons={lessons}
-            onStartLesson={handleStartLesson}
-          />
-        );
-      case 'scan':
-        return (
-          <ObjectScannerScreen
-            lessons={lessons}
-            onAddWordToFlashcards={handleAddWordToFlashcards}
-            onAddWordToLesson={handleAddWordToLesson}
-            onAddXp={() => {}}
-            onNavigate={(tab) => setActiveTab(tab as any)}
-          />
-        );
-      case 'cards':
-        return (
-          <FlashcardDeckScreen
-            words={savedWords}
-            onUpdateDifficulty={handleUpdateWordDifficulty}
-            onRemoveWord={handleRemoveWord}
-            onStartQuiz={() => setShowQuizModal(true)}
-          />
-        );
-      case 'profile':
-        return (
-          <ProfileScreen
-            userName={userName}
-            userEmail={userEmail}
-            wordsSavedCount={savedWords.length}
-            wordsLearnedCount={wordsLearnedCount}
-            dueCardsCount={dueCardsCount}
-            onLogout={handleLogout}
-          />
-        );
-      default:
-        return null;
+      case 'home': return <DashboardScreen userName={profile.displayName || userName} userEmail={userEmail} wordsSavedCount={profile.wordsSaved} wordsLearnedCount={profile.wordsLearned} dueCardsCount={profile.dueCards} lessons={lessons} wordOfTheDay={wordOfTheDay} onNavigate={tab => setActiveTab(tab as Tab)} onSelectLesson={openLesson} onOpenWordDetail={() => setActiveTab('cards')} />;
+      case 'learn': return <LessonGridScreen lessons={lessons} onStartLesson={openLesson} />;
+      case 'scan': return <ObjectScannerScreen onAddWordToFlashcards={handleSaveWord} />;
+      case 'cards': return <FlashcardDeckScreen words={savedWords} dueWords={dueWords} onReview={handleReview} onRemoveWord={handleRemove} onStartQuiz={() => { const lesson = selectedLesson ?? lessons[0] ?? null; setSelectedLesson(lesson); if (lesson) setShowQuiz(true); }} />;
+      case 'profile': return <ProfileScreen userName={profile.displayName || userName} userEmail={userEmail} wordsSavedCount={profile.wordsSaved} wordsLearnedCount={profile.wordsLearned} dueCardsCount={profile.dueCards} onLogout={onLogout} />;
     }
-  };
-
-  const handleLogout = async () => {
-    await clearUserLocalData();
-    onLogout();
-  };
-
-  if (userRole === 'ADMIN') {
-    return <AdminNavigator adminEmail={userEmail} onLogout={handleLogout} />;
-  }
+  })();
 
   return (
     <View style={styles.container}>
-      {renderActiveScreen()}
-
-      {/* FLOATING BOTTOM TAB BAR */}
+      {screen}
       <View style={styles.bottomTabContainer}>
-        <TouchableOpacity style={styles.searchPill} onPress={() => setShowSearch(true)}>
-          <Feather name="search" size={15} color={Palette.text.muted} />
-          <Text style={styles.searchPillText}>Tìm từ vựng, bài học...</Text>
-        </TouchableOpacity>
-
+        <TouchableOpacity style={styles.searchPill} onPress={() => setShowSearch(true)}><Feather name="search" size={15} color={Palette.text.muted} /><Text style={styles.searchPillText}>Tìm từ vựng, bài học...</Text></TouchableOpacity>
         <View style={styles.floatingTabBar}>
-          {[
-            { key: 'home', icon: 'home', label: 'Trang chủ' },
-            { key: 'learn', icon: 'book-open', label: 'Bài học' },
-            { key: 'scan', icon: 'aperture', label: 'Quét AI', isScanner: true },
-            { key: 'cards', icon: 'layers', label: 'Sổ từ' },
-            { key: 'profile', icon: 'user', label: 'Cá nhân' },
-          ].map(tab => {
-            const isActive = activeTab === tab.key;
-            if (tab.isScanner) {
-              return (
-                <TouchableOpacity
-                  key={tab.key}
-                  style={styles.scannerTabBtn}
-                  onPress={() => setActiveTab('scan')}
-                >
-                  <Feather name="aperture" size={24} color="#FFFFFF" />
-                </TouchableOpacity>
-              );
-            }
-            return (
-              <TouchableOpacity
-                key={tab.key}
-                style={[styles.tabItem, isActive && styles.tabItemActive]}
-                onPress={() => setActiveTab(tab.key as any)}
-              >
-                <Feather
-                  name={tab.icon as any}
-                  size={20}
-                  color={isActive ? Palette.primary[500] : Palette.text.muted}
-                />
-                <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
-                  {tab.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
+          {([
+            ['home', 'home', 'Trang chủ'], ['learn', 'book-open', 'Bài học'], ['scan', 'aperture', 'Quét AI'], ['cards', 'layers', 'Sổ từ'], ['profile', 'user', 'Cá nhân'],
+          ] as const).map(([key, icon, label]) => key === 'scan' ? (
+            <TouchableOpacity key={key} style={styles.scannerTabBtn} onPress={() => setActiveTab(key)}><Feather name={icon} size={24} color="#FFFFFF" /></TouchableOpacity>
+          ) : (
+            <TouchableOpacity key={key} style={[styles.tabItem, activeTab === key && styles.tabItemActive]} onPress={() => setActiveTab(key)}>
+              <Feather name={icon} size={20} color={activeTab === key ? Palette.primary[500] : Palette.text.muted} />
+              <Text style={[styles.tabLabel, activeTab === key && styles.tabLabelActive]}>{label}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
 
-      {/* QUIZ MODAL */}
-      <Modal visible={showQuizModal} animationType="slide">
-        <PracticeQuizScreen
-          lessonTitle={selectedLesson?.name || 'Bài học Chủ đề'}
-          words={selectedLesson?.words}
-          onClose={() => setShowQuizModal(false)}
-          onQuizComplete={(pct) => {
-            if (selectedLesson) {
-              saveLessonProgress(selectedLesson.id, pct);
-              setLessons(prev => prev.map(l => l.id === selectedLesson.id ? { ...l, progress: pct } : l));
-            }
-          }}
-        />
+      <Modal visible={!!selectedLesson && !showQuiz} animationType="slide">
+        {selectedLesson && <LessonDetailScreen lesson={selectedLesson} onClose={() => setSelectedLesson(null)} onStartLesson={() => setShowQuiz(true)} onSaveWord={handleSaveWord} />}
       </Modal>
-
-      {/* LESSON DETAIL MODAL */}
-      <Modal visible={!!selectedLesson} animationType="slide">
-        {selectedLesson && (
-          <LessonDetailScreen
-            lesson={selectedLesson}
-            onClose={() => setSelectedLesson(null)}
-            onStartLesson={(_id) => {
-              setShowQuizModal(true);
-            }}
-            onSaveWord={handleAddWordToFlashcards}
-            onLessonProgressUpdate={handleLessonProgressUpdate}
-          />
-        )}
+      <Modal visible={showQuiz} animationType="slide">
+        {selectedLesson && <PracticeQuizScreen lessonTitle={selectedLesson.name} words={selectedLesson.words} onClose={() => setShowQuiz(false)} onQuizComplete={score => handleLessonProgress(selectedLesson.id, score)} />}
       </Modal>
-
-      {/* SEARCH MODAL */}
       <Modal visible={showSearch} animationType="slide">
-        <SearchScreen
-          words={allCanonicalWords.length > 0 ? allCanonicalWords : savedWords}
-          lessons={lessons}
-          onClose={() => setShowSearch(false)}
-          onStartLesson={handleStartLesson}
-          onSaveWord={handleAddWordToFlashcards}
-        />
+        <SearchScreen words={allWords} lessons={lessons} onClose={() => setShowSearch(false)} onStartLesson={startLessonFromSearch} onSaveWord={handleSaveWord} />
       </Modal>
-
-      {/* SETTINGS MODAL */}
-      <Modal visible={showSettings} animationType="slide">
-        <SettingsScreen
-          onClose={() => setShowSettings(false)}
-          onLogout={() => {
-            setShowSettings(false);
-            onLogout();
-          }}
-        />
-      </Modal>
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Palette.canvas },
-  loadingScreen: {
-    flex: 1,
-    backgroundColor: Palette.canvas,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  loadingText: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    color: Palette.text.muted,
-  },
-  bottomTabContainer: {
-    position: 'absolute',
-    bottom: Platform.OS === 'ios' ? 24 : 16,
-    left: 0,
-    right: 0,
-    alignItems: 'center',
-    zIndex: 100,
-  },
-  floatingTabBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 32,
-    paddingHorizontal: Spacing.two,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: Palette.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.1,
-    shadowRadius: 16,
-    elevation: 8,
-    gap: 4,
-  },
-  tabItem: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
+  center: { flex: 1, backgroundColor: Palette.canvas, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 28 },
+  loadingText: { fontFamily: Fonts.sans, fontSize: 14, color: Palette.text.muted },
+  errorText: { fontFamily: Fonts.sans, fontSize: 14, color: Palette.text.secondary, textAlign: 'center' },
+  retryButton: { backgroundColor: Palette.primary[500], borderRadius: 12, paddingHorizontal: 22, paddingVertical: 11 },
+  retryText: { color: '#FFFFFF', fontWeight: '700' },
+  logoutText: { color: Palette.error.text, fontWeight: '600' },
+  bottomTabContainer: { position: 'absolute', bottom: Platform.OS === 'ios' ? 24 : 16, left: 0, right: 0, alignItems: 'center', zIndex: 100 },
+  floatingTabBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: Palette.surfaceWhite, borderRadius: 32, paddingHorizontal: Spacing.two, paddingVertical: 6, borderWidth: 1, borderColor: Palette.border, shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 16, elevation: 8, gap: 4 },
+  tabItem: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   tabItemActive: { backgroundColor: Palette.primary[100] },
-  tabLabel: {
-    fontFamily: Fonts.sans,
-    fontSize: 10,
-    fontWeight: '600',
-    color: Palette.text.muted,
-    marginTop: 2,
-  },
+  tabLabel: { fontFamily: Fonts.sans, fontSize: 10, fontWeight: '600', color: Palette.text.muted, marginTop: 2 },
   tabLabelActive: { color: Palette.primary[500], fontWeight: '800' },
-  scannerTabBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: Palette.primary[500],
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: Palette.primary[500],
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
-    marginHorizontal: 4,
-  },
-  searchPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    marginBottom: 8,
-    borderWidth: 1,
-    borderColor: Palette.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 4,
-    width: 220,
-  },
-  searchPillText: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    color: Palette.text.muted,
-    flex: 1,
-  },
+  scannerTabBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: Palette.primary[500], justifyContent: 'center', alignItems: 'center', shadowColor: Palette.primary[500], shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 8, elevation: 6, marginHorizontal: 4 },
+  searchPill: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: Palette.surfaceWhite, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 9, marginBottom: 8, borderWidth: 1, borderColor: Palette.border, width: 220 },
+  searchPillText: { fontFamily: Fonts.sans, fontSize: 13, color: Palette.text.muted, flex: 1 },
 });

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,33 +10,23 @@ import {
   Platform,
   Alert,
   Image,
-  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { Palette } from '@/constants/theme';
-import { VocabularyWord, Lesson } from '@/types';
+import { VocabularyWord } from '@/types';
 import DotsLoader from '@/components/ui/dots-loader';
 import { playAudio, playSoundEffect } from '@/utils/audio';
 import { api } from '@/services/api';
-import BoundingBoxOverlay, { BoundingBoxItem } from './bounding-box-overlay';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import { BoundingBoxOverlay, BoundingBoxItem } from './bounding-box-overlay';
 
 interface ObjectScannerScreenProps {
-  lessons: Lesson[];
-  onAddWordToFlashcards: (word: VocabularyWord) => void;
-  onAddWordToLesson: (lessonId: string, word: VocabularyWord) => void;
-  onAddXp?: (amount: number) => void;
-  onNavigate: (tab: string) => void;
+  onAddWordToFlashcards: (word: VocabularyWord) => Promise<void>;
 }
 
 export default function ObjectScannerScreen({
-  lessons,
   onAddWordToFlashcards,
-  onAddWordToLesson,
-  onNavigate,
 }: ObjectScannerScreenProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
@@ -46,8 +36,9 @@ export default function ObjectScannerScreen({
   const [scannedResult, setScannedResult] = useState<VocabularyWord | null>(null);
   const [showResultSheet, setShowResultSheet] = useState(false);
   const [addedToast, setAddedToast] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const [pulseAnim] = useState(() => new Animated.Value(1));
 
   const startPulse = () => {
     Animated.loop(
@@ -121,32 +112,40 @@ export default function ObjectScannerScreen({
       const imgH = response.imageHeight || 1080;
       setImageDimensions({ width: imgW, height: imgH });
 
-      const parsedDetections: BoundingBoxItem[] = response.predictions.map((p: any) => ({
+      const parsedDetections: BoundingBoxItem[] = response.predictions
+        .filter((p: any) => p.wordData?.id && p.box)
+        .map((p: any, index: number) => ({
+        id: `${p.label}_${index}`,
         label: p.label,
         confidence: p.confidence || 0.85,
         box: p.box,
         wordData: p.wordData ? {
-          id: String(p.wordData.id || Date.now()),
+          id: String(p.wordData.id),
           word: p.wordData.enWord || p.label,
           phonetic: p.wordData.phonetic || '',
-          vn: p.wordData.translation || p.label,
+          vn: p.wordData.translation || '',
           pos: p.wordData.pos || 'Noun',
-          sentence: p.wordData.exampleEn || `I see a ${p.label}.`,
-          sentenceVn: p.wordData.exampleVn || `Tôi thấy một ${p.label}.`,
+          definition: p.wordData.definition || undefined,
+          sentence: p.wordData.exampleEn || '',
+          sentenceVn: p.wordData.exampleVn || '',
           difficulty: 'easy',
-          imageUrl: p.wordData.imageUrl || fileUri,
+          imageUrl: p.wordData.imageUrl || undefined,
+          detectionLabel: p.wordData.detectionLabel || p.label,
+          captured: true,
         } : undefined,
       }));
 
       setDetections(parsedDetections);
       playSoundEffect('correct');
-
-      if (parsedDetections.length > 0) {
-        handleSelectBox(parsedDetections[0]);
+      if (parsedDetections.length === 0) {
+        Alert.alert('Chưa có từ vựng phù hợp', 'Các vật thể phát hiện được chưa ánh xạ tới từ vựng chính thức.');
       }
     } catch (err: any) {
       console.warn('Scan processing error:', err);
-      Alert.alert('Lỗi nhận diện', 'Không thể kết nối tới dịch vụ AI Scanner. Vui lòng kiểm tra lại kết nối mạng.');
+      const message = err?.message === 'NETWORK_UNAVAILABLE'
+        ? 'Không có kết nối tới máy chủ. Vui lòng kiểm tra mạng và thử lại.'
+        : 'Dịch vụ AI đang tạm thời không khả dụng. Vui lòng thử lại sau.';
+      Alert.alert('Lỗi nhận diện', message);
     } finally {
       setIsScanning(false);
       stopPulse();
@@ -155,32 +154,31 @@ export default function ObjectScannerScreen({
 
   const handleSelectBox = (item: BoundingBoxItem) => {
     setSelectedBox(item);
-    let word: VocabularyWord;
-    if (item.wordData) {
-      word = item.wordData;
-    } else {
-      word = {
-        id: `word_${item.label}`,
-        word: item.label,
-        pos: 'Noun',
-        phonetic: `/${item.label}/`,
-        vn: item.label,
-        sentence: `This is a ${item.label}.`,
-        sentenceVn: `Đó là một ${item.label}.`,
-        difficulty: 'easy',
-      };
-    }
+    if (!item.wordData) return;
+    const word = item.wordData;
     setScannedResult(word);
     setShowResultSheet(true);
     playAudio(word.word);
   };
 
-  const handleSaveToDeck = () => {
-    if (!scannedResult) return;
-    onAddWordToFlashcards(scannedResult);
-    playSoundEffect('success');
-    showToast(`Đã lưu "${scannedResult.word}" vào sổ từ!`);
-    setShowResultSheet(false);
+  const handleSaveToDeck = async () => {
+    if (!scannedResult || isSaving) return;
+    setIsSaving(true);
+    try {
+      await onAddWordToFlashcards(scannedResult);
+      playSoundEffect('success');
+      showToast(`Đã lưu "${scannedResult.word}" vào sổ từ!`);
+      setShowResultSheet(false);
+    } catch (err: any) {
+      if (err?.message === 'ALREADY_SAVED') {
+        showToast(`"${scannedResult.word}" đã có trong sổ từ của bạn.`);
+        setShowResultSheet(false);
+      } else {
+        Alert.alert('Không thể lưu thẻ', 'Không thể lưu từ vựng lúc này. Kiểm tra mạng và thử lại.');
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const showToast = (msg: string) => {
@@ -221,6 +219,7 @@ export default function ObjectScannerScreen({
                   imageHeight={imageDimensions.height}
                   detections={detections}
                   selectedLabel={selectedBox?.label}
+                  selectedId={selectedBox?.id}
                   onSelectBox={handleSelectBox}
                 />
               )}
@@ -267,6 +266,15 @@ export default function ObjectScannerScreen({
 
               {scannedResult && (
                 <ScrollView contentContainerStyle={styles.sheetContent}>
+                  {/* IMAGE — hiển thị nếu có imageUrl */}
+                  {scannedResult.imageUrl ? (
+                    <Image
+                      source={{ uri: scannedResult.imageUrl }}
+                      style={styles.wordImage}
+                      resizeMode="cover"
+                    />
+                  ) : null}
+
                   <View style={styles.wordHeaderRow}>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.wordTitle}>{scannedResult.word}</Text>
@@ -286,6 +294,14 @@ export default function ObjectScannerScreen({
                     <Text style={styles.vnText}>🇻🇳 {scannedResult.vn}</Text>
                   </View>
 
+                  {/* ENGLISH DEFINITION */}
+                  {scannedResult.definition ? (
+                    <View style={styles.definitionBox}>
+                      <Text style={styles.definitionTitle}>Definition:</Text>
+                      <Text style={styles.definitionText}>{scannedResult.definition}</Text>
+                    </View>
+                  ) : null}
+
                   {scannedResult.sentence && (
                     <View style={styles.sentenceBox}>
                       <Text style={styles.sentenceTitle}>Ví dụ câu Anh-Việt:</Text>
@@ -296,7 +312,7 @@ export default function ObjectScannerScreen({
                     </View>
                   )}
 
-                  <TouchableOpacity style={styles.saveFlashcardBtn} onPress={handleSaveToDeck}>
+                  <TouchableOpacity disabled={isSaving} style={[styles.saveFlashcardBtn, isSaving && { opacity: 0.6 }]} onPress={() => void handleSaveToDeck()}>
                     <Feather name="bookmark" size={18} color="#FFFFFF" />
                     <Text style={styles.saveFlashcardText}>Lưu vào Sổ từ Flashcard</Text>
                   </TouchableOpacity>
@@ -399,6 +415,12 @@ const styles = StyleSheet.create({
   sentenceTitle: { fontSize: 12, color: '#64748B' },
   sentenceEn: { fontSize: 14, color: '#1E293B', fontStyle: 'italic' },
   sentenceVn: { fontSize: 13, color: '#64748B', fontStyle: 'italic' },
+
+  wordImage: { width: '100%', height: 160, borderRadius: 12, marginBottom: 4 },
+
+  definitionBox: { backgroundColor: '#EFF6FF', padding: 12, borderRadius: 10 },
+  definitionTitle: { fontSize: 12, color: '#3B82F6', fontWeight: '600', marginBottom: 2 },
+  definitionText: { fontSize: 14, color: '#1E3A5F', lineHeight: 20 },
 
   saveFlashcardBtn: {
     backgroundColor: '#4F46E5',

@@ -18,8 +18,7 @@ interface LessonDetailScreenProps {
   lesson: Lesson;
   onClose: () => void;
   onStartLesson: (lessonId: string) => void;
-  onSaveWord?: (word: VocabularyWord) => void;
-  onLessonProgressUpdate?: (lessonId: string, progress: number) => void;
+  onSaveWord?: (word: VocabularyWord) => void | Promise<void>;
 }
 
 const DIFFICULTY_COLOR: Record<string, string> = {
@@ -39,21 +38,11 @@ export default function LessonDetailScreen({
   onClose,
   onStartLesson,
   onSaveWord,
-  onLessonProgressUpdate,
 }: LessonDetailScreenProps) {
   const [selectedWord, setSelectedWord] = useState<VocabularyWord | null>(null);
-  const [savedWordIds, setSavedWordIds] = useState<Set<string>>(new Set());
 
-  const handleSaveWord = (word: VocabularyWord) => {
-    onSaveWord?.(word);
-    setSavedWordIds(prev => {
-      const next = new Set(prev);
-      next.add(word.id);
-      // Progress = (saved words so far) / total words in lesson * 100
-      const progress = Math.round((next.size / Math.max(lesson.words.length, 1)) * 100);
-      onLessonProgressUpdate?.(lesson.id, Math.min(progress, 100));
-      return next;
-    });
+  const handleSaveWord = async (word: VocabularyWord) => {
+    await onSaveWord?.(word);
   };
 
   const progressColor = lesson.progress >= 80

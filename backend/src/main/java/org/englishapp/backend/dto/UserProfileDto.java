@@ -9,16 +9,18 @@ public class UserProfileDto {
     private boolean locked;
     private int wordsSaved;
     private int wordsLearned;
+    private int dueCards;
 
     public UserProfileDto() {}
 
-    public UserProfileDto(UUID userId, String displayName, String role, boolean locked, int wordsSaved, int wordsLearned) {
+    public UserProfileDto(UUID userId, String displayName, String role, boolean locked, int wordsSaved, int wordsLearned, int dueCards) {
         this.userId = userId;
         this.displayName = displayName;
         this.role = role;
         this.locked = locked;
         this.wordsSaved = wordsSaved;
         this.wordsLearned = wordsLearned;
+        this.dueCards = dueCards;
     }
 
     public UUID getUserId() { return userId; }
@@ -38,4 +40,6 @@ public class UserProfileDto {
 
     public int getWordsLearned() { return wordsLearned; }
     public void setWordsLearned(int wordsLearned) { this.wordsLearned = wordsLearned; }
+    public int getDueCards() { return dueCards; }
+    public void setDueCards(int dueCards) { this.dueCards = dueCards; }
 }

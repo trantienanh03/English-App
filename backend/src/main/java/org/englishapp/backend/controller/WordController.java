@@ -17,7 +17,7 @@ public class WordController {
         this.wordService = wordService;
     }
 
-    /** Returns all 80 COCO vocabulary words. */
+    /** Returns the canonical Objects365 vocabulary. */
     @GetMapping
     public ResponseEntity<List<WordDto>> getAll() {
         return ResponseEntity.ok(wordService.findAll());
@@ -27,8 +27,8 @@ public class WordController {
      * Looks up a word by its YOLO detection class name.
      * Example: GET /api/words/cup
      */
-    @GetMapping("/{cocoClass}")
-    public ResponseEntity<WordDto> getByCocoClass(@PathVariable String cocoClass) {
-        return ResponseEntity.ok(wordService.findByCocoClass(cocoClass));
+    @GetMapping("/{detectionLabel}")
+    public ResponseEntity<WordDto> getByDetectionLabel(@PathVariable String detectionLabel) {
+        return ResponseEntity.ok(wordService.findByDetectionLabel(detectionLabel));
     }
 }

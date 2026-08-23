@@ -1,18 +1,14 @@
 import Constants from 'expo-constants';
 import { Alert } from 'react-native';
 import { supabase } from '@/lib/supabase';
-import { VocabularyWord } from '@/types';
+import { Lesson, VocabularyWord } from '@/types';
 
 const getHostIp = () => {
   const hostUri = Constants.expoConfig?.hostUri || (Constants as any).manifest?.debuggerHost;
-  if (hostUri) {
-    return hostUri.split(':')[0];
-  }
-  return '192.168.1.22';
+  return hostUri ? hostUri.split(':')[0] : 'localhost';
 };
 
-const HOST_IP = getHostIp();
-export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || `http://${HOST_IP}:8080`;
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || `http://${getHostIp()}:8080`;
 
 export interface UserProfileDto {
   userId: string;
@@ -21,11 +17,12 @@ export interface UserProfileDto {
   locked: boolean;
   wordsSaved: number;
   wordsLearned: number;
+  dueCards: number;
 }
 
 export interface BackendWordDto {
   id: number;
-  cocoClass: string;
+  detectionLabel: string;
   enWord: string;
   phonetic: string;
   pos: string;
@@ -36,14 +33,25 @@ export interface BackendWordDto {
   imageUrl?: string;
 }
 
-export interface SyncPayload {
-  displayName?: string;
-  wordsSaved: number;
-  wordsLearned: number;
+export interface BackendFlashcardDto {
+  id: number;
+  word: BackendWordDto;
+  easinessFactor: number;
+  repetitions: number;
+  intervalDays: number;
+  nextReviewAt: string;
+  createdAt: string;
 }
 
-export interface SyncResponseDto {
-  status: string;
+interface BackendLessonDto {
+  id: string;
+  name: string;
+  description: string;
+  difficulty: Lesson['difficulty'];
+  category: string;
+  icon: string;
+  progress: number;
+  words: BackendWordDto[];
 }
 
 export interface AdminUserEntry {
@@ -55,172 +63,144 @@ export interface AdminUserEntry {
   wordsLearned: number;
 }
 
-/**
- * Centralized API Fetcher wrapper with automatic Supabase JWT Bearer token injection
- * & global error interceptor for 401 and 403 ACCOUNT_LOCKED.
- */
-async function apiClient<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+export type ReviewRating = 'AGAIN' | 'GOOD' | 'EASY';
+
+async function apiClient<T>(endpoint: string, options: RequestInit = {}, retryUnauthorized = true): Promise<T> {
   const session = (await supabase.auth.getSession()).data.session;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...(options.headers as any),
+    ...(options.headers as Record<string, string> | undefined),
   };
+  if (session?.access_token) headers.Authorization = `Bearer ${session.access_token}`;
 
-  if (session?.access_token) {
-    headers['Authorization'] = `Bearer ${session.access_token}`;
-  }
-  if (session?.user?.id) {
-    headers['X-User-Id'] = session.user.id;
-    headers['X-User-Email'] = session.user.email || '';
-    headers['X-User-Name'] = session.user.user_metadata?.display_name || '';
-  }
-
-  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  if (res.status === 401) {
-    await supabase.auth.refreshSession();
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+  } catch {
+    throw new Error('NETWORK_UNAVAILABLE');
   }
 
-  if (res.status === 403) {
-    const text = await res.text();
-    if (text.includes('ACCOUNT_LOCKED')) {
-      Alert.alert(
-        'Tài khoản bị khóa',
-        'Tài khoản của bạn đã bị khóa bởi Quản trị viên. Vui lòng liên hệ hỗ trợ.',
-        [{ text: 'Đóng', onPress: () => supabase.auth.signOut() }]
-      );
+  if (response.status === 401 && retryUnauthorized) {
+    const { data } = await supabase.auth.refreshSession();
+    if (data.session) return apiClient<T>(endpoint, options, false);
+  }
+
+  if (response.status === 403) {
+    const body = await response.text();
+    if (body.includes('ACCOUNT_LOCKED')) {
+      Alert.alert('Tài khoản bị khóa', 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.');
       await supabase.auth.signOut();
       throw new Error('ACCOUNT_LOCKED');
-    } else {
-      Alert.alert('Không có quyền', 'Bạn không có quyền thực hiện thao tác này.');
-      throw new Error('FORBIDDEN');
     }
+    throw new Error('FORBIDDEN');
   }
 
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(text || `HTTP ${res.status}`);
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(body || `HTTP_${response.status}`);
   }
-
-  const text = await res.text();
-  return text ? JSON.parse(text) : (null as any);
+  const body = await response.text();
+  return body ? JSON.parse(body) as T : undefined as T;
 }
 
-function mapWordDtoToVocabularyWord(dto: BackendWordDto): VocabularyWord {
+function mapWord(dto: BackendWordDto): VocabularyWord {
   return {
     id: String(dto.id),
     word: dto.enWord,
     phonetic: dto.phonetic || '',
     vn: dto.translation,
     pos: dto.pos || 'Noun',
+    definition: dto.definition || undefined,
     sentence: dto.exampleEn || '',
     sentenceVn: dto.exampleVn || '',
     difficulty: 'easy',
-    imageUrl: dto.imageUrl || 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop&q=60',
+    detectionLabel: dto.detectionLabel,
+    imageUrl: dto.imageUrl,
   };
 }
 
+function mapFlashcard(dto: BackendFlashcardDto): VocabularyWord {
+  return {
+    ...mapWord(dto.word),
+    flashcardId: String(dto.id),
+    easinessFactor: dto.easinessFactor,
+    repetitions: dto.repetitions,
+    intervalDays: dto.intervalDays,
+    nextReviewAt: dto.nextReviewAt,
+    difficulty: dto.easinessFactor < 2 ? 'hard' : dto.repetitions >= 2 ? 'easy' : 'medium',
+  };
+}
+
+function mapLesson(dto: BackendLessonDto): Lesson {
+  return { ...dto, wordCount: dto.words.length, words: dto.words.map(mapWord) };
+}
+
 export const api = {
-  /** GET /api/me — Fetch User Profile & Role from backend */
-  async fetchMe(): Promise<UserProfileDto> {
-    return apiClient<UserProfileDto>('/api/me');
-  },
+  fetchMe: () => apiClient<UserProfileDto>('/api/me'),
 
-  /** POST /api/sync/progress — Sync learning stats securely */
-  async syncProgress(payload: SyncPayload): Promise<SyncResponseDto> {
-    return apiClient<SyncResponseDto>('/api/sync/progress', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-  },
-
-  /** GET /api/words — Fetch all 365 words */
   async fetchAllWords(): Promise<VocabularyWord[]> {
-    const dtos = await apiClient<BackendWordDto[]>('/api/words');
-    return dtos.map(mapWordDtoToVocabularyWord);
+    return (await apiClient<BackendWordDto[]>('/api/words')).map(mapWord);
   },
 
-  async getAllWords(): Promise<VocabularyWord[]> {
-    return this.fetchAllWords();
-  },
-
-  /** GET /api/words/{cocoClass} */
-  async fetchWordByCocoClass(cocoClass: string): Promise<VocabularyWord | null> {
-    try {
-      const dto = await apiClient<BackendWordDto>(`/api/words/${cocoClass}`);
-      return mapWordDtoToVocabularyWord(dto);
-    } catch {
-      return null;
-    }
-  },
-
-  async getWordByClass(cocoClass: string): Promise<VocabularyWord | null> {
-    return this.fetchWordByCocoClass(cocoClass);
-  },
-
-  /** POST /api/scan — Upload image file to Spring Boot Gateway */
   async scanImage(fileUri: string): Promise<any> {
-    const session = (await supabase.auth.getSession()).data.session;
-    const formData = new FormData();
-    formData.append('file', {
-      uri: fileUri,
-      type: 'image/jpeg',
-      name: 'scan.jpg',
-    } as any);
-
-    const headers: Record<string, string> = {};
-    if (session?.access_token) {
-      headers['Authorization'] = `Bearer ${session.access_token}`;
+    let session = (await supabase.auth.getSession()).data.session;
+    if (!session) throw new Error('AUTH_REQUIRED');
+    const send = async (accessToken: string) => {
+      const formData = new FormData();
+      formData.append('file', { uri: fileUri, type: 'image/jpeg', name: 'scan.jpg' } as any);
+      try {
+        return await fetch(`${API_BASE_URL}/api/scan`, {
+          method: 'POST', headers: { Authorization: `Bearer ${accessToken}` }, body: formData,
+        });
+      } catch { throw new Error('NETWORK_UNAVAILABLE'); }
+    };
+    let response = await send(session.access_token);
+    if (response.status === 401) {
+      session = (await supabase.auth.refreshSession()).data.session;
+      if (!session) {
+        await supabase.auth.signOut();
+        throw new Error('AUTH_REQUIRED');
+      }
+      response = await send(session.access_token);
     }
-    if (session?.user?.id) {
-      headers['X-User-Id'] = session.user.id;
-    }
-
-    const res = await fetch(`${API_BASE_URL}/api/scan`, {
-      method: 'POST',
-      headers,
-      body: formData,
-    });
-
-    if (res.status === 403) {
-      Alert.alert('Tài khoản bị khóa', 'Tài khoản của bạn đã bị khóa bởi Quản trị viên.');
+    if (response.status === 403) {
+      Alert.alert('Tài khoản bị khóa', 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.');
       await supabase.auth.signOut();
       throw new Error('ACCOUNT_LOCKED');
     }
-
-    if (!res.ok) {
-      throw new Error(`Scan API error: ${res.status}`);
-    }
-
-    return res.json();
+    if (!response.ok) throw new Error(response.status === 503 ? 'AI_SERVICE_UNAVAILABLE' : `HTTP_${response.status}`);
+    return response.json();
   },
 
-  // Admin APIs
-  async fetchAdminStats(): Promise<{ totalUsers: number; activeUsers: number; lockedUsers: number; totalWords: number }> {
-    return apiClient('/api/admin/stats');
+  async fetchFlashcards(dueOnly = false): Promise<VocabularyWord[]> {
+    return (await apiClient<BackendFlashcardDto[]>(`/api/flashcards?due=${dueOnly}`)).map(mapFlashcard);
+  },
+  async saveFlashcard(vocabularyId: string): Promise<VocabularyWord> {
+    return mapFlashcard(await apiClient<BackendFlashcardDto>('/api/flashcards', {
+      method: 'POST', body: JSON.stringify({ vocabularyId: Number(vocabularyId) }),
+    }));
+  },
+  async reviewFlashcard(flashcardId: string, rating: ReviewRating): Promise<VocabularyWord> {
+    return mapFlashcard(await apiClient<BackendFlashcardDto>(`/api/flashcards/${flashcardId}/review`, {
+      method: 'POST', body: JSON.stringify({ rating }),
+    }));
+  },
+  deleteFlashcard: (flashcardId: string) => apiClient<void>(`/api/flashcards/${flashcardId}`, { method: 'DELETE' }),
+
+  async fetchLessons(): Promise<Lesson[]> {
+    return (await apiClient<BackendLessonDto[]>('/api/lessons')).map(mapLesson);
+  },
+  async saveLessonProgress(lessonId: string, score: number): Promise<Lesson> {
+    return mapLesson(await apiClient<BackendLessonDto>(`/api/lessons/${encodeURIComponent(lessonId)}/progress`, {
+      method: 'PUT', body: JSON.stringify({ score }),
+    }));
   },
 
-  async fetchAllWordDtos(): Promise<BackendWordDto[]> {
-    return apiClient('/api/words');
-  },
-
-  async fetchAdminUsers(): Promise<AdminUserEntry[]> {
-    return apiClient('/api/admin/users');
-  },
-
-  async updateCanonicalWord(id: number, data: Partial<BackendWordDto>): Promise<BackendWordDto> {
-    return apiClient(`/api/admin/words/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-    });
-  },
-
-  async toggleUserLock(userId: string): Promise<{ userId: string; status: string }> {
-    return apiClient(`/api/admin/users/${userId}/toggle-lock`, {
-      method: 'POST',
-    });
-  },
+  fetchAdminStats: () => apiClient<{ totalUsers: number; activeUsers: number; lockedUsers: number; totalWords: number }>('/api/admin/stats'),
+  fetchAllWordDtos: () => apiClient<BackendWordDto[]>('/api/words'),
+  fetchAdminUsers: () => apiClient<AdminUserEntry[]>('/api/admin/users'),
+  updateCanonicalWord: (id: number, data: Partial<BackendWordDto>) => apiClient<BackendWordDto>(`/api/admin/words/${id}`, {
+    method: 'PUT', body: JSON.stringify(data),
+  }),
+  toggleUserLock: (userId: string) => apiClient<{ userId: string; status: string }>(`/api/admin/users/${userId}/toggle-lock`, { method: 'POST' }),
 };

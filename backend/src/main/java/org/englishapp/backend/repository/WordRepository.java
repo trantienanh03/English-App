@@ -9,5 +9,5 @@ import java.util.Optional;
 @Repository
 public interface WordRepository extends JpaRepository<Word, Long> {
 
-    Optional<Word> findByCocoClass(String cocoClass);
+    Optional<Word> findByDetectionLabel(String detectionLabel);
 }
