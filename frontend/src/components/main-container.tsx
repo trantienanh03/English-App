@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -10,15 +10,23 @@ import {
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
-import { UserProgress, VocabularyWord, Lesson } from '@/types';
+import { UserProgress, VocabularyWord, Lesson, Badge } from '@/types';
 import { mockLessons, mockUserProgress } from '@/data/mock-data';
 import {
   initDatabase,
-  getOrCreateDeviceUuid,
+  initDeviceUuid,
   getLocalFlashcards,
   saveLocalFlashcard,
   deleteLocalFlashcard,
   updateFlashcardSM2,
+  saveUserProgress,
+  loadUserProgress,
+  saveBadges,
+  loadBadges,
+  getScanCount,
+  saveLessonProgress,
+  loadAllLessonProgress,
+  cacheWordsBulk,
   LocalFlashcard,
 } from '@/db/database';
 import { triggerBackgroundSync } from '@/services/sync-service';
@@ -41,6 +49,27 @@ interface MainContainerProps {
   onLogout: () => void;
 }
 
+// ─── Badge auto-unlock rules ─────────────────────────────────────────────────
+function computeUnlockedBadges(
+  progress: UserProgress,
+  scanCount: number,
+  quizPerfect: boolean
+): Badge[] {
+  return progress.badges.map(badge => {
+    if (badge.unlocked) return badge; // already unlocked — keep date
+    let shouldUnlock = false;
+    if (badge.id === 'b1') shouldUnlock = progress.streak >= 3;
+    if (badge.id === 'b2') shouldUnlock = scanCount >= 3;
+    if (badge.id === 'b3') shouldUnlock = progress.wordsLearned >= 15;
+    if (badge.id === 'b4') shouldUnlock = quizPerfect;
+
+    if (shouldUnlock) {
+      return { ...badge, unlocked: true, unlockedAt: new Date().toISOString().slice(0, 10) };
+    }
+    return badge;
+  });
+}
+
 export default function MainContainer({ userName, userEmail, onLogout }: MainContainerProps) {
   const [activeTab, setActiveTab] = useState<'home' | 'learn' | 'scan' | 'cards' | 'profile'>('home');
   const [showQuizModal, setShowQuizModal] = useState<boolean>(false);
@@ -49,21 +78,33 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
   const [showStreak, setShowStreak] = useState<boolean>(false);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
-  // App State Data — words & lessons start empty and are fetched from API
   const [userProgress, setUserProgress] = useState<UserProgress>(mockUserProgress);
   const [savedWords, setSavedWords] = useState<VocabularyWord[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>(mockLessons);
   const [wordOfTheDay, setWordOfTheDay] = useState<VocabularyWord | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // On app mount: restore in-memory flashcards, fetch word list, trigger background sync
+  // ─── Init — restore all persisted state from AsyncStorage ─────────────────
   useEffect(() => {
     const init = async () => {
       try {
         initDatabase();
-        getOrCreateDeviceUuid();
+        await initDeviceUuid();
 
-        const localCards = getLocalFlashcards();
+        // 1. Restore user progress
+        const savedProgress = await loadUserProgress();
+        const savedBadges = await loadBadges();
+
+        let restoredProgress: UserProgress = mockUserProgress;
+        if (savedProgress) {
+          restoredProgress = {
+            ...savedProgress,
+            badges: savedBadges ?? savedProgress.badges,
+          };
+        }
+
+        // 2. Restore flashcards
+        const localCards = await getLocalFlashcards();
         if (localCards.length > 0) {
           const mapped: VocabularyWord[] = localCards.map((c: LocalFlashcard) => ({
             id: c.id,
@@ -77,24 +118,36 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
             cocoClass: c.coco_class,
           }));
           setSavedWords(mapped);
+          restoredProgress = { ...restoredProgress, wordsLearned: mapped.length };
         }
 
-        // Update wordsLearned to reflect the in-memory flashcard count
-        setUserProgress(prev => ({ ...prev, wordsLearned: localCards.length }));
+        // 3. Restore lesson progress
+        const lessonProgressMap = await loadAllLessonProgress();
+        if (Object.keys(lessonProgressMap).length > 0) {
+          setLessons(prev =>
+            prev.map(l => ({
+              ...l,
+              progress: lessonProgressMap[l.id] ?? l.progress,
+            }))
+          );
+        }
 
-        // Fetch words from API and pick a random Word of the Day
+        setUserProgress(restoredProgress);
+
+        // 4. Fetch word dictionary from backend
         try {
           const remoteWords = await api.getAllWords();
           if (remoteWords.length > 0) {
+            cacheWordsBulk(remoteWords);
             const randomIdx = Math.floor(Math.random() * remoteWords.length);
             setWordOfTheDay(remoteWords[randomIdx]);
           }
         } catch {
-          // API unavailable — Word of the Day stays null
+          // Backend unavailable — skip
         }
 
-        // Best-effort background sync — skips silently when no network
-        triggerBackgroundSync(mockUserProgress, userName || 'Học Viên Vocam');
+        // 5. Background sync
+        triggerBackgroundSync(restoredProgress, userName || 'Học Viên Vocam');
       } catch (err) {
         console.warn('App initialization warning:', err);
       } finally {
@@ -105,8 +158,37 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
     init();
   }, []);
 
-  // XP Handler
-  const handleAddXp = (amount: number) => {
+  // ─── Persist progress helper ───────────────────────────────────────────────
+  const persistProgress = useCallback(async (progress: UserProgress) => {
+    await saveUserProgress(progress);
+    await saveBadges(progress.badges);
+    triggerBackgroundSync(progress, userName || 'Học Viên Vocam');
+  }, [userName]);
+
+  // ─── Badge auto-unlock ─────────────────────────────────────────────────────
+  const checkBadges = useCallback(async (
+    progress: UserProgress,
+    quizPerfect = false
+  ): Promise<UserProgress> => {
+    const currentScanCount = await getScanCount();
+    const updatedBadges = computeUnlockedBadges(progress, currentScanCount, quizPerfect);
+
+    // Check if any new badges were unlocked
+    const newlyUnlocked = updatedBadges.filter(
+      (b, i) => b.unlocked && !progress.badges[i]?.unlocked
+    );
+
+    const updatedProgress = { ...progress, badges: updatedBadges };
+
+    if (newlyUnlocked.length > 0) {
+      await saveBadges(updatedBadges);
+    }
+
+    return updatedProgress;
+  }, []);
+
+  // ─── XP Handler ───────────────────────────────────────────────────────────
+  const handleAddXp = useCallback((amount: number) => {
     setUserProgress(prev => {
       const newXp = prev.xp + amount;
       let newLevel = prev.level;
@@ -116,73 +198,107 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
         newNextXp += 300;
       }
       const updated = { ...prev, xp: newXp, level: newLevel, nextLevelXp: newNextXp };
-      triggerBackgroundSync(updated, userName || 'Học Viên Vocam');
-      return updated;
-    });
-  };
-
-  // Add Word to Flashcards
-  const handleAddWordToFlashcards = (newWord: VocabularyWord) => {
-    saveLocalFlashcard(newWord);
-    setSavedWords(prev => {
-      if (prev.some(w => w.word.toLowerCase() === newWord.word.toLowerCase())) {
-        return prev;
-      }
-      const updated = [newWord, ...prev];
-      // Keep wordsLearned in sync with actual in-memory flashcard count
-      setUserProgress(p => {
-        const next = { ...p, wordsLearned: updated.length };
-        triggerBackgroundSync(next, userName || 'Học Viên Vocam');
-        return next;
+      // Check badges and persist (async, fire-and-forget)
+      checkBadges(updated).then(withBadges => {
+        setUserProgress(withBadges);
+        persistProgress(withBadges);
       });
       return updated;
     });
-  };
+  }, [checkBadges, persistProgress]);
 
-  // Add Word to Lesson
-  const handleAddWordToLesson = (lessonId: string, word: VocabularyWord) => {
+  // ─── Add Word to Flashcards ───────────────────────────────────────────────
+  const handleAddWordToFlashcards = useCallback((newWord: VocabularyWord) => {
+    saveLocalFlashcard(newWord).then(async () => {
+      setSavedWords(prev => {
+        if (prev.some(w => w.word.toLowerCase() === newWord.word.toLowerCase())) {
+          return prev;
+        }
+        const updated = [newWord, ...prev];
+        setUserProgress(p => {
+          const next = { ...p, wordsLearned: updated.length };
+          checkBadges(next).then(withBadges => {
+            setUserProgress(withBadges);
+            persistProgress(withBadges);
+          });
+          return next;
+        });
+        return updated;
+      });
+    });
+  }, [checkBadges, persistProgress]);
+
+  // ─── Add Word to Lesson ────────────────────────────────────────────────────
+  const handleAddWordToLesson = useCallback((lessonId: string, word: VocabularyWord) => {
     setLessons(prev =>
       prev.map(les => {
         if (les.id === lessonId) {
-          return {
-            ...les,
-            words: [word, ...les.words],
-            wordCount: les.words.length + 1,
-          };
+          return { ...les, words: [word, ...les.words], wordCount: les.words.length + 1 };
         }
         return les;
       })
     );
-  };
+  }, []);
 
-  // Difficulty Update
-  const handleUpdateWordDifficulty = (id: string, difficulty: 'easy' | 'medium' | 'hard') => {
-    updateFlashcardSM2(id, difficulty);
-    setSavedWords(prev =>
-      prev.map(w => (w.id === id ? { ...w, difficulty } : w))
+  // ─── Lesson Progress Update ────────────────────────────────────────────────
+  const handleLessonProgressUpdate = useCallback(async (lessonId: string, progress: number) => {
+    await saveLessonProgress(lessonId, progress);
+    setLessons(prev =>
+      prev.map(l => l.id === lessonId ? { ...l, progress } : l)
     );
-  };
+  }, []);
 
-  // Remove Word
-  const handleRemoveWord = (id: string) => {
-    deleteLocalFlashcard(id);
-    setSavedWords(prev => prev.filter(w => w.id !== id));
-  };
+  // ─── Difficulty / Remove ──────────────────────────────────────────────────
+  const handleUpdateWordDifficulty = useCallback((id: string, difficulty: 'easy' | 'medium' | 'hard') => {
+    updateFlashcardSM2(id, difficulty).then(() => {
+      setSavedWords(prev => prev.map(w => w.id === id ? { ...w, difficulty } : w));
+    });
+  }, []);
 
-  // Start Lesson — opens Lesson Detail instead of jumping to cards tab directly
-  const handleStartLesson = (lessonId: string) => {
-    const lesson = lessons.find((l) => l.id === lessonId) ?? null;
+  const handleRemoveWord = useCallback((id: string) => {
+    deleteLocalFlashcard(id).then(() => {
+      setSavedWords(prev => {
+        const updated = prev.filter(w => w.id !== id);
+        setUserProgress(p => {
+          const next = { ...p, wordsLearned: updated.length };
+          persistProgress(next);
+          return next;
+        });
+        return updated;
+      });
+    });
+  }, [persistProgress]);
+
+  // ─── Lesson Navigation ────────────────────────────────────────────────────
+  const handleStartLesson = useCallback((lessonId: string) => {
+    const lesson = lessons.find(l => l.id === lessonId) ?? null;
     setSelectedLesson(lesson);
-  };
+  }, [lessons]);
 
-  const handleAddXpWithStreakCheck = (amount: number) => {
-    handleAddXp(amount);
-    // Show streak modal after earning XP if streak is a milestone
-    const milestones = [3, 7, 14, 30];
-    if (milestones.includes(userProgress.streak)) {
-      setShowStreak(true);
-    }
-  };
+  // ─── XP with streak check ─────────────────────────────────────────────────
+  const handleAddXpWithStreakCheck = useCallback((amount: number, quizPerfect = false) => {
+    setUserProgress(prev => {
+      const newXp = prev.xp + amount;
+      let newLevel = prev.level;
+      let newNextXp = prev.nextLevelXp;
+      if (newXp >= prev.nextLevelXp) {
+        newLevel += 1;
+        newNextXp += 300;
+      }
+      const updated = { ...prev, xp: newXp, level: newLevel, nextLevelXp: newNextXp };
+
+      checkBadges(updated, quizPerfect).then(withBadges => {
+        setUserProgress(withBadges);
+        persistProgress(withBadges);
+      });
+
+      const milestones = [3, 7, 14, 30];
+      if (milestones.includes(prev.streak)) {
+        setShowStreak(true);
+      }
+      return updated;
+    });
+  }, [checkBadges, persistProgress]);
 
   if (isLoading) {
     return (
@@ -252,12 +368,10 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
 
   return (
     <View style={styles.container}>
-      {/* SCREEN CONTENT */}
       {renderActiveScreen()}
 
       {/* FLOATING BOTTOM TAB BAR */}
       <View style={styles.bottomTabContainer}>
-        {/* Search pill button above the tab bar */}
         <TouchableOpacity style={styles.searchPill} onPress={() => setShowSearch(true)}>
           <Feather name="search" size={15} color={Palette.text.muted} />
           <Text style={styles.searchPillText}>Tìm từ vựng, bài học...</Text>
@@ -283,7 +397,6 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
                 </TouchableOpacity>
               );
             }
-
             return (
               <TouchableOpacity
                 key={tab.key}
@@ -308,7 +421,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
       <Modal visible={showQuizModal} animationType="slide">
         <PracticeQuizScreen
           onClose={() => setShowQuizModal(false)}
-          onAddXp={handleAddXpWithStreakCheck}
+          onAddXp={(xp) => handleAddXpWithStreakCheck(xp, xp >= 40)}
         />
       </Modal>
 
@@ -323,6 +436,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
               setActiveTab('cards');
             }}
             onSaveWord={handleAddWordToFlashcards}
+            onLessonProgressUpdate={handleLessonProgressUpdate}
           />
         )}
       </Modal>
@@ -361,10 +475,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Palette.canvas,
-  },
+  container: { flex: 1, backgroundColor: Palette.canvas },
   loadingScreen: {
     flex: 1,
     backgroundColor: Palette.canvas,
@@ -408,9 +519,7 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 20,
   },
-  tabItemActive: {
-    backgroundColor: Palette.primary[100],
-  },
+  tabItemActive: { backgroundColor: Palette.primary[100] },
   tabLabel: {
     fontFamily: Fonts.sans,
     fontSize: 10,
@@ -418,10 +527,7 @@ const styles = StyleSheet.create({
     color: Palette.text.muted,
     marginTop: 2,
   },
-  tabLabelActive: {
-    color: Palette.primary[500],
-    fontWeight: '800',
-  },
+  tabLabelActive: { color: Palette.primary[500], fontWeight: '800' },
   scannerTabBtn: {
     width: 48,
     height: 48,

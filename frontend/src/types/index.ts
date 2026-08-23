@@ -30,6 +30,7 @@ export interface UserProgress {
   level: number;
   nextLevelXp: number;
   wordsLearned: number;     // total flashcards saved by the user
+  scanCount: number;        // total objects successfully scanned
   weeklyXp: { day: string; xp: number; active: boolean }[];
   badges: Badge[];
 }

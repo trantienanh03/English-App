@@ -218,41 +218,40 @@ export const mockLessons: Lesson[] = [
 ];
 
 export const mockUserProgress: UserProgress = {
-  streak: 5,
-  xp: 320,
-  level: 3,
-  nextLevelXp: 500,
-  wordsLearned: 0, // will be updated once flashcards are loaded into memory
+  streak: 0,
+  xp: 0,
+  level: 1,
+  nextLevelXp: 300,
+  wordsLearned: 0,
+  scanCount: 0,
   weeklyXp: [
-    { day: 'T2', xp: 40, active: true },
-    { day: 'T3', xp: 50, active: true },
-    { day: 'T4', xp: 80, active: true },
+    { day: 'T2', xp: 0, active: false },
+    { day: 'T3', xp: 0, active: false },
+    { day: 'T4', xp: 0, active: false },
     { day: 'T5', xp: 0, active: false },
-    { day: 'T6', xp: 60, active: true },
-    { day: 'T7', xp: 90, active: true },
+    { day: 'T6', xp: 0, active: false },
+    { day: 'T7', xp: 0, active: false },
     { day: 'CN', xp: 0, active: false }
   ],
   badges: [
     {
       id: 'b1',
       name: 'Chăm Chỉ 🔥',
-      description: 'Đạt chuỗi 5 ngày học liên tiếp',
+      description: 'Đạt chuỗi 3 ngày học liên tiếp',
       icon: 'fire',
-      unlocked: true,
-      unlockedAt: '2026-07-10'
+      unlocked: false,
     },
     {
       id: 'b2',
       name: 'Thợ Săn Ảnh 📷',
-      description: 'Quét thành công 3 vật thể ngoài đời',
+      description: 'Quét thành công 3 vật thể bằng AI',
       icon: 'camera',
-      unlocked: true,
-      unlockedAt: '2026-07-11'
+      unlocked: false,
     },
     {
       id: 'b3',
       name: 'Vua Từ Vựng 👑',
-      description: 'Lưu trữ hơn 15 thẻ flashcard tự chọn',
+      description: 'Lưu trữ hơn 15 thẻ flashcard',
       icon: 'crown',
       unlocked: false
     },
