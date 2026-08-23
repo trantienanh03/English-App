@@ -27,6 +27,7 @@ import {
   saveLessonProgress,
   loadAllLessonProgress,
   cacheWordsBulk,
+  clearUserLocalData,
   LocalFlashcard,
 } from '@/db/database';
 import { syncProgressWithServer } from '@/services/sync-service';
@@ -374,7 +375,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
             wordsSavedCount={savedWords.length}
             wordsLearnedCount={wordsLearnedCount}
             dueCardsCount={dueCardsCount}
-            onLogout={onLogout}
+            onLogout={handleLogout}
           />
         );
       default:
@@ -382,8 +383,13 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
     }
   };
 
+  const handleLogout = async () => {
+    await clearUserLocalData();
+    onLogout();
+  };
+
   if (userRole === 'ADMIN') {
-    return <AdminNavigator adminEmail={userEmail} onLogout={onLogout} />;
+    return <AdminNavigator adminEmail={userEmail} onLogout={handleLogout} />;
   }
 
   return (

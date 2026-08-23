@@ -238,3 +238,8 @@ export function getUnsyncedEvents(): LearningEvent[] {
 }
 
 export function markEventsSynced(_eventIds: string[]): void {}
+
+export async function clearUserLocalData(): Promise<void> {
+  cachedFlashcards = null;
+  await AsyncStorage.removeItem(KEYS.FLASHCARDS);
+}
