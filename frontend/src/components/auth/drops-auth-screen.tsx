@@ -7,11 +7,13 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Variables } from '@/constants/variables';
 import DotsLoader from '@/components/ui/dots-loader';
+import { supabase } from '@/lib/supabase';
 
 interface DropsAuthScreenProps {
   initialMode?: 'login' | 'signup';
@@ -41,50 +43,100 @@ export default function DropsAuthScreen({
 
   const validateEmail = (str: string) => /\S+@\S+\.\S+/.test(str);
 
-  const handleSubmit = () => {
+  /**
+   * Email/Password auth — calls Supabase Auth directly.
+   */
+  const handleSubmit = async () => {
     setError(null);
 
     if (!email || !password) {
       setError('Vui lòng điền đầy đủ thông tin.');
       return;
     }
-
     if (!validateEmail(email)) {
       setError('Email không đúng định dạng.');
       return;
     }
-
     if (password.length < 6) {
       setError('Mật khẩu phải từ 6 ký tự.');
       return;
     }
-
     if (authMode === 'signup' && !name) {
       setError('Vui lòng điền tên của bạn.');
       return;
     }
 
     setLoading(true);
+    try {
+      if (authMode === 'signup') {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            data: { display_name: name.trim() },
+          },
+        });
 
-    setTimeout(() => {
+        if (signUpError) {
+          setError(signUpError.message === 'User already registered'
+            ? 'Email này đã được đăng ký. Hãy đăng nhập.'
+            : signUpError.message);
+          return;
+        }
+
+        const userName = data.user?.user_metadata?.display_name || name;
+        onAuthSuccess(userName, email.trim());
+      } else {
+        const { data, error: loginError } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+
+        if (loginError) {
+          setError('Email hoặc mật khẩu không đúng.');
+          return;
+        }
+
+        const userName =
+          data.user?.user_metadata?.display_name ||
+          data.user?.email?.split('@')[0] ||
+          'Học Viên Vocam';
+        onAuthSuccess(userName, data.user?.email || email.trim());
+      }
+    } catch (err: any) {
+      setError('Đã xảy ra lỗi kết nối. Vui lòng thử lại.');
+    } finally {
       setLoading(false);
-      const userName = authMode === 'signup' ? name : (email.split('@')[0] || 'Learner');
-      onAuthSuccess(userName, email);
-    }, 1200);
+    }
   };
 
-  const handleGoogleLogin = (googleEmail: string, googleName: string) => {
+  /**
+   * Google OAuth via Supabase.
+   */
+  const handleGoogleOAuth = async () => {
     setGoogleLoading(true);
-    setTimeout(() => {
+    try {
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: 'vocam://auth/callback',
+          queryParams: { access_type: 'offline', prompt: 'consent' },
+        },
+      });
+      if (oauthError) {
+        Alert.alert('Lỗi đăng nhập Google', oauthError.message);
+      }
+    } catch {
+      Alert.alert('Lỗi', 'Không thể mở đăng nhập Google.');
+    } finally {
       setGoogleLoading(false);
       setShowGoogleModal(false);
-      onAuthSuccess(googleName, googleEmail);
-    }, 1000);
+    }
   };
 
   const isFormValid = email.length > 0 && password.length >= 6 && (authMode === 'login' || name.length > 0);
 
-  // --- SCREEN 26: LANDING STEP ---
+  // --- LANDING STEP ---
   if (viewState === 'landing') {
     return (
       <SafeAreaView style={styles.container}>
@@ -95,20 +147,17 @@ export default function DropsAuthScreen({
 
           <TouchableOpacity
             style={styles.topRightLink}
-            onPress={() => {
-              setAuthMode('login');
-              setViewState('form');
-            }}
+            onPress={() => { setAuthMode('login'); setViewState('form'); }}
           >
-            <Text style={styles.topRightTextMuted}>Existing user? </Text>
-            <Text style={styles.topRightTextBold}>Log in</Text>
+            <Text style={styles.topRightTextMuted}>Đã có tài khoản? </Text>
+            <Text style={styles.topRightTextBold}>Đăng nhập</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.landingHero}>
-          <Text style={styles.heroTitle}>Start learning with Vocam</Text>
+          <Text style={styles.heroTitle}>Bắt đầu học với Vocam</Text>
           <Text style={styles.heroSubtitle}>
-            Track your learning progress, personalize your experience and earn achievements.
+            Theo dõi tiến độ học, cá nhân hoá trải nghiệm và nhận huy hiệu thành tích.
           </Text>
         </View>
 
@@ -118,69 +167,45 @@ export default function DropsAuthScreen({
             onPress={() => setShowGoogleModal(true)}
           >
             <MaterialCommunityIcons name="google" size={20} color="#EA4335" />
-            <Text style={styles.googlePillText}>CONTINUE WITH GOOGLE</Text>
+            <Text style={styles.googlePillText}>TIẾP TỤC VỚI GOOGLE</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.createAccountPillBtn}
-            onPress={() => {
-              setAuthMode('signup');
-              setViewState('form');
-            }}
+            onPress={() => { setAuthMode('signup'); setViewState('form'); }}
           >
             <Feather name="mail" size={18} color="#FFFFFF" />
-            <Text style={styles.createAccountPillText}>CREATE AN ACCOUNT</Text>
+            <Text style={styles.createAccountPillText}>TẠO TÀI KHOẢN</Text>
           </TouchableOpacity>
         </View>
 
-        {/* GOOGLE MODAL */}
+        {/* GOOGLE OAUTH MODAL */}
         <Modal visible={showGoogleModal} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.googleModalCard}>
               <View style={styles.googleHeader}>
                 <MaterialCommunityIcons name="google" size={26} color="#4285F4" />
-                <Text style={styles.googleModalTitle}>Sign in with Google</Text>
+                <Text style={styles.googleModalTitle}>Đăng nhập với Google</Text>
               </View>
-              <Text style={styles.googleModalSub}>Choose an account to continue to Vocam:</Text>
+              <Text style={styles.googleModalSub}>
+                Bạn sẽ được chuyển đến trang đăng nhập Google của Supabase.
+              </Text>
 
               {googleLoading ? (
                 <View style={styles.loadingBox}>
                   <DotsLoader color={Variables.primary[500]} size={12} gap={10} />
-                  <Text style={styles.loadingText}>Authenticating with Google...</Text>
+                  <Text style={styles.loadingText}>Đang mở Google...</Text>
                 </View>
               ) : (
-                <View style={styles.accountList}>
-                  <TouchableOpacity
-                    style={styles.accountItem}
-                    onPress={() => handleGoogleLogin('thanhtran.dev@gmail.com', 'Thành Trần')}
-                  >
-                    <View style={styles.accountAvatar}>
-                      <Text style={styles.accountAvatarText}>T</Text>
-                    </View>
-                    <View>
-                      <Text style={styles.accountName}>Thành Trần</Text>
-                      <Text style={styles.accountEmail}>thanhtran.dev@gmail.com</Text>
-                    </View>
+                <View style={styles.googleActionRow}>
+                  <TouchableOpacity style={styles.confirmGoogleBtn} onPress={handleGoogleOAuth}>
+                    <Text style={styles.confirmGoogleBtnText}>Tiếp tục</Text>
                   </TouchableOpacity>
-
-                  <TouchableOpacity
-                    style={styles.accountItem}
-                    onPress={() => handleGoogleLogin('learner.vocam@gmail.com', 'Vocam Learner')}
-                  >
-                    <View style={[styles.accountAvatar, { backgroundColor: Variables.secondary[500] }]}>
-                      <Text style={styles.accountAvatarText}>V</Text>
-                    </View>
-                    <View>
-                      <Text style={styles.accountName}>Vocam Learner</Text>
-                      <Text style={styles.accountEmail}>learner.vocam@gmail.com</Text>
-                    </View>
+                  <TouchableOpacity style={styles.closeGoogleBtn} onPress={() => setShowGoogleModal(false)}>
+                    <Text style={styles.closeGoogleBtnText}>Hủy</Text>
                   </TouchableOpacity>
                 </View>
               )}
-
-              <TouchableOpacity style={styles.closeGoogleBtn} onPress={() => setShowGoogleModal(false)}>
-                <Text style={styles.closeGoogleBtnText}>Cancel</Text>
-              </TouchableOpacity>
             </View>
           </View>
         </Modal>
@@ -188,420 +213,211 @@ export default function DropsAuthScreen({
     );
   }
 
-  // --- SCREENS 27, 28, 29: FORM STEP ---
+  // --- FORM STEP (signup / login) ---
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.formScrollContent} showsVerticalScrollIndicator={false}>
-        {/* BACK ARROW */}
         <TouchableOpacity style={styles.iconBtn} onPress={() => setViewState('landing')}>
           <Feather name="arrow-left" size={24} color={Variables.text.primary} />
         </TouchableOpacity>
 
-        {/* HEADER */}
         <View style={styles.formHeader}>
           <Text style={styles.formTitle}>
-            {authMode === 'signup' ? 'Sign up' : 'Log in'}
+            {authMode === 'signup' ? 'Tạo tài khoản' : 'Đăng nhập'}
           </Text>
-
-          <TouchableOpacity
-            style={styles.switchAuthRow}
-            onPress={() => {
-              setError(null);
-              setAuthMode(authMode === 'signup' ? 'login' : 'signup');
-            }}
-          >
-            <Text style={styles.switchMuted}>
-              {authMode === 'signup' ? 'Existing user? ' : 'New user? '}
-            </Text>
-            <Text style={styles.switchBold}>
-              {authMode === 'signup' ? 'Log in' : 'Sign up'}
-            </Text>
-          </TouchableOpacity>
+          <Text style={styles.formSubtitle}>
+            {authMode === 'signup'
+              ? 'Bắt đầu hành trình học tiếng Anh của bạn'
+              : 'Chào mừng trở lại!'}
+          </Text>
         </View>
 
-        {/* ERROR BANNER */}
         {error && (
           <View style={styles.errorBox}>
-            <Feather name="alert-circle" size={16} color={Variables.semantic.errorText} />
+            <Feather name="alert-circle" size={15} color="#EF4444" />
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
 
-        {/* INPUT FIELDS */}
-        <View style={styles.inputsGroup}>
-          {authMode === 'signup' && (
-            <View style={styles.pillInputContainer}>
-              <Feather name="user" size={18} color={Variables.text.muted} style={styles.pillIcon} />
+        {authMode === 'signup' && (
+          <View style={styles.inputGroup}>
+            <Text style={styles.inputLabel}>Họ và tên</Text>
+            <View style={styles.inputWrapper}>
+              <Feather name="user" size={16} color={Variables.text.secondary} style={styles.inputIcon} />
               <TextInput
-                style={styles.pillInput}
-                placeholder="Name"
-                placeholderTextColor={Variables.text.muted}
+                style={styles.input}
                 value={name}
                 onChangeText={setName}
+                placeholder="Nhập tên của bạn"
+                placeholderTextColor={Variables.text.placeholder}
+                autoCapitalize="words"
               />
             </View>
-          )}
+          </View>
+        )}
 
-          <View style={styles.pillInputContainer}>
-            <Feather name="mail" size={18} color={Variables.text.muted} style={styles.pillIcon} />
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Email</Text>
+          <View style={styles.inputWrapper}>
+            <Feather name="mail" size={16} color={Variables.text.secondary} style={styles.inputIcon} />
             <TextInput
-              style={styles.pillInput}
-              placeholder="Email"
-              placeholderTextColor={Variables.text.muted}
-              keyboardType="email-address"
-              autoCapitalize="none"
+              style={styles.input}
               value={email}
               onChangeText={setEmail}
+              placeholder="your@email.com"
+              placeholderTextColor={Variables.text.placeholder}
+              keyboardType="email-address"
+              autoCapitalize="none"
             />
           </View>
+        </View>
 
-          <View style={styles.pillInputContainer}>
-            <Feather name="lock" size={18} color={Variables.text.muted} style={styles.pillIcon} />
+        <View style={styles.inputGroup}>
+          <Text style={styles.inputLabel}>Mật khẩu</Text>
+          <View style={styles.inputWrapper}>
+            <Feather name="lock" size={16} color={Variables.text.secondary} style={styles.inputIcon} />
             <TextInput
-              style={styles.pillInput}
-              placeholder="Password"
-              placeholderTextColor={Variables.text.muted}
-              secureTextEntry={!showPassword}
+              style={[styles.input, { flex: 1 }]}
               value={password}
               onChangeText={setPassword}
+              placeholder="Ít nhất 6 ký tự"
+              placeholderTextColor={Variables.text.placeholder}
+              secureTextEntry={!showPassword}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeBtn}>
-              <Feather name={showPassword ? 'eye-off' : 'eye'} size={18} color={Variables.text.muted} />
+              <Feather name={showPassword ? 'eye-off' : 'eye'} size={16} color={Variables.text.secondary} />
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* SUBMIT BUTTON (DROPS STYLED CENTERED PILL) */}
-        <View style={styles.submitContainer}>
-          <TouchableOpacity
-            style={[
-              styles.submitPillBtn,
-              isFormValid && styles.submitPillBtnActive,
-              loading && styles.submitPillBtnDisabled,
-            ]}
-            onPress={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? (
-              <DotsLoader color="#FFFFFF" size={10} gap={8} />
-            ) : (
-              <Text style={[styles.submitPillText, isFormValid && styles.submitPillTextActive]}>
-                {authMode === 'signup' ? 'SIGN UP' : 'LOG IN'}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={[styles.submitBtn, (!isFormValid || loading) && styles.submitBtnDisabled]}
+          onPress={handleSubmit}
+          disabled={!isFormValid || loading}
+        >
+          {loading ? (
+            <DotsLoader color="#FFFFFF" size={10} gap={8} />
+          ) : (
+            <Text style={styles.submitBtnText}>
+              {authMode === 'signup' ? 'Tạo tài khoản' : 'Đăng nhập'}
+            </Text>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.switchModeBtn}
+          onPress={() => {
+            setAuthMode(authMode === 'login' ? 'signup' : 'login');
+            setError(null);
+          }}
+        >
+          <Text style={styles.switchModeText}>
+            {authMode === 'login'
+              ? 'Chưa có tài khoản? '
+              : 'Đã có tài khoản? '}
+          </Text>
+          <Text style={styles.switchModeBold}>
+            {authMode === 'login' ? 'Đăng ký' : 'Đăng nhập'}
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Variables.canvas,
-    paddingHorizontal: 24,
-  },
-
-  // Header
+  container: { flex: 1, backgroundColor: '#FFFFFF' },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingTop: 12,
-  },
-  iconBtn: {
-    padding: 8,
-    marginLeft: -8,
-  },
-  topRightLink: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  topRightTextMuted: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 14,
-    color: Variables.text.secondary,
-  },
-  topRightTextBold: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 14,
-    fontWeight: '800',
-    color: Variables.primary[500],
-  },
-
-  // Landing Hero
-  landingHero: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  heroTitle: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 28,
-    fontWeight: '900',
-    color: Variables.text.primary,
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  heroSubtitle: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 14,
-    color: Variables.text.secondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-
-  // Landing Actions
-  landingActions: {
-    gap: 14,
-    paddingBottom: 40,
-  },
-  googlePillBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: Variables.white,
-    height: 54,
-    borderRadius: 27,
-    borderWidth: 1,
-    borderColor: Variables.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  googlePillText: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 13,
-    fontWeight: '800',
-    color: Variables.text.primary,
-    letterSpacing: 0.5,
-  },
-  createAccountPillBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    backgroundColor: Variables.primary[500], // Forest Green from variables.ts
-    height: 54,
-    borderRadius: 27,
-    shadowColor: Variables.primary[500],
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  createAccountPillText: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: 0.5,
-  },
-
-  // Form Scroll & Header
-  formScrollContent: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingTop: 12,
-    paddingBottom: 40,
-  },
-  formHeader: {
-    alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 32,
-  },
-  formTitle: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 32,
-    fontWeight: '900',
-    color: Variables.text.primary,
-    marginBottom: 6,
-  },
-  switchAuthRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  switchMuted: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 14,
-    color: Variables.text.secondary,
-  },
-  switchBold: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 14,
-    fontWeight: '800',
-    color: Variables.primary[500],
-  },
-
-  // Error Box
-  errorBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: Variables.semantic.errorBg,
-    padding: 12,
-    borderRadius: 16,
-    marginBottom: 16,
-  },
-  errorText: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 12,
-    color: Variables.semantic.errorText,
-    fontWeight: '600',
-  },
-
-  // Inputs Group
-  inputsGroup: {
-    gap: 14,
-    marginBottom: 36,
-  },
-  pillInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Variables.white,
-    height: 56,
-    borderRadius: 28,
     paddingHorizontal: 20,
-    borderWidth: 1,
-    borderColor: Variables.border,
+    paddingTop: 12,
   },
-  pillIcon: {
-    marginRight: 12,
-  },
-  pillInput: {
-    flex: 1,
-    fontFamily: Variables.fonts.sans,
-    fontSize: 14,
-    color: Variables.text.primary,
-  },
-  eyeBtn: {
-    padding: 6,
-  },
+  iconBtn: { padding: 8 },
+  topRightLink: { flexDirection: 'row', alignItems: 'center' },
+  topRightTextMuted: { fontSize: 14, color: '#94A3B8' },
+  topRightTextBold: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
 
-  // Submit Pill
-  submitContainer: {
+  landingHero: { paddingHorizontal: 28, marginTop: 40, gap: 12 },
+  heroTitle: { fontSize: 28, fontWeight: '800', color: '#1E293B', letterSpacing: -0.5 },
+  heroSubtitle: { fontSize: 15, color: '#64748B', lineHeight: 22 },
+
+  landingActions: { paddingHorizontal: 28, marginTop: 36, gap: 14 },
+  googlePillBtn: {
+    height: 52,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  submitPillBtn: {
-    width: 180,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: Variables.primary[100],
     justifyContent: 'center',
-    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#FFFFFF',
   },
-  submitPillBtnActive: {
+  googlePillText: { fontSize: 14, fontWeight: '700', color: '#1E293B', letterSpacing: 0.5 },
+  createAccountPillBtn: {
+    height: 52,
+    borderRadius: 16,
     backgroundColor: Variables.primary[500],
-    shadowColor: Variables.primary[500],
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
   },
-  submitPillBtnDisabled: {
-    opacity: 0.6,
-  },
-  submitPillText: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 13,
-    fontWeight: '800',
-    color: Variables.text.muted,
-    letterSpacing: 0.5,
-  },
-  submitPillTextActive: {
-    color: '#FFFFFF',
-  },
+  createAccountPillText: { fontSize: 14, fontWeight: '700', color: '#FFFFFF', letterSpacing: 0.5 },
 
   // Google Modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  googleModalCard: {
-    backgroundColor: Variables.white,
-    borderRadius: 24,
-    padding: 20,
-  },
-  googleHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 6,
-  },
-  googleModalTitle: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 18,
-    fontWeight: '800',
-    color: Variables.text.primary,
-  },
-  googleModalSub: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 12,
-    color: Variables.text.secondary,
-    marginBottom: 16,
-  },
-  loadingBox: {
-    alignItems: 'center',
-    paddingVertical: 20,
-    gap: 10,
-  },
-  loadingText: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 12,
-    color: Variables.text.secondary,
-  },
-  accountList: {
-    gap: 10,
-    marginBottom: 16,
-  },
-  accountItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    padding: 12,
-    backgroundColor: Variables.canvas,
-    borderRadius: 14,
-  },
-  accountAvatar: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'center', paddingHorizontal: 28 },
+  googleModalCard: { backgroundColor: '#FFFFFF', borderRadius: 24, padding: 24, gap: 12 },
+  googleHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  googleModalTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B' },
+  googleModalSub: { fontSize: 14, color: '#64748B', lineHeight: 20 },
+  loadingBox: { alignItems: 'center', gap: 10, paddingVertical: 16 },
+  loadingText: { fontSize: 13, color: '#64748B' },
+  googleActionRow: { flexDirection: 'row', gap: 12, marginTop: 4 },
+  confirmGoogleBtn: {
+    flex: 1, height: 44, borderRadius: 12,
     backgroundColor: Variables.primary[500],
-    justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center', justifyContent: 'center',
   },
-  accountAvatarText: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#FFFFFF',
-  },
-  accountName: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 13,
-    fontWeight: '800',
-    color: Variables.text.primary,
-  },
-  accountEmail: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 11,
-    color: Variables.text.secondary,
-  },
+  confirmGoogleBtnText: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
   closeGoogleBtn: {
-    alignItems: 'center',
-    paddingVertical: 8,
+    flex: 1, height: 44, borderRadius: 12,
+    backgroundColor: '#F1F5F9',
+    alignItems: 'center', justifyContent: 'center',
   },
-  closeGoogleBtnText: {
-    fontFamily: Variables.fonts.sans,
-    fontSize: 13,
-    fontWeight: '700',
-    color: Variables.text.muted,
+  closeGoogleBtnText: { fontSize: 15, fontWeight: '600', color: '#64748B' },
+
+  // Form
+  formScrollContent: { paddingHorizontal: 24, paddingBottom: 40 },
+  formHeader: { marginTop: 28, marginBottom: 24, gap: 6 },
+  formTitle: { fontSize: 26, fontWeight: '800', color: '#1E293B' },
+  formSubtitle: { fontSize: 14, color: '#64748B' },
+  errorBox: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#FEF2F2', borderRadius: 10, padding: 12, marginBottom: 12,
   },
+  errorText: { fontSize: 13, color: '#EF4444', flex: 1 },
+  inputGroup: { gap: 6, marginBottom: 16 },
+  inputLabel: { fontSize: 13, fontWeight: '600', color: '#475569' },
+  inputWrapper: {
+    flexDirection: 'row', alignItems: 'center',
+    borderWidth: 1.5, borderColor: '#E2E8F0', borderRadius: 12,
+    backgroundColor: '#F8FAFC', paddingHorizontal: 12, height: 50,
+  },
+  inputIcon: { marginRight: 8 },
+  input: { flex: 1, fontSize: 15, color: '#1E293B' },
+  eyeBtn: { padding: 4 },
+  submitBtn: {
+    height: 52, borderRadius: 16,
+    backgroundColor: Variables.primary[500],
+    alignItems: 'center', justifyContent: 'center',
+    marginTop: 8,
+  },
+  submitBtnDisabled: { opacity: 0.5 },
+  submitBtnText: { fontSize: 16, fontWeight: '700', color: '#FFFFFF' },
+  switchModeBtn: { flexDirection: 'row', justifyContent: 'center', marginTop: 20 },
+  switchModeText: { fontSize: 14, color: '#64748B' },
+  switchModeBold: { fontSize: 14, fontWeight: '700', color: Variables.primary[500] },
 });
