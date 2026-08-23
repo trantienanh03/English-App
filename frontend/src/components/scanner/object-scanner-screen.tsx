@@ -8,16 +8,18 @@ import {
   Modal,
   Animated,
   Platform,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { VocabularyWord, Lesson } from '@/types';
 import DotsLoader from '@/components/ui/dots-loader';
 import { playAudio, playSoundEffect } from '@/utils/audio';
-import { detect, DetectionResult } from '@/services/yolo-detector';
+import { detect, detectMultiObjects, DetectionResult } from '@/services/yolo-detector';
 import { api } from '@/services/api';
-import { getCachedWordByClass } from '@/db/database';
+import { getCachedWordByClass, incrementScanCount } from '@/db/database';
 
 interface ObjectScannerScreenProps {
   lessons: Lesson[];
@@ -59,10 +61,84 @@ export default function ObjectScannerScreen({
   };
 
   /**
+   * Build FormData from a local image URI (native) or use existing FormData (web).
+   */
+  const buildFormDataFromUri = async (uri: string): Promise<FormData> => {
+    const formData = new FormData();
+    const filename = uri.split('/').pop() || 'photo.jpg';
+    const match = /\.([a-z]+)$/i.exec(filename);
+    const type = match ? `image/${match[1]}` : 'image/jpeg';
+    // React Native's FormData accepts { uri, name, type } as a file object
+    (formData as any).append('file', { uri, name: filename, type } as any);
+    return formData;
+  };
+
+  /**
+   * Open device camera using expo-image-picker.
+   */
+  const handleCameraCapture = async () => {
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Cần quyền Camera', 'Vui lòng cấp quyền camera trong cài đặt thiết bị.');
+        return;
+      }
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+      allowsEditing: false,
+    });
+    if (!result.canceled && result.assets[0]) {
+      const uri = result.assets[0].uri;
+      if (Platform.OS === 'web') {
+        // On web, uri is a blob URL — fetch and wrap in FormData
+        const blob = await (await fetch(uri)).blob();
+        const fd = new FormData();
+        fd.append('file', blob, 'photo.jpg');
+        await handleScan(fd);
+      } else {
+        const fd = await buildFormDataFromUri(uri);
+        await handleScan(fd);
+      }
+    }
+  };
+
+  /**
+   * Open photo library using expo-image-picker.
+   */
+  const handleGalleryPick = async () => {
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Cần quyền Thư viện', 'Vui lòng cấp quyền truy cập ảnh trong cài đặt.');
+        return;
+      }
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+      allowsEditing: false,
+    });
+    if (!result.canceled && result.assets[0]) {
+      const uri = result.assets[0].uri;
+      if (Platform.OS === 'web') {
+        const blob = await (await fetch(uri)).blob();
+        const fd = new FormData();
+        fd.append('file', blob, 'photo.jpg');
+        await handleScan(fd);
+      } else {
+        const fd = await buildFormDataFromUri(uri);
+        await handleScan(fd);
+      }
+    }
+  };
+
+  /**
    * Main scan handler:
-   * 1. Call YOLO detector (mock or real)
-   * 2. If word not in local cache, fetch from Spring Boot API
-   * 3. Show result bottom sheet
+   * 1. Send image FormData to FastAPI YOLO-World v2
+   * 2. Look up vocabulary from cache or Spring Boot
+   * 3. Show result bottom sheet + increment scan count for badge
    */
   const handleScan = async (formData?: any) => {
     if (isScanning) return;
@@ -73,18 +149,19 @@ export default function ObjectScannerScreen({
     startPulse();
 
     try {
-      // Run YOLO inference via FastAPI AI Microservice
       const result: DetectionResult | null = await detect(formData);
 
       if (!result) {
         setIsScanning(false);
         stopPulse();
+        if (formData) {
+          Alert.alert('Không nhận diện được', 'Không tìm thấy vật thể trong ảnh. Hãy thử ảnh khác.');
+        }
         return;
       }
 
       let vocabulary = result.word;
 
-      // If word not in local cache, fetch from Spring Boot backend
       if (!vocabulary) {
         const cached = getCachedWordByClass(result.cocoClass);
         if (cached) {
@@ -105,6 +182,11 @@ export default function ObjectScannerScreen({
             };
           }
         }
+      }
+
+      // Increment scan count for badge tracking
+      if (formData) {
+        await incrementScanCount();
       }
 
       setScannedResult(vocabulary);
@@ -200,52 +282,30 @@ export default function ObjectScannerScreen({
           </View>
         </Animated.View>
 
-        {/* SCAN BUTTON */}
-        <TouchableOpacity
-          style={[styles.scanButton, isScanning && styles.scanButtonActive]}
-          onPress={() => handleScan()}
-          disabled={isScanning}
-        >
-          <Feather
-            name={isScanning ? 'loader' : 'camera'}
-            size={22}
-            color="#FFFFFF"
-          />
-          <Text style={styles.scanButtonText}>
-            {isScanning ? 'ĐANG NHẬN DIỆN...' : 'QUÉT VẬT THỂ MẪU'}
-          </Text>
-        </TouchableOpacity>
+        {/* ACTION BUTTONS — Camera + Gallery (native & web) */}
+        <View style={styles.actionButtonRow}>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.actionBtnCamera, isScanning && styles.actionBtnDisabled]}
+            onPress={handleCameraCapture}
+            disabled={isScanning}
+          >
+            <Feather name="camera" size={20} color="#FFFFFF" />
+            <Text style={styles.actionBtnText}>
+              {isScanning ? 'Đang xử lý...' : 'Chụp ảnh'}
+            </Text>
+          </TouchableOpacity>
 
-        {/* WEB SAFARI CAMERA / PHOTO PICKER */}
-        {Platform.OS === 'web' && (
-          <View style={{ marginTop: 12, width: '100%', alignItems: 'center' }}>
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              id="web-camera-input"
-              style={{ display: 'none' }}
-              onChange={(e: any) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  const formData = new FormData();
-                  formData.append('file', file);
-                  handleScan(formData);
-                }
-              }}
-            />
-            <TouchableOpacity
-              style={styles.webUploadBtn}
-              onPress={() => {
-                const el = document.getElementById('web-camera-input');
-                if (el) el.click();
-              }}
-            >
-              <Feather name="image" size={18} color="#FFFFFF" />
-              <Text style={styles.webUploadBtnText}>CHỤP / CHỌN ẢNH TỪ ĐIỆN THOẠI</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.actionBtnGallery, isScanning && styles.actionBtnDisabled]}
+            onPress={handleGalleryPick}
+            disabled={isScanning}
+          >
+            <Feather name="image" size={20} color={Palette.primary[600] ?? Palette.primary[500]} />
+            <Text style={[styles.actionBtnText, { color: Palette.primary[500] }]}>
+              Chọn ảnh
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         {/* RESULT BOTTOM SHEET */}
         <Modal visible={showResultSheet} transparent animationType="slide">
@@ -640,21 +700,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
-  webUploadBtn: {
-    backgroundColor: Palette.secondary[600],
-    height: 46,
-    borderRadius: 14,
-    paddingHorizontal: 16,
+  // New camera/gallery action buttons
+  actionButtonRow: {
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 16,
+    width: '100%',
+    paddingHorizontal: 4,
+  },
+  actionBtn: {
+    flex: 1,
+    height: 52,
+    borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    width: '100%',
   },
-  webUploadBtnText: {
+  actionBtnCamera: {
+    backgroundColor: Palette.primary[500],
+  },
+  actionBtnGallery: {
+    backgroundColor: Palette.primary[100] ?? '#E8F0FE',
+    borderWidth: 1.5,
+    borderColor: Palette.primary[300] ?? Palette.primary[500],
+  },
+  actionBtnDisabled: {
+    opacity: 0.5,
+  },
+  actionBtnText: {
     fontFamily: Fonts.sans,
-    fontSize: 12,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '700',
     color: '#FFFFFF',
   },
 
