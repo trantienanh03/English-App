@@ -42,7 +42,6 @@ import PracticeQuizScreen from './quiz/practice-quiz-screen';
 import ProfileScreen from './profile/profile-screen';
 import SettingsScreen from './profile/settings-screen';
 import SearchScreen from './ui/search-screen';
-import StreakCelebrationModal from './ui/streak-celebration-modal';
 
 interface MainContainerProps {
   userName: string;
@@ -83,6 +82,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
 
   const [userProgress, setUserProgress] = useState<UserProgress>(mockUserProgress);
+  const [allCanonicalWords, setAllCanonicalWords] = useState<VocabularyWord[]>([]);
   const [savedWords, setSavedWords] = useState<VocabularyWord[]>([]);
   const [lessons, setLessons] = useState<Lesson[]>(mockLessons);
   const [wordOfTheDay, setWordOfTheDay] = useState<VocabularyWord | null>(null);
@@ -151,6 +151,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
         try {
           const remoteWords = await api.getAllWords();
           if (remoteWords.length > 0) {
+            setAllCanonicalWords(remoteWords);
             cacheWordsBulk(remoteWords);
             const randomIdx = Math.floor(Math.random() * remoteWords.length);
             setWordOfTheDay(remoteWords[randomIdx]);
@@ -476,7 +477,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
       {/* SEARCH MODAL */}
       <Modal visible={showSearch} animationType="slide">
         <SearchScreen
-          words={savedWords}
+          words={allCanonicalWords.length > 0 ? allCanonicalWords : savedWords}
           lessons={lessons}
           onClose={() => setShowSearch(false)}
           onStartLesson={handleStartLesson}
@@ -495,13 +496,6 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
         />
       </Modal>
 
-      {/* STREAK CELEBRATION */}
-      <StreakCelebrationModal
-        visible={showStreak}
-        streakDays={userProgress.streak}
-        xpEarned={50}
-        onClose={() => setShowStreak(false)}
-      />
     </View>
   );
 }

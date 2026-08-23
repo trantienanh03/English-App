@@ -2,6 +2,7 @@ package org.englishapp.backend.service;
 
 import org.englishapp.backend.dto.SyncRequest;
 import org.englishapp.backend.dto.SyncResponse;
+import org.englishapp.backend.dto.UserEntryDto;
 import org.englishapp.backend.dto.UserProfileDto;
 import org.englishapp.backend.entity.AppUser;
 import org.englishapp.backend.entity.UserProgress;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -75,11 +77,11 @@ public class UserService {
         );
     }
 
-    /** POST /api/sync/progress — Sync learning progress securely */
+    /** POST /api/sync/progress — Sync learning stats */
     @Transactional
     public SyncResponse syncProgress(UUID userId, SyncRequest req) {
         AppUser appUser = appUserRepository.findById(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found: " + userId));
 
         if (Boolean.TRUE.equals(appUser.getLocked())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "ACCOUNT_LOCKED");
@@ -91,11 +93,6 @@ public class UserService {
                     p.setAppUser(appUser);
                     return p;
                 });
-
-        if (req.getDisplayName() != null && !req.getDisplayName().isBlank()) {
-            appUser.setDisplayName(req.getDisplayName().trim());
-            appUserRepository.save(appUser);
-        }
 
         progress.setWordsSaved(req.getWordsSaved());
         progress.setWordsLearned(req.getWordsLearned());
@@ -121,13 +118,13 @@ public class UserService {
 
     /** GET /api/admin/users — Returns list of registered users for Admin User Management */
     @Transactional(readOnly = true)
-    public List<org.englishapp.backend.dto.UserEntryDto> getAllUsers() {
+    public List<UserEntryDto> getAllUsers() {
         return appUserRepository.findAll().stream()
                 .map(u -> {
                     UserProgress p = userProgressRepository.findByUserId(u.getUserId()).orElse(null);
                     int saved = p != null ? p.getWordsSaved() : 0;
                     int learned = p != null ? p.getWordsLearned() : 0;
-                    return new org.englishapp.backend.dto.UserEntryDto(
+                    return new UserEntryDto(
                             u.getUserId(),
                             u.getDisplayName(),
                             u.getRole(),

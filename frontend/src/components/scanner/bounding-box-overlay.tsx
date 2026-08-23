@@ -1,8 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, LayoutChangeEvent } from 'react-native';
 import { VocabularyWord } from '@/types';
 
 export interface BoundingBoxItem {
+  id: string; // Unique instance identifier e.g. "person_0"
   label: string;
   confidence: number;
   box: { x1: number; y1: number; x2: number; y2: number };
@@ -14,6 +15,7 @@ interface Props {
   imageHeight: number;
   detections: BoundingBoxItem[];
   selectedLabel?: string | null;
+  selectedId?: string | null;
   onSelectBox: (item: BoundingBoxItem) => void;
 }
 
@@ -22,37 +24,79 @@ export const BoundingBoxOverlay: React.FC<Props> = ({
   imageHeight,
   detections,
   selectedLabel,
+  selectedId,
   onSelectBox,
 }) => {
+  const [layout, setLayout] = React.useState<{ width: number; height: number }>({ width: 0, height: 0 });
+
   if (!detections || detections.length === 0) return null;
 
-  const windowWidth = Dimensions.get('window').width - 32;
-  const scaleX = windowWidth / (imageWidth || 640);
-  const scaleY = scaleX;
+  const onLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    if (width > 0 && height > 0) {
+      setLayout({ width, height });
+    }
+  };
+
+  const cWidth = layout.width;
+  const cHeight = layout.height;
+  const imgW = imageWidth || 1920;
+  const imgH = imageHeight || 1080;
+
+  // Aspect Contain Scaling & Offsets Calculation
+  let scale = 1;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  if (cWidth > 0 && cHeight > 0) {
+    const containerAspect = cWidth / cHeight;
+    const imageAspect = imgW / imgH;
+
+    if (containerAspect > imageAspect) {
+      scale = cHeight / imgH;
+      offsetX = (cWidth - imgW * scale) / 2;
+      offsetY = 0;
+    } else {
+      scale = cWidth / imgW;
+      offsetX = 0;
+      offsetY = (cHeight - imgH * scale) / 2;
+    }
+  }
+
+  // Sort detections by area descending so smallest box is rendered ON TOP and receives taps first!
+  const sortedDetections = [...detections].sort((a, b) => {
+    const areaA = (a.box.x2 - a.box.x1) * (a.box.y2 - a.box.y1);
+    const areaB = (b.box.x2 - b.box.x1) * (b.box.y2 - b.box.y1);
+    if (areaA !== areaB) {
+      return areaB - areaA; // Larger first, smaller last (on top)
+    }
+    return a.confidence - b.confidence;
+  });
 
   return (
-    <View style={styles.container}>
-      {detections.map((item, idx) => {
-        const isSelected = selectedLabel === item.label;
-        const left = item.box.x1 * scaleX;
-        const top = item.box.y1 * scaleY;
-        const width = (item.box.x2 - item.box.x1) * scaleX;
-        const height = (item.box.y2 - item.box.y1) * scaleY;
+    <View style={styles.container} onLayout={onLayout} pointerEvents="box-none">
+      {cWidth > 0 && cHeight > 0 && sortedDetections.map((item) => {
+        const isSelected = selectedId === item.id || selectedLabel === item.label;
+        const left = offsetX + item.box.x1 * scale;
+        const top = offsetY + item.box.y1 * scale;
+        const width = (item.box.x2 - item.box.x1) * scale;
+        const height = (item.box.y2 - item.box.y1) * scale;
 
         return (
           <TouchableOpacity
-            key={`box_${idx}`}
-            activeOpacity={0.7}
+            key={item.id}
+            activeOpacity={0.8}
             onPress={() => onSelectBox(item)}
             style={[
               styles.box,
               {
-                left,
-                top,
+                left: Math.max(0, left),
+                top: Math.max(0, top),
                 width: Math.max(width, 40),
                 height: Math.max(height, 30),
                 borderColor: isSelected ? '#F59E0B' : '#10B981',
-                backgroundColor: isSelected ? 'rgba(245, 158, 11, 0.25)' : 'rgba(16, 185, 129, 0.15)',
+                backgroundColor: isSelected ? 'rgba(245, 158, 11, 0.35)' : 'rgba(16, 185, 129, 0.15)',
+                borderWidth: isSelected ? 3 : 2,
               },
             ]}
           >
@@ -69,24 +113,22 @@ export const BoundingBoxOverlay: React.FC<Props> = ({
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFill,
-    pointerEvents: 'box-none',
   },
   box: {
     position: 'absolute',
-    borderWidth: 2,
     borderRadius: 6,
   },
   labelBadge: {
     position: 'absolute',
     top: -22,
     left: -2,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
   },
   labelText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '700',
   },
 });

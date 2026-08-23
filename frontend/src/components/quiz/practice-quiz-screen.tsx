@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,13 +10,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { VocabularyWord } from '@/types';
 import { mockQuizzes } from '@/data/mock-data';
-import { playAudio, playSoundEffect } from '@/utils/audio';
+import { playSoundEffect } from '@/utils/audio';
 
 interface PracticeQuizScreenProps {
   lessonTitle?: string;
   words?: VocabularyWord[];
   onClose: () => void;
   onQuizComplete?: (percentage: number) => void;
+}
+
+interface QuizQuestionItem {
+  id: string;
+  question: string;
+  options: string[];
+  answer: string;
 }
 
 interface WrongAnswerItem {
@@ -27,7 +34,7 @@ interface WrongAnswerItem {
 
 export default function PracticeQuizScreen({
   lessonTitle = 'Bài học Chủ đề',
-  words,
+  words = [],
   onClose,
   onQuizComplete,
 }: PracticeQuizScreenProps) {
@@ -39,8 +46,49 @@ export default function PracticeQuizScreen({
   const [quizFinished, setQuizFinished] = useState(false);
   const [wrongAnswers, setWrongAnswers] = useState<WrongAnswerItem[]>([]);
 
-  const currentQuiz = mockQuizzes[currentIndex % mockQuizzes.length];
-  const totalQuestions = mockQuizzes.length;
+  // Dynamically generate quiz questions specifically for the selected Lesson's words!
+  const questions: QuizQuestionItem[] = useMemo(() => {
+    if (!words || words.length === 0) {
+      return mockQuizzes.map((q, idx) => ({
+        id: `default_${idx}`,
+        question: q.question,
+        options: q.options || [],
+        answer: q.answer,
+      }));
+    }
+
+    const allVn = words.map(w => w.vn);
+    const allEn = words.map(w => w.word);
+
+    return words.map((w, idx) => {
+      // Type 1: English word -> select VN meaning
+      if (idx % 2 === 0) {
+        const otherVn = allVn.filter(v => v !== w.vn);
+        const distractors = otherVn.sort(() => 0.5 - Math.random()).slice(0, 3);
+        const options = [w.vn, ...distractors].sort(() => 0.5 - Math.random());
+        return {
+          id: `q_${w.id}_1`,
+          question: `Từ "${w.word}" trong tiếng Anh có nghĩa tiếng Việt là gì?`,
+          options,
+          answer: w.vn,
+        };
+      } else {
+        // Type 2: VN meaning -> select English word
+        const otherEn = allEn.filter(e => e !== w.word);
+        const distractors = otherEn.sort(() => 0.5 - Math.random()).slice(0, 3);
+        const options = [w.word, ...distractors].sort(() => 0.5 - Math.random());
+        return {
+          id: `q_${w.id}_2`,
+          question: `Từ tiếng Anh nào mang nghĩa "${w.vn}"?`,
+          options,
+          answer: w.word,
+        };
+      }
+    });
+  }, [words]);
+
+  const currentQuiz = questions[currentIndex % questions.length];
+  const totalQuestions = questions.length;
 
   const handleSelectOption = (opt: string) => {
     if (isAnswered) return;

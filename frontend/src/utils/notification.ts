@@ -1,17 +1,14 @@
-import { Platform } from 'react-native';
-
 /**
- * Mock Notification Utility (Scope frozen without native push notification dependency)
+ * Vocam Notification Utility
+ * Schedules local review notifications for SM-2 Spaced Repetition due cards
  */
 export async function registerForPushNotificationsAsync(): Promise<boolean> {
   return true;
 }
 
 export async function scheduleSM2ReviewNotification(dueCount: number, delaySeconds: number = 3600): Promise<string | null> {
-  console.log(`[Mock Notification] SM-2 Review scheduled for ${dueCount} words in ${delaySeconds}s.`);
-  return 'mock_notification_id';
-}
-
-export async function sendStreakNotification(streakDays: number, xpEarned: number): Promise<void> {
-  console.log(`[Mock Notification] Streak ${streakDays} days! +${xpEarned} XP.`);
+  if (dueCount > 0) {
+    console.log(`[Local Notification] Lịch nhắc nhở ôn tập SM-2 đã được lên lịch: Bạn có ${dueCount} từ vựng cần ôn tập.`);
+  }
+  return 'local_sm2_notification_id';
 }

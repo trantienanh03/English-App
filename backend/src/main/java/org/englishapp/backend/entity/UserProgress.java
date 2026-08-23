@@ -17,15 +17,6 @@ public class UserProgress {
     @JoinColumn(name = "user_id")
     private AppUser appUser;
 
-    @Column(name = "total_xp", nullable = false)
-    private Integer totalXp = 0;
-
-    @Column(name = "current_streak", nullable = false)
-    private Integer currentStreak = 0;
-
-    @Column(name = "longest_streak", nullable = false)
-    private Integer longestStreak = 0;
-
     @Column(name = "words_saved", nullable = false)
     private Integer wordsSaved = 0;
 
@@ -57,15 +48,6 @@ public class UserProgress {
 
     public AppUser getAppUser() { return appUser; }
     public void setAppUser(AppUser appUser) { this.appUser = appUser; }
-
-    public Integer getTotalXp() { return totalXp; }
-    public void setTotalXp(Integer totalXp) { this.totalXp = totalXp; }
-
-    public Integer getCurrentStreak() { return currentStreak; }
-    public void setCurrentStreak(Integer currentStreak) { this.currentStreak = currentStreak; }
-
-    public Integer getLongestStreak() { return longestStreak; }
-    public void setLongestStreak(Integer longestStreak) { this.longestStreak = longestStreak; }
 
     public Integer getWordsSaved() { return wordsSaved; }
     public void setWordsSaved(Integer wordsSaved) { this.wordsSaved = wordsSaved; }
