@@ -41,6 +41,12 @@ export default function DropsAuthScreen({
   const [showGoogleModal, setShowGoogleModal] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  // Forgot Password Modal State
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState<string | null>(null);
+
   const validateEmail = (str: string) => /\S+@\S+\.\S+/.test(str);
 
   /**
@@ -107,6 +113,32 @@ export default function DropsAuthScreen({
       setError('Đã xảy ra lỗi kết nối. Vui lòng thử lại.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  /**
+   * Reset Password via Supabase Auth.
+   */
+  const handleForgotPassword = async () => {
+    if (!resetEmail || !validateEmail(resetEmail)) {
+      setResetMessage('Vui lòng nhập email hợp lệ.');
+      return;
+    }
+    setResetLoading(true);
+    setResetMessage(null);
+    try {
+      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(resetEmail.trim(), {
+        redirectTo: 'vocam://reset-password',
+      });
+      if (resetErr) {
+        setResetMessage('Lỗi: ' + resetErr.message);
+      } else {
+        setResetMessage('Đã gửi email khôi phục mật khẩu. Vui lòng kiểm tra hộp thư!');
+      }
+    } catch {
+      setResetMessage('Không thể gửi yêu cầu. Vui lòng thử lại sau.');
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -290,6 +322,19 @@ export default function DropsAuthScreen({
           </View>
         </View>
 
+        {authMode === 'login' && (
+          <TouchableOpacity
+            style={{ alignSelf: 'flex-end', marginBottom: 16 }}
+            onPress={() => {
+              setResetEmail(email);
+              setResetMessage(null);
+              setShowResetModal(true);
+            }}
+          >
+            <Text style={{ fontSize: 13, color: '#4F46E5', fontWeight: '600' }}>Quên mật khẩu?</Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity
           style={[styles.submitBtn, (!isFormValid || loading) && styles.submitBtnDisabled]}
           onPress={handleSubmit}
@@ -321,6 +366,49 @@ export default function DropsAuthScreen({
           </Text>
         </TouchableOpacity>
       </ScrollView>
+
+      {/* FORGOT PASSWORD MODAL */}
+      <Modal visible={showResetModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.googleModalCard}>
+            <View style={styles.googleHeader}>
+              <Feather name="key" size={24} color="#4F46E5" />
+              <Text style={styles.googleModalTitle}>Khôi phục mật khẩu</Text>
+            </View>
+            <Text style={styles.googleModalSub}>
+              Nhập email đã đăng ký tài khoản. Hệ thống Supabase Auth sẽ gửi liên kết tạo lại mật khẩu vào hòm thư của bạn.
+            </Text>
+
+            {resetMessage && (
+              <Text style={{ fontSize: 13, color: resetMessage.startsWith('Lỗi') ? '#EF4444' : '#10B981', marginBottom: 12, textAlign: 'center' }}>
+                {resetMessage}
+              </Text>
+            )}
+
+            <View style={[styles.inputWrapper, { marginBottom: 16 }]}>
+              <Feather name="mail" size={16} color={Variables.text.secondary} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                value={resetEmail}
+                onChangeText={setResetEmail}
+                placeholder="your@email.com"
+                placeholderTextColor={Variables.text.placeholder}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+
+            <View style={styles.googleActionRow}>
+              <TouchableOpacity style={styles.confirmGoogleBtn} onPress={handleForgotPassword} disabled={resetLoading}>
+                <Text style={styles.confirmGoogleBtnText}>{resetLoading ? 'Đang gửi...' : 'Gửi Email'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.closeGoogleBtn} onPress={() => setShowResetModal(false)}>
+                <Text style={styles.closeGoogleBtnText}>Đóng</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
