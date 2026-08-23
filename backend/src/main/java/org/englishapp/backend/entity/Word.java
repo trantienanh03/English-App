@@ -11,7 +11,7 @@ public class Word {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // YOLO detection class name, e.g. "cup", "cat", "laptop"
+    // YOLO detection class name, e.g. "cup", "cat", "laptop" (Canonical Label — Protected)
     @Column(name = "coco_class", nullable = false, unique = true, length = 50)
     private String cocoClass;
 
@@ -35,6 +35,9 @@ public class Word {
 
     @Column(name = "example_vn", columnDefinition = "TEXT")
     private String exampleVn;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
 
     @Column(name = "created_at")
     private Instant createdAt = Instant.now();
@@ -67,6 +70,9 @@ public class Word {
 
     public String getExampleVn() { return exampleVn; }
     public void setExampleVn(String exampleVn) { this.exampleVn = exampleVn; }
+
+    public String getImageUrl() { return imageUrl; }
+    public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }

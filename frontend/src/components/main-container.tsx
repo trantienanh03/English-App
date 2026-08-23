@@ -446,8 +446,15 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
       {/* QUIZ MODAL */}
       <Modal visible={showQuizModal} animationType="slide">
         <PracticeQuizScreen
+          lessonTitle={selectedLesson?.name || 'Bài học Chủ đề'}
+          words={selectedLesson?.words}
           onClose={() => setShowQuizModal(false)}
-          onAddXp={(xp) => handleAddXpWithStreakCheck(xp, xp >= 40)}
+          onQuizComplete={(pct) => {
+            if (selectedLesson) {
+              saveLessonProgress(selectedLesson.id, pct);
+              setLessons(prev => prev.map(l => l.id === selectedLesson.id ? { ...l, progress: pct } : l));
+            }
+          }}
         />
       </Modal>
 
@@ -458,8 +465,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
             lesson={selectedLesson}
             onClose={() => setSelectedLesson(null)}
             onStartLesson={(_id) => {
-              setSelectedLesson(null);
-              setActiveTab('cards');
+              setShowQuizModal(true);
             }}
             onSaveWord={handleAddWordToFlashcards}
             onLessonProgressUpdate={handleLessonProgressUpdate}

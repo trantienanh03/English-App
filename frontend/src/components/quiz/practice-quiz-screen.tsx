@@ -8,18 +8,28 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
-import { Palette, Fonts, Spacing } from '@/constants/theme';
+import { VocabularyWord } from '@/types';
 import { mockQuizzes } from '@/data/mock-data';
 import { playAudio, playSoundEffect } from '@/utils/audio';
 
 interface PracticeQuizScreenProps {
+  lessonTitle?: string;
+  words?: VocabularyWord[];
   onClose: () => void;
-  onAddXp: (amount: number) => void;
+  onQuizComplete?: (percentage: number) => void;
+}
+
+interface WrongAnswerItem {
+  question: string;
+  selectedOption: string;
+  correctAnswer: string;
 }
 
 export default function PracticeQuizScreen({
+  lessonTitle = 'Bài học Chủ đề',
+  words,
   onClose,
-  onAddXp,
+  onQuizComplete,
 }: PracticeQuizScreenProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
@@ -27,8 +37,10 @@ export default function PracticeQuizScreen({
   const [isCorrect, setIsCorrect] = useState(false);
   const [score, setScore] = useState(0);
   const [quizFinished, setQuizFinished] = useState(false);
+  const [wrongAnswers, setWrongAnswers] = useState<WrongAnswerItem[]>([]);
 
-  const currentQuiz = mockQuizzes[currentIndex];
+  const currentQuiz = mockQuizzes[currentIndex % mockQuizzes.length];
+  const totalQuestions = mockQuizzes.length;
 
   const handleSelectOption = (opt: string) => {
     if (isAnswered) return;
@@ -43,18 +55,30 @@ export default function PracticeQuizScreen({
       playSoundEffect('correct');
     } else {
       playSoundEffect('incorrect');
+      setWrongAnswers(prev => [
+        ...prev,
+        {
+          question: currentQuiz.question,
+          selectedOption: opt,
+          correctAnswer: currentQuiz.answer,
+        },
+      ]);
     }
   };
 
   const handleNext = () => {
-    if (currentIndex < mockQuizzes.length - 1) {
+    if (currentIndex < totalQuestions - 1) {
       setCurrentIndex(prev => prev + 1);
       setSelectedOption(null);
       setIsAnswered(false);
       setIsCorrect(false);
     } else {
       setQuizFinished(true);
-      onAddXp(score * 15 + 10);
+      const finalScore = score + (isCorrect ? 1 : 0);
+      const percentage = Math.round((finalScore / totalQuestions) * 100);
+      if (onQuizComplete) {
+        onQuizComplete(percentage);
+      }
       playSoundEffect('success');
     }
   };
@@ -66,7 +90,10 @@ export default function PracticeQuizScreen({
     setIsCorrect(false);
     setScore(0);
     setQuizFinished(false);
+    setWrongAnswers([]);
   };
+
+  const percentageScore = Math.round((score / totalQuestions) * 100);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -74,119 +101,104 @@ export default function PracticeQuizScreen({
         {/* HEADER BAR */}
         <View style={styles.headerBar}>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <Feather name="x" size={24} color={Palette.text.primary} />
+            <Feather name="x" size={24} color="#1E293B" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Thử thách Luyện tập Quiz 🎯</Text>
+          <Text style={styles.headerTitle}>Quiz: {lessonTitle}</Text>
           <View style={styles.scoreBadge}>
-            <Text style={styles.scoreText}>{score} Điểm</Text>
+            <Text style={styles.scoreBadgeText}>Điểm: {score}/{totalQuestions}</Text>
           </View>
         </View>
 
         {!quizFinished ? (
-          <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-            {/* Progress */}
-            <View style={styles.progressRow}>
-              <Text style={styles.progressText}>Câu hỏi {currentIndex + 1} / {mockQuizzes.length}</Text>
-              <View style={styles.progressTrack}>
-                <View style={[styles.progressFill, { width: `${((currentIndex + 1) / mockQuizzes.length) * 100}%` }]} />
-              </View>
+          <ScrollView contentContainerStyle={styles.content}>
+            {/* PROGRESS BAR */}
+            <View style={styles.progressBarBg}>
+              <View style={[styles.progressBarFill, { width: `${((currentIndex + 1) / totalQuestions) * 100}%` }]} />
             </View>
+            <Text style={styles.progressText}>Câu hỏi {currentIndex + 1} / {totalQuestions}</Text>
 
             {/* QUESTION CARD */}
             <View style={styles.questionCard}>
-              <Text style={styles.typeBadge}>
-                {currentQuiz.type === 'multiple-choice' ? 'CHỌN ĐÁP ÁN ĐÚNG' : 'ĐIỀN TỪ CÒN THIẾU'}
-              </Text>
               <Text style={styles.questionText}>{currentQuiz.question}</Text>
-
-              <TouchableOpacity style={styles.hintBtn} onPress={() => playAudio(currentQuiz.question)}>
-                <Feather name="volume-2" size={16} color={Palette.primary[500]} />
-                <Text style={styles.hintText}>{currentQuiz.vnHint}</Text>
-              </TouchableOpacity>
             </View>
 
             {/* OPTIONS LIST */}
-            <View style={styles.optionsList}>
-              {currentQuiz.options?.map((opt, idx) => {
+            <View style={styles.optionsContainer}>
+              {(currentQuiz.options || []).map((opt: string, i: number) => {
                 const isSelected = selectedOption === opt;
-                const isCorrectOption = opt === currentQuiz.answer;
+                const isAnswer = opt === currentQuiz.answer;
 
-                let optionStyle: any = styles.optionNormal;
+                let btnStyle: any = styles.optionBtn;
+                let textStyle: any = styles.optionText;
+
                 if (isAnswered) {
-                  if (isCorrectOption) optionStyle = styles.optionCorrect;
-                  else if (isSelected && !isCorrect) optionStyle = styles.optionWrong;
+                  if (isAnswer) {
+                    btnStyle = [styles.optionBtn, styles.optionCorrect];
+                    textStyle = [styles.optionText, styles.optionTextCorrect];
+                  } else if (isSelected && !isCorrect) {
+                    btnStyle = [styles.optionBtn, styles.optionIncorrect];
+                    textStyle = [styles.optionText, styles.optionTextIncorrect];
+                  }
                 }
 
                 return (
                   <TouchableOpacity
-                    key={idx}
-                    style={[styles.optionItem, optionStyle]}
+                    key={i}
+                    style={btnStyle}
                     onPress={() => handleSelectOption(opt)}
                     disabled={isAnswered}
                   >
-                    <Text style={styles.optionIndex}>{String.fromCharCode(65 + idx)}</Text>
-                    <Text style={styles.optionText}>{opt}</Text>
-                    {isAnswered && isCorrectOption && (
-                      <Feather name="check-circle" size={20} color={Palette.success.text} />
-                    )}
-                    {isAnswered && isSelected && !isCorrect && (
-                      <Feather name="x-circle" size={20} color={Palette.error.text} />
-                    )}
+                    <Text style={textStyle}>{opt}</Text>
                   </TouchableOpacity>
                 );
               })}
             </View>
 
-            {/* ANSWER FEEDBACK SHEET */}
+            {/* NEXT BUTTON */}
             {isAnswered && (
-              <View style={[styles.feedbackBox, isCorrect ? styles.feedbackCorrect : styles.feedbackWrong]}>
-                <View style={styles.feedbackTextRow}>
-                  <Feather
-                    name={isCorrect ? 'smile' : 'frown'}
-                    size={24}
-                    color={isCorrect ? Palette.success.text : Palette.error.text}
-                  />
-                  <Text style={[styles.feedbackTitle, isCorrect ? styles.txtCorrect : styles.txtWrong]}>
-                    {isCorrect ? 'Chính xác! Giỏi lắm! 🎉' : 'Rất tiếc, chưa đúng rồi! 😅'}
-                  </Text>
-                </View>
-                {!isCorrect && (
-                  <Text style={styles.correctAnswerLabel}>Đáp án đúng: {currentQuiz.answer}</Text>
-                )}
-
-                <TouchableOpacity style={styles.nextBtn} onPress={handleNext}>
-                  <Text style={styles.nextBtnText}>CÂU TIẾP THEO</Text>
-                  <Feather name="arrow-right" size={16} color="#FFFFFF" />
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity style={styles.nextBtn} onPress={handleNext}>
+                <Text style={styles.nextBtnText}>{currentIndex === totalQuestions - 1 ? 'Xem kết quả Quiz' : 'Câu tiếp theo'}</Text>
+                <Feather name="arrow-right" size={18} color="#FFFFFF" />
+              </TouchableOpacity>
             )}
           </ScrollView>
         ) : (
-          /* QUIZ FINISHED CELEBRATION */
-          <View style={styles.finishedWrapper}>
-            <View style={styles.celebrationCard}>
-              <Feather name="award" size={60} color={Palette.warning.text} />
-              <Text style={styles.celebrationTitle}>Hoàn thành Quiz! 🌟</Text>
-              <Text style={styles.celebrationSub}>
-                Bạn trả lời đúng <Text style={styles.boldScore}>{score}/{mockQuizzes.length}</Text> câu hỏi.
-              </Text>
+          /* QUIZ FINISHED RESULTS SCREEN */
+          <ScrollView contentContainerStyle={styles.resultsContent}>
+            <View style={styles.resultCard}>
+              <Feather name="award" size={56} color="#4F46E5" />
+              <Text style={styles.resultTitle}>Hoàn thành Bài Quiz! 🎉</Text>
+              <Text style={styles.resultScoreText}>{score} / {totalQuestions} câu đúng ({percentageScore}%)</Text>
 
-              <View style={styles.xpBonusCard}>
-                <Feather name="zap" size={18} color={Palette.warning.text} />
-                <Text style={styles.xpBonusText}>Thưởng: +{score * 15 + 10} XP!</Text>
-              </View>
+              {wrongAnswers.length > 0 ? (
+                <View style={styles.wrongSection}>
+                  <Text style={styles.wrongTitle}>📌 Ôn lại câu làm sai ({wrongAnswers.length}):</Text>
+                  {wrongAnswers.map((w, idx) => (
+                    <View key={idx} style={styles.wrongCard}>
+                      <Text style={styles.wrongQuestion}>• {w.question}</Text>
+                      <Text style={styles.wrongUserAns}>❌ Bạn chọn: {w.selectedOption}</Text>
+                      <Text style={styles.wrongCorrectAns}>✅ Đáp án đúng: {w.correctAnswer}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <View style={styles.perfectBox}>
+                  <Text style={styles.perfectText}>🌟 Xuất sắc! Bạn làm đúng 100% tất cả các câu hỏi.</Text>
+                </View>
+              )}
 
-              <View style={styles.finishedBtnGroup}>
-                <TouchableOpacity style={styles.restartBtn} onPress={resetQuiz}>
-                  <Text style={styles.restartBtnText}>Làm lại bài này</Text>
+              <View style={styles.resultActions}>
+                <TouchableOpacity style={styles.retryBtn} onPress={resetQuiz}>
+                  <Feather name="refresh-cw" size={16} color="#4F46E5" />
+                  <Text style={styles.retryText}>Làm lại Quiz</Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.closeMainBtn} onPress={onClose}>
-                  <Text style={styles.closeMainBtnText}>VỀ DẠO DIỆN CHÍNH</Text>
+                <TouchableOpacity style={styles.finishBtn} onPress={onClose}>
+                  <Text style={styles.finishText}>Hoàn tất</Text>
                 </TouchableOpacity>
               </View>
             </View>
-          </View>
+          </ScrollView>
         )}
       </View>
     </SafeAreaView>
@@ -194,273 +206,60 @@ export default function PracticeQuizScreen({
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: Palette.canvas,
-  },
-  container: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.two,
-  },
+  safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
+  container: { flex: 1 },
+
   headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: Spacing.three,
+    padding: 16,
+    backgroundColor: '#FFFFFF',
+    borderBottomWidth: 1,
+    borderColor: '#E2E8F0',
   },
-  closeBtn: {
-    padding: 4,
-  },
-  headerTitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 16,
-    fontWeight: '800',
-    color: Palette.text.primary,
-  },
-  scoreBadge: {
-    backgroundColor: Palette.warning.bg,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  scoreText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    fontWeight: '800',
-    color: Palette.warning.text,
-  },
+  closeBtn: { padding: 4 },
+  headerTitle: { fontSize: 16, fontWeight: '700', color: '#1E293B' },
+  scoreBadge: { backgroundColor: '#EEF2FF', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  scoreBadgeText: { color: '#4F46E5', fontSize: 12, fontWeight: '700' },
 
-  content: {
-    paddingBottom: 40,
-  },
-  progressRow: {
-    gap: 6,
-    marginBottom: Spacing.three,
-  },
-  progressText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    fontWeight: '700',
-    color: Palette.text.muted,
-  },
-  progressTrack: {
-    height: 8,
-    backgroundColor: Palette.border,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: Palette.primary[500],
-    borderRadius: 4,
-  },
+  content: { padding: 20, gap: 16 },
+  progressBarBg: { height: 6, backgroundColor: '#E2E8F0', borderRadius: 3, overflow: 'hidden' },
+  progressBarFill: { height: '100%', backgroundColor: '#4F46E5' },
+  progressText: { fontSize: 12, color: '#64748B', fontWeight: '600' },
 
-  questionCard: {
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 24,
-    padding: Spacing.four,
-    borderWidth: 1,
-    borderColor: Palette.border,
-    marginBottom: Spacing.three,
-  },
-  typeBadge: {
-    fontFamily: Fonts.sans,
-    fontSize: 10,
-    fontWeight: '900',
-    color: Palette.primary[500],
-    letterSpacing: 0.5,
-    marginBottom: Spacing.one,
-  },
-  questionText: {
-    fontFamily: Fonts.sans,
-    fontSize: 18,
-    fontWeight: '800',
-    color: Palette.text.primary,
-    lineHeight: 26,
-    marginBottom: Spacing.two,
-  },
-  hintBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: Palette.canvas,
-    padding: Spacing.two,
-    borderRadius: 12,
-  },
-  hintText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
-    color: Palette.text.secondary,
-  },
+  questionCard: { backgroundColor: '#FFFFFF', padding: 20, borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0' },
+  questionText: { fontSize: 18, fontWeight: '700', color: '#1E293B', lineHeight: 26 },
 
-  optionsList: {
-    gap: Spacing.two,
-    marginBottom: Spacing.three,
-  },
-  optionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: Spacing.three,
-    borderRadius: 16,
-    borderWidth: 1.5,
-    gap: Spacing.two,
-  },
-  optionNormal: {
-    backgroundColor: Palette.surfaceWhite,
-    borderColor: Palette.border,
-  },
-  optionCorrect: {
-    backgroundColor: Palette.success.bg,
-    borderColor: Palette.success.text,
-  },
-  optionWrong: {
-    backgroundColor: Palette.error.bg,
-    borderColor: Palette.error.text,
-  },
-  optionIndex: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    fontWeight: '800',
-    color: Palette.text.muted,
-    width: 24,
-  },
-  optionText: {
-    flex: 1,
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    fontWeight: '600',
-    color: Palette.text.primary,
-  },
+  optionsContainer: { gap: 10 },
+  optionBtn: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#CBD5E1', padding: 16, borderRadius: 12 },
+  optionText: { fontSize: 15, fontWeight: '600', color: '#334155' },
+  optionCorrect: { backgroundColor: '#ECFDF5', borderColor: '#10B981' },
+  optionTextCorrect: { color: '#047857', fontWeight: '700' },
+  optionIncorrect: { backgroundColor: '#FEF2F2', borderColor: '#EF4444' },
+  optionTextIncorrect: { color: '#B91C1C', fontWeight: '700' },
 
-  feedbackBox: {
-    padding: Spacing.three,
-    borderRadius: 20,
-    gap: Spacing.two,
-  },
-  feedbackCorrect: {
-    backgroundColor: Palette.success.bg,
-    borderWidth: 1,
-    borderColor: Palette.success.text,
-  },
-  feedbackWrong: {
-    backgroundColor: Palette.error.bg,
-    borderWidth: 1,
-    borderColor: Palette.error.text,
-  },
-  feedbackTextRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: Spacing.two,
-  },
-  feedbackTitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 15,
-    fontWeight: '800',
-  },
-  txtCorrect: {
-    color: Palette.success.text,
-  },
-  txtWrong: {
-    color: Palette.error.text,
-  },
-  correctAnswerLabel: {
-    fontFamily: Fonts.sans,
-    fontSize: 13,
-    fontWeight: '700',
-    color: Palette.text.primary,
-  },
-  nextBtn: {
-    backgroundColor: Palette.primary[500],
-    height: 48,
-    borderRadius: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginTop: 4,
-  },
-  nextBtnText: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    fontWeight: '900',
-    color: '#FFFFFF',
-  },
+  nextBtn: { backgroundColor: '#4F46E5', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 14, borderRadius: 12, marginTop: 12 },
+  nextBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 15 },
 
-  finishedWrapper: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  celebrationCard: {
-    width: '100%',
-    backgroundColor: Palette.surfaceWhite,
-    borderRadius: 28,
-    padding: Spacing.five,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Palette.border,
-  },
-  celebrationTitle: {
-    fontFamily: Fonts.sans,
-    fontSize: 22,
-    fontWeight: '900',
-    color: Palette.text.primary,
-    marginTop: Spacing.two,
-  },
-  celebrationSub: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    color: Palette.text.secondary,
-    marginTop: 4,
-    marginBottom: Spacing.three,
-  },
-  boldScore: {
-    fontWeight: '900',
-    color: Palette.primary[500],
-  },
-  xpBonusCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: Palette.warning.bg,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 14,
-    marginBottom: Spacing.four,
-  },
-  xpBonusText: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    fontWeight: '800',
-    color: Palette.warning.text,
-  },
-  finishedBtnGroup: {
-    width: '100%',
-    gap: Spacing.two,
-  },
-  restartBtn: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 44,
-  },
-  restartBtnText: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    fontWeight: '700',
-    color: Palette.text.secondary,
-  },
-  closeMainBtn: {
-    backgroundColor: Palette.primary[500],
-    height: 52,
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeMainBtnText: {
-    fontFamily: Fonts.sans,
-    fontSize: 14,
-    fontWeight: '900',
-    color: '#FFFFFF',
-  },
+  resultsContent: { padding: 20 },
+  resultCard: { backgroundColor: '#FFFFFF', padding: 24, borderRadius: 20, borderWidth: 1, borderColor: '#E2E8F0', alignItems: 'center', gap: 12 },
+  resultTitle: { fontSize: 20, fontWeight: '800', color: '#1E293B' },
+  resultScoreText: { fontSize: 18, fontWeight: '700', color: '#10B981' },
+
+  wrongSection: { width: '100%', gap: 10, marginTop: 12 },
+  wrongTitle: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
+  wrongCard: { backgroundColor: '#FEF2F2', padding: 12, borderRadius: 10, borderWidth: 1, borderColor: '#FCA5A5', gap: 4 },
+  wrongQuestion: { fontSize: 13, fontWeight: '700', color: '#991B1B' },
+  wrongUserAns: { fontSize: 12, color: '#DC2626' },
+  wrongCorrectAns: { fontSize: 12, color: '#059669', fontWeight: '700' },
+
+  perfectBox: { backgroundColor: '#ECFDF5', padding: 14, borderRadius: 12, marginTop: 8 },
+  perfectText: { color: '#047857', fontSize: 13, fontWeight: '700', textAlign: 'center' },
+
+  resultActions: { flexDirection: 'row', gap: 12, width: '100%', marginTop: 16 },
+  retryBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1, borderColor: '#4F46E5', padding: 12, borderRadius: 10 },
+  retryText: { color: '#4F46E5', fontWeight: '700' },
+  finishBtn: { flex: 1, backgroundColor: '#4F46E5', alignItems: 'center', justifyContent: 'center', padding: 12, borderRadius: 10 },
+  finishText: { color: '#FFFFFF', fontWeight: '700' },
 });

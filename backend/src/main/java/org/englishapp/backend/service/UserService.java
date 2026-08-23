@@ -119,6 +119,26 @@ public class UserService {
         return newLockStatus ? "LOCKED" : "ACTIVE";
     }
 
+    /** GET /api/admin/users — Returns list of registered users for Admin User Management */
+    @Transactional(readOnly = true)
+    public List<org.englishapp.backend.dto.UserEntryDto> getAllUsers() {
+        return appUserRepository.findAll().stream()
+                .map(u -> {
+                    UserProgress p = userProgressRepository.findByUserId(u.getUserId()).orElse(null);
+                    int saved = p != null ? p.getWordsSaved() : 0;
+                    int learned = p != null ? p.getWordsLearned() : 0;
+                    return new org.englishapp.backend.dto.UserEntryDto(
+                            u.getUserId(),
+                            u.getDisplayName(),
+                            u.getRole(),
+                            Boolean.TRUE.equals(u.getLocked()),
+                            saved,
+                            learned
+                    );
+                })
+                .toList();
+    }
+
     public long countUsers() {
         return appUserRepository.count();
     }

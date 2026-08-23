@@ -203,6 +203,14 @@ export const api = {
     return apiClient('/api/admin/stats');
   },
 
+  async fetchAllWordDtos(): Promise<BackendWordDto[]> {
+    return apiClient('/api/words');
+  },
+
+  async fetchAdminUsers(): Promise<AdminUserEntry[]> {
+    return apiClient('/api/admin/users');
+  },
+
   async updateCanonicalWord(id: number, data: Partial<BackendWordDto>): Promise<BackendWordDto> {
     return apiClient(`/api/admin/words/${id}`, {
       method: 'PUT',

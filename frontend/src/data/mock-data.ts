@@ -3,217 +3,167 @@ import { VocabularyWord, Lesson, UserProgress, QuizQuestion } from '../types';
 export const mockWords: VocabularyWord[] = [
   {
     id: 'w1',
-    word: 'Coffee Mug',
-    phonetic: '/ˈkɒfi mʌɡ/',
-    vn: 'Cái cốc cà phê',
+    word: 'cup',
+    phonetic: '/kʌp/',
+    vn: 'cái cốc / tách',
     pos: 'Noun',
-    sentence: 'She wrapped her hands around her coffee mug to stay warm.',
-    sentenceVn: 'Cô ấy ôm chặt chiếc cốc cà phê để giữ ấm.',
+    sentence: 'She wrapped her hands around her cup to stay warm.',
+    sentenceVn: 'Cô ấy ôm lấy cái cốc để giữ ấm.',
     difficulty: 'easy',
     imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop&q=60'
   },
   {
     id: 'w2',
-    word: 'Laptop',
+    word: 'laptop',
     phonetic: '/ˈlæptɒp/',
-    vn: 'Máy tính xách tay',
+    vn: 'máy tính xách tay',
     pos: 'Noun',
     sentence: 'She opened her laptop to check her emails.',
     sentenceVn: 'Cô ấy mở máy tính xách tay để kiểm tra email.',
-    difficulty: 'medium',
+    difficulty: 'easy',
     imageUrl: 'https://images.unsplash.com/photo-1496181130204-7552cc14ac1a?w=400&auto=format&fit=crop&q=60'
   },
   {
     id: 'w3',
-    word: 'Water Bottle',
-    phonetic: '/ˈwɔːtər ˈbɒtl/',
-    vn: 'Bình nước cá nhân',
+    word: 'bottle',
+    phonetic: '/ˈbɒtl/',
+    vn: 'chai / bình nước',
     pos: 'Noun',
     sentence: 'Always carry a water bottle when you exercise.',
-    sentenceVn: 'Hãy luôn mang theo bình nước khi bạn tập thể dục.',
+    sentenceVn: 'Hãy luôn mang theo chai nước khi bạn tập thể dục.',
     difficulty: 'easy',
     imageUrl: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&auto=format&fit=crop&q=60'
   },
   {
     id: 'w4',
-    word: 'Headphones',
+    word: 'headphones',
     phonetic: '/ˈhɛdfəʊnz/',
-    vn: 'Tai nghe chụp tai',
+    vn: 'tai nghe chụp tai',
     pos: 'Noun',
-    sentence: 'He put on his headphones to block out the noise.',
-    sentenceVn: 'Anh ấy đeo tai nghe để cách ly với tiếng ồn xung quanh.',
-    difficulty: 'medium',
+    sentence: 'He put on his headphones to listen to music.',
+    sentenceVn: 'Anh ấy đeo tai nghe để nghe nhạc.',
+    difficulty: 'easy',
     imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format&fit=crop&q=60'
   },
   {
     id: 'w5',
-    word: 'Notebook',
+    word: 'notebook',
     phonetic: '/ˈnəʊtbʊk/',
-    vn: 'Quyển sổ ghi chép',
+    vn: 'quyển sổ ghi chép',
     pos: 'Noun',
-    sentence: 'She wrote her ideas in a small notebook.',
-    sentenceVn: 'Cô ấy ghi chép những ý tưởng vào một cuốn sổ nhỏ.',
+    sentence: 'She wrote her notes in a small notebook.',
+    sentenceVn: 'Cô ấy ghi chép những ghi chú vào một cuốn sổ nhỏ.',
     difficulty: 'easy',
     imageUrl: 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=400&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 'w6',
-    word: 'Croissant',
-    phonetic: '/ˈkrwæsɒ̃/',
-    vn: 'Bánh sừng bò',
-    pos: 'Noun',
-    sentence: 'He ordered a hot coffee and a fresh croissant for breakfast.',
-    sentenceVn: 'Anh ấy gọi cà phê nóng và bánh sừng bò tươi cho bữa sáng.',
-    difficulty: 'hard',
-    imageUrl: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=400&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 'w7',
-    word: 'Cappuccino',
-    phonetic: '/ˌkæpʊˈtʃiːnəʊ/',
-    vn: 'Cà phê cappuccino',
-    pos: 'Noun',
-    sentence: 'The barista dusted cocoa powder on top of the cappuccino.',
-    sentenceVn: 'Nhân viên pha chế rắc bột ca cao lên lớp bọt cappuccino.',
-    difficulty: 'medium',
-    imageUrl: 'https://images.unsplash.com/photo-1572442388796-11668a720eb9?w=400&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 'w8',
-    word: 'Punctual',
-    phonetic: '/ˈpʌŋktʃuəl/',
-    vn: 'Đúng giờ, không trễ hẹn',
-    pos: 'Adjective',
-    sentence: 'Please be punctual for the meeting tomorrow morning.',
-    sentenceVn: 'Xin vui lòng có mặt đúng giờ cho cuộc họp sáng mai.',
-    difficulty: 'medium',
-    imageUrl: 'https://images.unsplash.com/photo-1508962914676-134849a727f0?w=400&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 'w9',
-    word: 'Procrastinate',
-    phonetic: '/prəʊˈkræstɪneɪt/',
-    vn: 'Trì hoãn, chần chừ',
-    pos: 'Verb',
-    sentence: 'Stop procrastinating and finish your work now!',
-    sentenceVn: 'Đừng chần chừ nữa, hãy hoàn thành công việc ngay!',
-    difficulty: 'hard',
-    imageUrl: 'https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=400&auto=format&fit=crop&q=60'
   }
 ];
 
 export const mockLessons: Lesson[] = [
   {
-    id: 'l1',
-    name: 'At the Coffee Shop',
-    description: 'Học từ vựng phổ biến khi đi cà phê và gọi món tại nước ngoài.',
+    id: 'les1',
+    name: 'Đồ dùng học tập & Văn phòng',
+    description: 'Từ vựng các vật thể quen thuộc trong lớp học và văn phòng làm việc',
     difficulty: 'Sơ cấp',
-    category: 'Giao tiếp hàng ngày',
-    icon: '☕',
-    wordCount: 4,
-    progress: 75,
-    words: [
-      mockWords[0],
-      mockWords[5],
-      mockWords[6],
-      {
-        id: 'w10',
-        word: 'Espresso',
-        phonetic: '/eˈspresəʊ/',
-        vn: 'Cà phê đậm đặc',
-        pos: 'Noun',
-        sentence: 'He drank a quick shot of espresso before going to work.',
-        sentenceVn: 'Anh ấy uống nhanh một ly espresso trước khi đi làm.',
-        difficulty: 'easy',
-        imageUrl: 'https://images.unsplash.com/photo-1510707577719-ee7c21b15981?w=400&auto=format&fit=crop&q=60'
-      }
-    ]
-  },
-  {
-    id: 'l2',
-    name: 'Workplace & Productivity',
-    description: 'Từ vựng chuyên dùng trong môi trường văn phòng, thảo luận công việc.',
-    difficulty: 'Trung cấp',
-    category: 'Công sở & Sự nghiệp',
-    icon: '💻',
-    wordCount: 4,
-    progress: 25,
-    words: [
-      mockWords[1],
-      mockWords[7],
-      mockWords[8],
-      {
-        id: 'w11',
-        word: 'Collaboration',
-        phonetic: '/kəˌlæbəˈreɪʃn/',
-        vn: 'Sự hợp tác, cộng tác',
-        pos: 'Noun',
-        sentence: 'This project is a successful collaboration between two teams.',
-        sentenceVn: 'Dự án này là một sự hợp tác thành công giữa hai nhóm.',
-        difficulty: 'hard',
-        imageUrl: 'https://images.unsplash.com/photo-1531538606174-0f90ff5dce83?w=400&auto=format&fit=crop&q=60'
-      }
-    ]
-  },
-  {
-    id: 'l3',
-    name: 'Study Essentials',
-    description: 'Các vật dụng và thói quen cần thiết cho học sinh, sinh viên.',
-    difficulty: 'Sơ cấp',
-    category: 'Học tập & Giáo dục',
-    icon: '📚',
-    wordCount: 3,
+    category: 'Văn phòng',
+    icon: 'book-open',
+    wordCount: 5,
     progress: 0,
     words: [
-      mockWords[3],
-      mockWords[4],
-      mockWords[2],
+      { id: 'l1_1', word: 'laptop', phonetic: '/ˈlæptɒp/', vn: 'máy tính xách tay', pos: 'Noun', sentence: 'I work on my laptop every day.', sentenceVn: 'Tôi làm việc trên máy tính xách tay mỗi ngày.', difficulty: 'easy' },
+      { id: 'l1_2', word: 'notebook', phonetic: '/ˈnəʊtbʊk/', vn: 'sổ ghi chép', pos: 'Noun', sentence: 'Write the notes in your notebook.', sentenceVn: 'Ghi chép vào sổ tay của bạn.', difficulty: 'easy' },
+      { id: 'l1_3', word: 'pen', phonetic: '/pɛn/', vn: 'bút bi / bút mực', pos: 'Noun', sentence: 'He signed the contract with a black pen.', sentenceVn: 'Anh ấy ký hợp đồng bằng bút mực đen.', difficulty: 'easy' },
+      { id: 'l1_4', word: 'pencil', phonetic: '/ˈpɛnsɪl/', vn: 'bút chì', pos: 'Noun', sentence: 'Draw a sketch with a pencil.', sentenceVn: 'Vẽ phác thảo bằng bút chì.', difficulty: 'easy' },
+      { id: 'l1_5', word: 'chair', phonetic: '/tʃɛər/', vn: 'cái ghế', pos: 'Noun', sentence: 'Sit comfortably on the chair.', sentenceVn: 'Ngồi thoải mái trên ghế.', difficulty: 'easy' },
     ]
   },
   {
-    id: 'l4',
-    name: 'Expressing Emotions',
-    description: 'Diễn tả cảm xúc từ cơ bản đến nâng cao một cách tự nhiên.',
-    difficulty: 'Trung cấp',
-    category: 'Tâm lý & Đời sống',
-    icon: '🎭',
-    wordCount: 3,
+    id: 'les2',
+    name: 'Thực phẩm & Đồ dùng Nhà bếp',
+    description: 'Các vật thể và thực phẩm phổ biến trong gian bếp gia đình',
+    difficulty: 'Sơ cấp',
+    category: 'Nhà bếp',
+    icon: 'coffee',
+    wordCount: 5,
     progress: 0,
     words: [
-      {
-        id: 'w12',
-        word: 'Ecstatic',
-        phonetic: '/ɪkˈstætɪk/',
-        vn: 'Vô cùng hạnh phúc, ngây ngất',
-        pos: 'Adjective',
-        sentence: 'Sally was ecstatic when she passed her English exam.',
-        sentenceVn: 'Sally đã vô cùng hạnh phúc khi đỗ kỳ thi tiếng Anh.',
-        difficulty: 'hard',
-        imageUrl: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=400&auto=format&fit=crop&q=60'
-      },
-      {
-        id: 'w13',
-        word: 'Apprehensive',
-        phonetic: '/ˌæprɪˈhensɪv/',
-        vn: 'Lo lắng nhẹ, e sợ',
-        pos: 'Adjective',
-        sentence: 'He felt apprehensive about starting his new job tomorrow.',
-        sentenceVn: 'Anh ấy cảm thấy lo lắng nhẹ khi bắt đầu công việc mới vào ngày mai.',
-        difficulty: 'hard',
-        imageUrl: 'https://images.unsplash.com/photo-1484863137850-59afcfe05386?w=400&auto=format&fit=crop&q=60'
-      },
-      {
-        id: 'w14',
-        word: 'Nostalgic',
-        phonetic: '/nɒˈstældʒɪk/',
-        vn: 'Hoài niệm, nhớ về quá khứ',
-        pos: 'Adjective',
-        sentence: 'Hearing that old song made her feel very nostalgic.',
-        sentenceVn: 'Nghe lại bản nhạc cũ khiến cô ấy vô cùng hoài niệm.',
-        difficulty: 'medium',
-        imageUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&auto=format&fit=crop&q=60'
-      }
+      { id: 'l2_1', word: 'cup', phonetic: '/kʌp/', vn: 'cái cốc / tách', pos: 'Noun', sentence: 'A cup of hot tea in the morning.', sentenceVn: 'Một cốc trà nóng vào buổi sáng.', difficulty: 'easy' },
+      { id: 'l2_2', word: 'bottle', phonetic: '/ˈbɒtl/', vn: 'chai / bình nước', pos: 'Noun', sentence: 'Keep a water bottle on your desk.', sentenceVn: 'Giữ chai nước trên bàn làm việc.', difficulty: 'easy' },
+      { id: 'l2_3', word: 'plate', phonetic: '/pleɪt/', vn: 'cái đĩa', pos: 'Noun', sentence: 'Put the sandwich on the plate.', sentenceVn: 'Đặt bánh mì kẹp lên đĩa.', difficulty: 'easy' },
+      { id: 'l2_4', word: 'apple', phonetic: '/ˈæpl/', vn: 'quả táo', pos: 'Noun', sentence: 'An apple a day keeps the doctor away.', sentenceVn: 'Mỗi ngày một quả táo giúp cơ thể khỏe mạnh.', difficulty: 'easy' },
+      { id: 'l2_5', word: 'banana', phonetic: '/bəˈnɑːnə/', vn: 'quả chuối', pos: 'Noun', sentence: 'Bananas are rich in potassium.', sentenceVn: 'Chuối rất giàu kali.', difficulty: 'easy' },
     ]
+  },
+  {
+    id: 'les3',
+    name: 'Phương tiện Giao thông',
+    description: 'Tên gọi các phương tiện di chuyển phổ biến trên đường phố',
+    difficulty: 'Trung cấp',
+    category: 'Giao thông',
+    icon: 'truck',
+    wordCount: 5,
+    progress: 0,
+    words: [
+      { id: 'l3_1', word: 'car', phonetic: '/kɑːr/', vn: 'xe ô tô', pos: 'Noun', sentence: 'He drives a blue car to work.', sentenceVn: 'Anh ấy lái ô tô màu xanh đi làm.', difficulty: 'easy' },
+      { id: 'l3_2', word: 'bicycle', phonetic: '/ˈbaɪsɪkl/', vn: 'xe đạp', pos: 'Noun', sentence: 'Riding a bicycle is good exercise.', sentenceVn: 'Đi xe đạp là hình thức tập thể dục tốt.', difficulty: 'easy' },
+      { id: 'l3_3', word: 'bus', phonetic: '/bʌs/', vn: 'xe buýt', pos: 'Noun', sentence: 'Take the bus to the city center.', sentenceVn: 'Bắt xe buýt đến trung tâm thành phố.', difficulty: 'easy' },
+      { id: 'l3_4', word: 'motorcycle', phonetic: '/ˈmoʊtərsaɪkl/', vn: 'xe máy', pos: 'Noun', sentence: 'Wear a helmet when riding a motorcycle.', sentenceVn: 'Đội mũ bảo hiểm khi đi xe máy.', difficulty: 'easy' },
+      { id: 'l3_5', word: 'airplane', phonetic: '/ˈɛərpleɪn/', vn: 'máy bay', pos: 'Noun', sentence: 'The airplane landed safely at the airport.', sentenceVn: 'Máy bay đã hạ cánh an toàn xuống sân bay.', difficulty: 'easy' },
+    ]
+  },
+  {
+    id: 'les4',
+    name: 'Thế giới Động vật',
+    description: 'Từ vựng tiếng Anh về các loài động vật xung quanh chúng ta',
+    difficulty: 'Sơ cấp',
+    category: 'Động vật',
+    icon: 'heart',
+    wordCount: 5,
+    progress: 0,
+    words: [
+      { id: 'l4_1', word: 'cat', phonetic: '/kæt/', vn: 'con mèo', pos: 'Noun', sentence: 'The cat is sleeping on the sofa.', sentenceVn: 'Con mèo đang ngủ trên ghế sofa.', difficulty: 'easy' },
+      { id: 'l4_2', word: 'dog', phonetic: '/dɒɡ/', vn: 'con chó', pos: 'Noun', sentence: 'The dog barked happily at the door.', sentenceVn: 'Con chó sủa vui vẻ ngoài cửa.', difficulty: 'easy' },
+      { id: 'l4_3', word: 'bird', phonetic: '/bɜːrd/', vn: 'con chim', pos: 'Noun', sentence: 'A bird is singing in the tree.', sentenceVn: 'Một chú chim đang hót trên cây.', difficulty: 'easy' },
+      { id: 'l4_4', word: 'horse', phonetic: '/hɔːrs/', vn: 'con ngựa', pos: 'Noun', sentence: 'He rode a white horse across the field.', sentenceVn: 'Anh ấy cưỡi con ngựa trắng qua cánh đồng.', difficulty: 'easy' },
+      { id: 'l4_5', word: 'bear', phonetic: '/bɛər/', vn: 'con gấu', pos: 'Noun', sentence: 'The brown bear lives in the forest.', sentenceVn: 'Con gấu nâu sống trong rừng sâu.', difficulty: 'easy' },
+    ]
+  }
+];
+
+export const mockQuizzes: QuizQuestion[] = [
+  {
+    id: 'q1',
+    type: 'multiple-choice',
+    question: 'Từ "laptop" trong tiếng Anh có nghĩa là gì?',
+    options: ['Máy tính xách tay', 'Màn hình TV', 'Điện thoại di động', 'Máy tính bỏ túi'],
+    answer: 'Máy tính xách tay',
+  },
+  {
+    id: 'q2',
+    type: 'multiple-choice',
+    question: 'Từ nào sau đây mang nghĩa "cái cốc / tách"?',
+    options: ['cup', 'plate', 'bottle', 'fork'],
+    answer: 'cup',
+  },
+  {
+    id: 'q3',
+    type: 'multiple-choice',
+    question: 'Nghĩa tiếng Việt của từ "bicycle" là gì?',
+    options: ['Xe đạp', 'Xe máy', 'Xe ô tô', 'Xe buýt'],
+    answer: 'Xe đạp',
+  },
+  {
+    id: 'q4',
+    type: 'multiple-choice',
+    question: 'Từ nào sau đây mô tả con vật "con mèo"?',
+    options: ['cat', 'dog', 'bird', 'horse'],
+    answer: 'cat',
+  },
+  {
+    id: 'q5',
+    type: 'multiple-choice',
+    question: 'Điền từ còn thiếu vào câu: "She wrote notes in her _____."',
+    options: ['notebook', 'glasses', 'umbrella', 'shoe'],
+    answer: 'notebook',
   }
 ];
 
@@ -224,174 +174,6 @@ export const mockUserProgress: UserProgress = {
   nextLevelXp: 300,
   wordsLearned: 0,
   scanCount: 0,
-  weeklyXp: [
-    { day: 'T2', xp: 0, active: false },
-    { day: 'T3', xp: 0, active: false },
-    { day: 'T4', xp: 0, active: false },
-    { day: 'T5', xp: 0, active: false },
-    { day: 'T6', xp: 0, active: false },
-    { day: 'T7', xp: 0, active: false },
-    { day: 'CN', xp: 0, active: false }
-  ],
-  badges: [
-    {
-      id: 'b1',
-      name: 'Chăm Chỉ 🔥',
-      description: 'Đạt chuỗi 3 ngày học liên tiếp',
-      icon: 'fire',
-      unlocked: false,
-    },
-    {
-      id: 'b2',
-      name: 'Thợ Săn Ảnh 📷',
-      description: 'Quét thành công 3 vật thể bằng AI',
-      icon: 'camera',
-      unlocked: false,
-    },
-    {
-      id: 'b3',
-      name: 'Vua Từ Vựng 👑',
-      description: 'Lưu trữ hơn 15 thẻ flashcard',
-      icon: 'crown',
-      unlocked: false
-    },
-    {
-      id: 'b4',
-      name: 'Vượt Ải Quiz 🎯',
-      description: 'Đạt điểm tối đa trong một bài kiểm tra',
-      icon: 'target',
-      unlocked: false
-    }
-  ]
+  weeklyXp: [],
+  badges: [],
 };
-
-export const mockQuizzes: QuizQuestion[] = [
-  {
-    id: 'q1',
-    type: 'multiple-choice',
-    question: 'Chọn nghĩa đúng nhất của từ: "Procrastinate"',
-    options: [
-      'Làm việc chăm chỉ không ngừng nghỉ',
-      'Trì hoãn, chần chừ thực hiện công việc',
-      'Ủng hộ nhiệt tình một ý tưởng mới',
-      'Xây dựng kế hoạch chi tiết cho tương lai'
-    ],
-    answer: 'Trì hoãn, chần chừ thực hiện công việc',
-    vnHint: 'Gợi ý: Stop procrastinating and finish your work now!'
-  },
-  {
-    id: 'q2',
-    type: 'fill-blank',
-    question: 'Điền từ còn thiếu: "Always carry a _____ bottle when you exercise to stay hydrated."',
-    options: ['water', 'glass', 'coffee', 'coke'],
-    answer: 'water',
-    vnHint: 'Gợi ý: Hãy luôn mang theo bình NƯỚC khi bạn tập thể dục.'
-  },
-  {
-    id: 'q3',
-    type: 'multiple-choice',
-    question: 'Trong tiếng Anh, "Cái cốc cà phê" là gì?',
-    options: ['Water Bottle', 'Coffee Mug', 'Croissant', 'Headphones'],
-    answer: 'Coffee Mug',
-    vnHint: 'Gợi ý: Vật dụng thường dùng để đựng đồ uống nóng như cà phê.'
-  },
-  {
-    id: 'q4',
-    type: 'fill-blank',
-    question: 'Điền từ thích hợp: "He put on his _____ to block out the noisy environment."',
-    options: ['headphones', 'laptop', 'notebook', 'glasses'],
-    answer: 'headphones',
-    vnHint: 'Gợi ý: Anh ấy đeo TAI NGHE để giảm thiểu tiếng ồn xung quanh.'
-  }
-];
-
-export const mockScannerPresets: VocabularyWord[] = [
-  {
-    id: 's1',
-    word: 'Coffee Mug',
-    phonetic: '/ˈkɒfi mʌɡ/',
-    vn: 'Cái cốc cà phê',
-    pos: 'Noun',
-    sentence: 'She wrapped her hands around her coffee mug to stay warm.',
-    sentenceVn: 'Cô ấy ôm chiếc cốc cà phê để giữ ấm.',
-    difficulty: 'easy',
-    imageUrl: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 's2',
-    word: 'Laptop',
-    phonetic: '/ˈlæptɒp/',
-    vn: 'Máy tính xách tay',
-    pos: 'Noun',
-    sentence: 'She opened her laptop to check her emails.',
-    sentenceVn: 'Cô ấy mở máy tính xách tay để xem email.',
-    difficulty: 'medium',
-    imageUrl: 'https://images.unsplash.com/photo-1496181130204-7552cc14ac1a?w=400&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 's3',
-    word: 'Water Bottle',
-    phonetic: '/ˈwɔːtər ˈbɒtl/',
-    vn: 'Bình nước',
-    pos: 'Noun',
-    sentence: 'Always carry a water bottle when you exercise.',
-    sentenceVn: 'Luôn mang theo bình nước khi tập thể thao.',
-    difficulty: 'easy',
-    imageUrl: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 's4',
-    word: 'Headphones',
-    phonetic: '/ˈhɛdfəʊnz/',
-    vn: 'Tai nghe',
-    pos: 'Noun',
-    sentence: 'He put on his headphones to block out the noise.',
-    sentenceVn: 'Anh ấy đeo tai nghe để giảm tiếng ồn.',
-    difficulty: 'medium',
-    imageUrl: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 's5',
-    word: 'Notebook',
-    phonetic: '/ˈnəʊtbʊk/',
-    vn: 'Quyển sổ tay',
-    pos: 'Noun',
-    sentence: 'She wrote her ideas in a small notebook.',
-    sentenceVn: 'Cô ấy ghi lại ý tưởng vào cuốn sổ nhỏ.',
-    difficulty: 'easy',
-    imageUrl: 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?w=400&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 's6',
-    word: 'Desk Lamp',
-    phonetic: '/desk læmp/',
-    vn: 'Đèn học bàn làm việc',
-    pos: 'Noun',
-    sentence: 'The desk lamp cast a warm glow over his workspace.',
-    sentenceVn: 'Đèn bàn chiếu ánh sáng ấm áp lên góc làm việc.',
-    difficulty: 'easy',
-    imageUrl: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=400&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 's7',
-    word: 'Potted Plant',
-    phonetic: '/ˈpɒtɪd plɑːnt/',
-    vn: 'Chậu cây cảnh nhỏ',
-    pos: 'Noun',
-    sentence: 'She added a small potted plant to her office desk.',
-    sentenceVn: 'Cô ấy đặt một chậu cây cảnh nhỏ lên bàn làm việc.',
-    difficulty: 'easy',
-    imageUrl: 'https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=400&auto=format&fit=crop&q=60'
-  },
-  {
-    id: 's8',
-    word: 'Wristwatch',
-    phonetic: '/ˈrɪstwɒtʃ/',
-    vn: 'Đồng hồ đeo tay',
-    pos: 'Noun',
-    sentence: 'He checked his wristwatch and realized he was late.',
-    sentenceVn: 'Anh ấy xem đồng hồ đeo tay và nhận ra mình đã trễ.',
-    difficulty: 'medium',
-    imageUrl: 'https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&auto=format&fit=crop&q=60'
-  }
-];

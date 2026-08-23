@@ -26,7 +26,7 @@ public class WordService {
     }
 
     public WordDto findByCocoClass(String cocoClass) {
-        return wordRepository.findByCocoClass(cocoClass.toLowerCase())
+        return wordRepository.findByCocoClass(cocoClass.toLowerCase().trim())
                 .map(this::toDto)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -40,6 +40,9 @@ public class WordService {
 
     public WordDto createWord(WordDto dto) {
         Word word = new Word();
+        if (dto.getCocoClass() != null) {
+            word.setCocoClass(dto.getCocoClass().toLowerCase().trim());
+        }
         updateEntityFromDto(word, dto);
         Word saved = wordRepository.save(word);
         return toDto(saved);
@@ -48,27 +51,22 @@ public class WordService {
     public WordDto updateWord(Long id, WordDto dto) {
         Word word = wordRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Word not found: " + id));
+        
+        // Canonical coco_class label is protected and read-only to preserve YOLO mapping!
         updateEntityFromDto(word, dto);
         Word updated = wordRepository.save(word);
         return toDto(updated);
     }
 
-    public void deleteWord(Long id) {
-        if (!wordRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Word not found: " + id);
-        }
-        wordRepository.deleteById(id);
-    }
-
     private void updateEntityFromDto(Word word, WordDto dto) {
-        if (dto.cocoClass() != null) word.setCocoClass(dto.cocoClass().toLowerCase().trim());
-        if (dto.enWord() != null) word.setEnWord(dto.enWord().trim());
-        if (dto.phonetic() != null) word.setPhonetic(dto.phonetic().trim());
-        if (dto.pos() != null) word.setPos(dto.pos().trim());
-        if (dto.definition() != null) word.setDefinition(dto.definition().trim());
-        if (dto.translation() != null) word.setTranslation(dto.translation().trim());
-        if (dto.exampleEn() != null) word.setExampleEn(dto.exampleEn().trim());
-        if (dto.exampleVn() != null) word.setExampleVn(dto.exampleVn().trim());
+        if (dto.getEnWord() != null) word.setEnWord(dto.getEnWord().trim());
+        if (dto.getPhonetic() != null) word.setPhonetic(dto.getPhonetic().trim());
+        if (dto.getPos() != null) word.setPos(dto.getPos().trim());
+        if (dto.getDefinition() != null) word.setDefinition(dto.getDefinition().trim());
+        if (dto.getTranslation() != null) word.setTranslation(dto.getTranslation().trim());
+        if (dto.getExampleEn() != null) word.setExampleEn(dto.getExampleEn().trim());
+        if (dto.getExampleVn() != null) word.setExampleVn(dto.getExampleVn().trim());
+        if (dto.getImageUrl() != null) word.setImageUrl(dto.getImageUrl().trim());
     }
 
     private WordDto toDto(Word w) {
@@ -81,7 +79,8 @@ public class WordService {
                 w.getDefinition(),
                 w.getTranslation(),
                 w.getExampleEn(),
-                w.getExampleVn()
+                w.getExampleVn(),
+                w.getImageUrl()
         );
     }
 }

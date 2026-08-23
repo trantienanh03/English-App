@@ -6,11 +6,9 @@ import LoginScreen from '@/components/auth/login-screen';
 import MainContainer from '@/components/main-container';
 import DotsLoader from '@/components/ui/dots-loader';
 import { Palette } from '@/constants/theme';
+import { supabase } from '@/lib/supabase';
 
 type Screen = 'onboarding' | 'login' | 'signup' | 'dashboard';
-
-// Brief splash duration on first launch (ms)
-const SPLASH_MS = 1400;
 
 export default function HomeScreen() {
   const [isBooting, setIsBooting] = useState(true);
@@ -20,9 +18,37 @@ export default function HomeScreen() {
   const [userEmail, setUserEmail] = useState<string>('');
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsBooting(false), SPLASH_MS);
-    return () => clearTimeout(timer);
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && session.user) {
+          const email = session.user.email || '';
+          const name = session.user.user_metadata?.display_name || (email ? email.split('@')[0] : 'Học Viên Vocam');
+          setUserName(name);
+          setUserEmail(email);
+          setCurrentScreen('dashboard');
+        }
+      } catch (err) {
+        console.warn('Session restore check error:', err);
+      } finally {
+        setIsBooting(false);
+      }
+    };
+
+    checkSession();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('SignOut warning:', err);
+    } finally {
+      setUserName('');
+      setUserEmail('');
+      setCurrentScreen('login');
+    }
+  };
 
   if (isBooting) {
     return (
@@ -37,11 +63,7 @@ export default function HomeScreen() {
       <MainContainer
         userName={userName}
         userEmail={userEmail}
-        onLogout={() => {
-          setUserName('');
-          setUserEmail('');
-          setCurrentScreen('onboarding');
-        }}
+        onLogout={handleLogout}
       />
     );
   }
@@ -61,24 +83,24 @@ export default function HomeScreen() {
   if (currentScreen === 'signup') {
     return (
       <SignupScreen
-        onLoginPress={() => setCurrentScreen('login')}
-        onSignupSuccess={(name?: string, email?: string) => {
-          setUserName(name || 'Học Viên Vocam');
+        onSignupSuccess={(name, email) => {
+          setUserName(name || '');
           setUserEmail(email || '');
           setCurrentScreen('dashboard');
         }}
+        onLoginPress={() => setCurrentScreen('login')}
       />
     );
   }
 
   return (
     <LoginScreen
-      onSignupPress={() => setCurrentScreen('signup')}
-      onLoginSuccess={(name?: string, email?: string) => {
-        setUserName(name || email?.split('@')[0] || 'Học Viên Vocam');
+      onLoginSuccess={(name, email) => {
+        setUserName(name || '');
         setUserEmail(email || '');
         setCurrentScreen('dashboard');
       }}
+      onSignupPress={() => setCurrentScreen('signup')}
     />
   );
 }
@@ -87,7 +109,7 @@ const styles = StyleSheet.create({
   splash: {
     flex: 1,
     backgroundColor: Palette.primary[500],
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 });

@@ -97,7 +97,11 @@ export async function getLocalFlashcards(): Promise<LocalFlashcard[]> {
 export async function saveLocalFlashcard(word: VocabularyWord): Promise<void> {
   const cards = await getLocalFlashcards();
   const now = Date.now();
-  const exists = cards.findIndex(c => c.id === word.id);
+  const exists = cards.findIndex(c =>
+    c.id === word.id ||
+    c.en_word.toLowerCase().trim() === word.word.toLowerCase().trim() ||
+    c.coco_class.toLowerCase().trim() === word.word.toLowerCase().trim()
+  );
   const newCard: LocalFlashcard = {
     id: word.id,
     coco_class: word.word.toLowerCase(),

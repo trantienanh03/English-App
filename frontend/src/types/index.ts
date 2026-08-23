@@ -50,7 +50,7 @@ export interface QuizQuestion {
   question: string;
   options?: string[];
   answer: string;
-  vnHint: string;
+  vnHint?: string;
   audioUrl?: string;
 }
 

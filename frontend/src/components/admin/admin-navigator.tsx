@@ -38,12 +38,14 @@ export default function AdminNavigator({ adminEmail, onLogout }: AdminNavigatorP
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const [s, w] = await Promise.all([
+      const [s, w, u] = await Promise.all([
         api.fetchAdminStats().catch(() => ({ totalUsers: 0, activeUsers: 0, lockedUsers: 0, totalWords: 365 })),
-        api.fetchAllWords().catch(() => []),
+        api.fetchAllWordDtos().catch(() => []),
+        api.fetchAdminUsers().catch(() => []),
       ]);
       setStats(s);
-      setWords(w as any);
+      setWords(w);
+      setUsers(u);
     } catch (e: any) {
       console.warn('Error loading admin data:', e);
     } finally {

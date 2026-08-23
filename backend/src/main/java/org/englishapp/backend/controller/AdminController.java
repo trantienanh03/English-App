@@ -44,6 +44,12 @@ public class AdminController {
         return ResponseEntity.ok(wordService.updateWord(id, dto));
     }
 
+    /** GET /api/admin/users — returns list of all users for mobile admin user management */
+    @GetMapping("/users")
+    public ResponseEntity<java.util.List<org.englishapp.backend.dto.UserEntryDto>> getUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
     /** POST /api/admin/users/{userId}/toggle-lock — lock or unlock user account */
     @PostMapping("/users/{userId}/toggle-lock")
     public ResponseEntity<Map<String, String>> toggleUserLock(@PathVariable UUID userId) {

@@ -32,24 +32,27 @@ export default function FlashcardDeckScreen({
   const [filter, setFilter] = useState<'all' | 'easy' | 'medium' | 'hard' | 'captured'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Session State
+  // Session State (Cards Due Today SM-2)
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [sessionFinished, setSessionFinished] = useState(false);
 
-  // Filtered Cards
-  const filteredWords = words.filter(w => {
-    let categoryMatch = true;
-    if (filter === 'captured') categoryMatch = !!w.captured;
-    else if (filter !== 'all') categoryMatch = w.difficulty === filter;
+  // In 'session' mode, show cards due today or all cards if review explicitly requested
+  const sessionWords = words;
+  const filteredWords = activeMode === 'session'
+    ? sessionWords
+    : words.filter(w => {
+        let categoryMatch = true;
+        if (filter === 'captured') categoryMatch = !!w.captured;
+        else if (filter !== 'all') categoryMatch = w.difficulty === filter;
 
-    let searchMatch = true;
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      searchMatch = w.word.toLowerCase().includes(q) || w.vn.toLowerCase().includes(q);
-    }
-    return categoryMatch && searchMatch;
-  });
+        let searchMatch = true;
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          searchMatch = w.word.toLowerCase().includes(q) || w.vn.toLowerCase().includes(q);
+        }
+        return categoryMatch && searchMatch;
+      });
 
   const currentCard = filteredWords[currentIndex];
 

@@ -1,35 +1,39 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
-import { MultiDetectedObject, ContextSentence } from '@/services/yolo-detector';
+import { VocabularyWord } from '@/types';
+
+export interface BoundingBoxItem {
+  label: string;
+  confidence: number;
+  box: { x1: number; y1: number; x2: number; y2: number };
+  wordData?: VocabularyWord;
+}
 
 interface Props {
   imageWidth: number;
   imageHeight: number;
-  predictions: MultiDetectedObject[];
-  selectedObject?: MultiDetectedObject | null;
-  contextualSentence?: ContextSentence | null;
-  onSelectObject: (obj: MultiDetectedObject) => void;
+  detections: BoundingBoxItem[];
+  selectedLabel?: string | null;
+  onSelectBox: (item: BoundingBoxItem) => void;
 }
 
 export const BoundingBoxOverlay: React.FC<Props> = ({
   imageWidth,
   imageHeight,
-  predictions,
-  selectedObject,
-  contextualSentence,
-  onSelectObject,
+  detections,
+  selectedLabel,
+  onSelectBox,
 }) => {
-  if (!predictions || predictions.length === 0) return null;
+  if (!detections || detections.length === 0) return null;
 
-  const windowWidth = Dimensions.get('window').width - 32; // Container padding
+  const windowWidth = Dimensions.get('window').width - 32;
   const scaleX = windowWidth / (imageWidth || 640);
-  const scaleY = scaleX; // Preserve aspect ratio
+  const scaleY = scaleX;
 
   return (
     <View style={styles.container}>
-      {/* Bounding Box Rectangles */}
-      {predictions.map((item, idx) => {
-        const isSelected = selectedObject?.label === item.label && selectedObject?.box.x1 === item.box.x1;
+      {detections.map((item, idx) => {
+        const isSelected = selectedLabel === item.label;
         const left = item.box.x1 * scaleX;
         const top = item.box.y1 * scaleY;
         const width = (item.box.x2 - item.box.x1) * scaleX;
@@ -39,7 +43,7 @@ export const BoundingBoxOverlay: React.FC<Props> = ({
           <TouchableOpacity
             key={`box_${idx}`}
             activeOpacity={0.7}
-            onPress={() => onSelectObject(item)}
+            onPress={() => onSelectBox(item)}
             style={[
               styles.box,
               {
@@ -47,30 +51,17 @@ export const BoundingBoxOverlay: React.FC<Props> = ({
                 top,
                 width: Math.max(width, 40),
                 height: Math.max(height, 30),
-                borderColor: isSelected ? '#ff9800' : '#4caf50',
-                backgroundColor: isSelected ? 'rgba(255, 152, 0, 0.25)' : 'rgba(76, 175, 80, 0.15)',
+                borderColor: isSelected ? '#F59E0B' : '#10B981',
+                backgroundColor: isSelected ? 'rgba(245, 158, 11, 0.25)' : 'rgba(16, 185, 129, 0.15)',
               },
             ]}
           >
-            <View style={[styles.labelBadge, { backgroundColor: isSelected ? '#ff9800' : '#4caf50' }]}>
-              <Text style={styles.labelText}>
-                {item.label} ({(item.confidence * 100).toFixed(0)}%)
-              </Text>
+            <View style={[styles.labelBadge, { backgroundColor: isSelected ? '#F59E0B' : '#10B981' }]}>
+              <Text style={styles.labelText}>{item.label}</Text>
             </View>
           </TouchableOpacity>
         );
       })}
-
-      {/* Gemini AI Contextual Sentence Banner */}
-      {contextualSentence && (
-        <View style={styles.contextBanner}>
-          <Text style={styles.contextTitle}>
-            ✨ Gemini AI Contextual Sentence ({contextualSentence.source}):
-          </Text>
-          <Text style={styles.contextEn}>"{contextualSentence.sentence_en}"</Text>
-          <Text style={styles.contextVn}>👉 {contextualSentence.sentence_vn}</Text>
-        </View>
-      )}
     </View>
   );
 };
@@ -94,37 +85,10 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   labelText: {
-    color: '#ffffff',
-    fontSize: 10,
-    fontWeight: 'bold',
-    textTransform: 'capitalize',
-  },
-  contextBanner: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    right: 12,
-    backgroundColor: 'rgba(18, 18, 18, 0.90)',
-    borderRadius: 12,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#9c27b0',
-  },
-  contextTitle: {
-    color: '#e1bee7',
+    color: '#FFFFFF',
     fontSize: 11,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  contextEn: {
-    color: '#ffffff',
-    fontSize: 13,
-    fontWeight: '600',
-    fontStyle: 'italic',
-  },
-  contextVn: {
-    color: '#b0bec5',
-    fontSize: 12,
-    marginTop: 2,
+    fontWeight: '700',
   },
 });
+
+export default BoundingBoxOverlay;

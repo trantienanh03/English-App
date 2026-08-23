@@ -15,6 +15,7 @@ CREATE TABLE words (
     translation VARCHAR(200) NOT NULL,          -- Vietnamese meaning
     example_en  TEXT,
     example_vn  TEXT,
+    image_url   VARCHAR(500),
     created_at  TIMESTAMPTZ  DEFAULT NOW()
 );
 
