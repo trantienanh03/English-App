@@ -162,6 +162,7 @@ INSERT INTO words (coco_class, en_word, phonetic, pos, definition, translation, 
 ('clock',         'clock',         '/klɒk/',         'Noun', 'A device for telling time',                  'đồng hồ',              'The clock shows it is time for lunch.',               'Đồng hồ cho thấy đã đến giờ ăn trưa.'),
 ('vase',          'vase',          '/vɑːz/',         'Noun', 'A container for displaying flowers',         'bình hoa',             'She put fresh flowers in the vase.',                  'Cô ấy cắm hoa tươi vào bình.'),
 ('teddy bear',    'teddy bear',    '/ˈtɛdi bɛr/',   'Noun', 'A soft toy in the shape of a bear',         'gấu bông',             'The child slept with her teddy bear.',                'Đứa bé ngủ ôm gấu bông.'),
-('potted plant',  'potted plant',  '/ˈpɒtɪd plɑːnt/','Noun','A plant growing in a container',            'cây trồng trong chậu', 'She placed a potted plant on the windowsill.',        'Cô ấy đặt cây trồng trong chậu trên bậu cửa sổ.'),
+('potted plant',  'potted plant',  '/ˈpɒtɪd plɑːnt/','Noun','A plant growing in a container',            'cây trồng trong chậu', 'She placed a potted plant on the windowsill.',        'Cô ấy đặt cây trồng trong chậu trên bậu cửa sổ.')
 
 ON CONFLICT (coco_class) DO NOTHING;
+

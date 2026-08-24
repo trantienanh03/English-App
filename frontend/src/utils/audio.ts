@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import * as Speech from 'expo-speech';
 
 /**
  * Pronounces English words using Speech Synthesis or Expo Speech fallback.
@@ -25,8 +26,17 @@ export const playAudio = (text: string) => {
       console.warn('SpeechSynthesis error:', e);
     }
   } else {
-    // Console fallback or native audio trigger
-    console.log(`[Audio TTS] Speaking: "${text}"`);
+    // Native TTS fallback using expo-speech
+    try {
+      console.log(`[Audio TTS] Speaking via expo-speech: "${text}"`);
+      void Speech.stop();
+      void Speech.speak(text, {
+        language: 'en-US',
+        rate: 0.9,
+      });
+    } catch (e) {
+      console.warn('Expo Speech error:', e);
+    }
   }
 };
 

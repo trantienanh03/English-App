@@ -7,6 +7,7 @@ import {
   ScrollView,
   Switch,
   Alert,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -36,11 +37,34 @@ export default function ProfileScreen({
   const handleToggleNotifications = async (value: boolean) => {
     try {
       if (value) {
-        const identifier = await scheduleReviewNotification(dueCardsCount, 3600);
-        setNotificationsEnabled(Boolean(identifier));
-        Alert.alert(identifier ? 'Đã bật thông báo' : 'Không thể bật thông báo', identifier
-          ? 'Vocam sẽ nhắc bạn về các thẻ đang đến hạn.'
-          : dueCardsCount === 0 ? 'Hiện không có thẻ đến hạn để lên lịch.' : 'Quyền thông báo chưa được cấp.');
+        if (dueCardsCount === 0) {
+          Alert.alert(
+            'Thông báo thử nghiệm',
+            'Hiện không có thẻ từ nào đến hạn ôn tập. Bạn có muốn nhận một thông báo thử nghiệm sau 5 giây để kiểm tra tính năng không?',
+            [
+              { text: 'Hủy', onPress: () => setNotificationsEnabled(false), style: 'cancel' },
+              {
+                text: 'Có, gửi thử',
+                onPress: async () => {
+                  const identifier = await scheduleReviewNotification(0, 5);
+                  setNotificationsEnabled(Boolean(identifier));
+                  if (identifier) {
+                    Alert.alert('Đã lên lịch', 'Vui lòng khóa màn hình hoặc đưa ứng dụng về chạy ngầm (nút Home) để nhận thông báo sau 5 giây!');
+                  }
+                },
+              },
+            ]
+          );
+        } else {
+          const identifier = await scheduleReviewNotification(dueCardsCount, 3600);
+          setNotificationsEnabled(Boolean(identifier));
+          if (identifier) {
+            Alert.alert('Đã bật thông báo', 'Vocam sẽ nhắc bạn khi có thẻ từ đến hạn ôn tập.');
+          } else {
+            Alert.alert('Không thể bật thông báo', 'Quyền thông báo chưa được cấp trong cài đặt thiết bị.');
+            setNotificationsEnabled(false);
+          }
+        }
       } else {
         await cancelReviewNotification();
         setNotificationsEnabled(false);
@@ -69,7 +93,9 @@ export default function ProfileScreen({
 
         {/* LEARNING PROGRESS SUMMARY */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📈 Tiến độ Học tập</Text>
+          <Text style={styles.sectionTitle}>
+            <Text style={styles.emoji}>📈</Text> Tiến độ Học tập
+          </Text>
 
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
@@ -81,7 +107,7 @@ export default function ProfileScreen({
             <View style={styles.statBox}>
               <Feather name="check-circle" size={24} color="#10B981" />
               <Text style={styles.statNumber}>{wordsLearnedCount}</Text>
-              <Text style={styles.statLabel}>Từ đã thuộc (SM-2)</Text>
+              <Text style={styles.statLabel}>Từ đã ghi nhớ</Text>
             </View>
 
             <View style={styles.statBox}>
@@ -94,7 +120,9 @@ export default function ProfileScreen({
 
         {/* SETTINGS */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>⚙️ Cài đặt & Nhắc nhở</Text>
+          <Text style={styles.sectionTitle}>
+            <Text style={styles.emoji}>⚙️</Text> Cài đặt & Nhắc nhở
+          </Text>
 
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
@@ -136,7 +164,10 @@ export default function ProfileScreen({
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
-  scrollContent: { padding: 16, gap: 16 },
+  scrollContent: { padding: 16, paddingBottom: 110, gap: 16 },
+  emoji: {
+    fontFamily: Platform.OS === 'ios' ? 'Apple Color Emoji' : undefined,
+  },
 
   profileCard: {
     flexDirection: 'row',

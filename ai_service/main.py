@@ -23,6 +23,23 @@ import numpy as np
 from ultralytics import YOLO
 from contextlib import asynccontextmanager
 
+# Load .env manually if present
+env_path = Path(__file__).resolve().parent / ".env"
+if not env_path.exists():
+    # Try parent directory .env
+    env_path = Path(__file__).resolve().parent.parent / ".env"
+
+if env_path.exists():
+    try:
+        with open(env_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, val = line.split("=", 1)
+                    os.environ[key.strip()] = val.strip().strip('"').strip("'")
+    except Exception as e:
+        print(f"⚠️ Cảnh báo đọc file .env: {e}")
+
 # Gemini AI SDK
 try:
     import google.generativeai as genai
@@ -32,9 +49,13 @@ except ImportError:
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 if HAS_GEMINI_SDK and GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    gemini_model = genai.GenerativeModel('gemini-1.5-flash')
-    print("✨ Đã cấu hình Google Gemini API thành công!")
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+        print("✨ Đã cấu hình Google Gemini API thành công!")
+    except Exception as e:
+        print(f"⚠️ Không thể khởi tạo Gemini Model: {e}")
+        gemini_model = None
 else:
     gemini_model = None
 

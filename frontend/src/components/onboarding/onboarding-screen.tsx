@@ -40,34 +40,34 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
   const [step, setStep] = useState<number>(0);
 
   // User Selections
-  const [selectedLevel, setSelectedLevel] = useState<string>('I know some');
+  const [selectedLevel, setSelectedLevel] = useState<string>('Mới bắt đầu cơ bản');
   const [selectedGoals, setSelectedGoals] = useState<string[]>([
-    'Master the basics',
-    'Speak more fluently',
+    'Nắm vững từ vựng cơ bản',
+    'Phản xạ giao tiếp tự nhiên',
   ]);
-  const [selectedTime, setSelectedTime] = useState<string>('10 mins daily');
+  const [selectedTime, setSelectedTime] = useState<string>('10 phút / ngày');
 
   const levelsList = [
-    { key: 'Nonexistent', label: 'Nonexistent', sub: 'Mới bắt đầu từ con số 0' },
-    { key: 'I know some', label: 'I know some', sub: 'Đã biết một chút cơ bản' },
-    { key: 'I know a good amount', label: 'I know a good amount', sub: 'Đã có nền tảng vững chắc' },
+    { key: 'Chưa biết gì', label: 'Chưa biết gì', sub: 'Mới bắt đầu từ con số 0' },
+    { key: 'Mới bắt đầu cơ bản', label: 'Mới bắt đầu cơ bản', sub: 'Đã biết một số từ vựng đơn giản' },
+    { key: 'Đã có nền tảng tốt', label: 'Đã có nền tảng tốt', sub: 'Có thể giao tiếp và đọc hiểu cơ bản' },
   ];
 
   const goalsList = [
-    { key: 'Master the basics', label: 'Master the basics', sub: 'Nắm vững từ vựng cơ bản' },
-    { key: 'Chat with English speakers', label: 'Chat with English speakers', sub: 'Giao tiếp với người bản xứ' },
-    { key: 'Watch movies without subtitles', label: 'Watch movies without subtitles', sub: 'Xem phim không cần phụ đề' },
-    { key: 'Learn about culture & travel', label: 'Learn about culture & travel', sub: 'Phục vụ du lịch & khám phá' },
-    { key: 'Connect with family and friends', label: 'Connect with family and friends', sub: 'Kết nối bạn bè quốc tế' },
-    { key: 'Impress my colleagues', label: 'Impress my colleagues', sub: 'Nâng cao khả năng công sở' },
-    { key: 'Ace my next English test', label: 'Ace my next English test', sub: 'Luyện thi chứng chỉ' },
-    { key: 'Speak more fluently', label: 'Speak more fluently', sub: 'Phản xạ phát âm tự nhiên' },
+    { key: 'Nắm vững từ vựng cơ bản', label: 'Nắm vững từ vựng cơ bản', sub: 'Xây dựng nền tảng từ vựng vững chắc' },
+    { key: 'Giao tiếp với người nước ngoài', label: 'Giao tiếp với người nước ngoài', sub: 'Trò chuyện tự tin và tự nhiên' },
+    { key: 'Xem phim không cần phụ đề', label: 'Xem phim không cần phụ đề', sub: 'Thưởng thức phim ảnh & âm nhạc' },
+    { key: 'Phục vụ du lịch & khám phá', label: 'Phục vụ du lịch & khám phá', sub: 'Tự tin du lịch nước ngoài' },
+    { key: 'Kết nối bạn bè quốc tế', label: 'Kết nối bạn bè quốc tế', sub: 'Giao lưu văn hóa toàn cầu' },
+    { key: 'Nâng cao khả năng công sở', label: 'Nâng cao khả năng công sở', sub: 'Thăng tiến trong công việc' },
+    { key: 'Luyện thi chứng chỉ', label: 'Luyện thi chứng chỉ', sub: 'Ôn thi các bằng cấp tiếng Anh' },
+    { key: 'Phản xạ giao tiếp tự nhiên', label: 'Phản xạ giao tiếp tự nhiên', sub: 'Phát âm chuẩn và phản xạ nhanh' },
   ];
 
   const timeList = [
-    { key: '5 mins daily', label: '5 mins daily', sub: '5 phút mỗi ngày (Duy trì thói quen)' },
-    { key: '10 mins daily', label: '10 mins daily', sub: '10 phút mỗi ngày (Vừa sức & hiệu quả)' },
-    { key: '15 mins or more', label: '15 mins or more', sub: '15 phút trở lên (Bứt phá nhanh chóng)' },
+    { key: '5 phút / ngày', label: '5 phút / ngày', sub: 'Học nhẹ nhàng, duy trì thói quen' },
+    { key: '10 phút / ngày', label: '10 phút / ngày', sub: 'Vừa sức & đạt hiệu quả cao nhất' },
+    { key: '15+ phút / ngày', label: '15+ phút / ngày', sub: 'Bứt phá tốc độ nâng cao trình độ' },
   ];
 
   const handleToggleGoal = (goalKey: string) => {
@@ -125,9 +125,9 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
           {/* Top Login Link */}
           <View style={styles.welcomeTopBar}>
             <Text style={styles.loginQuestion}>
-              Already using Vocam?{' '}
+              Đã có tài khoản Vocam?{' '}
               <Text style={styles.loginLink} onPress={onLoginPress}>
-                Log in
+                Đăng nhập
               </Text>
             </Text>
           </View>
@@ -150,14 +150,14 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
           {/* Main Title & Subtitle */}
           <View style={styles.welcomeTextSection}>
             <Text style={styles.welcomeTitle}>
-              Hi! Ready to learn English{'\n'}the fun way?
+              Xin chào! Sẵn sàng học{'\n'}tiếng Anh thú vị hơn chưa?
             </Text>
-            <Text style={styles.welcomeSubtitle}>Let&apos;s set up your profile.</Text>
+            <Text style={styles.welcomeSubtitle}>Hãy cùng thiết lập lộ trình học dành riêng cho bạn.</Text>
           </View>
 
           {/* GET STARTED Button */}
-          <TouchableOpacity style={styles.limeButton} onPress={() => setStep(1)}>
-            <Text style={styles.limeButtonText}>GET STARTED</Text>
+          <TouchableOpacity style={styles.limeButton} onPress={() => setStep(1)} activeOpacity={0.85}>
+            <Text style={styles.limeButtonText}>BẮT ĐẦU NGAY</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -167,8 +167,8 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
         <View style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={styles.scrollStepContent} showsVerticalScrollIndicator={false}>
             <View style={styles.questionSection}>
-              <Text style={styles.questionTitle}>How is your English?</Text>
-              <Text style={styles.questionSubtitle}>Trình độ tiếng Anh hiện tại của bạn thế nào?</Text>
+              <Text style={styles.questionTitle}>Trình độ tiếng Anh của bạn thế nào?</Text>
+              <Text style={styles.questionSubtitle}>Lựa chọn mức độ phù hợp nhất với khả năng hiện tại</Text>
             </View>
 
             <View style={styles.optionsList}>
@@ -195,8 +195,8 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
           </ScrollView>
 
           <View style={styles.stickyFooter}>
-            <TouchableOpacity style={styles.limeButton} onPress={() => setStep(2)}>
-              <Text style={styles.limeButtonText}>CONTINUE</Text>
+            <TouchableOpacity style={styles.limeButton} onPress={() => setStep(2)} activeOpacity={0.85}>
+              <Text style={styles.limeButtonText}>TIẾP TỤC</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -207,8 +207,8 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
         <View style={{ flex: 1 }}>
           <ScrollView contentContainerStyle={styles.scrollStepContent} showsVerticalScrollIndicator={false}>
             <View style={styles.questionSection}>
-              <Text style={styles.questionTitle}>What are your goals?</Text>
-              <Text style={styles.questionSubtitle}>Select all that apply (Chọn tất cả những mục tiêu phù hợp)</Text>
+              <Text style={styles.questionTitle}>Mục tiêu học tập của bạn là gì?</Text>
+              <Text style={styles.questionSubtitle}>Chọn tất cả những mục tiêu bạn mong muốn đạt được</Text>
             </View>
 
             <View style={styles.optionsList}>
@@ -239,8 +239,9 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
               style={[styles.limeButton, selectedGoals.length === 0 && { opacity: 0.5 }]}
               onPress={() => setStep(3)}
               disabled={selectedGoals.length === 0}
+              activeOpacity={0.85}
             >
-              <Text style={styles.limeButtonText}>CONTINUE</Text>
+              <Text style={styles.limeButtonText}>TIẾP TỤC</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -252,10 +253,10 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
           <ScrollView contentContainerStyle={styles.scrollStepContent} showsVerticalScrollIndicator={false}>
             <View style={styles.questionSection}>
               <Text style={styles.questionTitle}>
-                How much time will you devote to learning?
+                Bạn muốn dành bao nhiêu thời gian học mỗi ngày?
               </Text>
               <Text style={styles.questionSubtitle}>
-                Bạn muốn dành bao nhiêu thời gian học mỗi ngày?
+                Duy trì thói quen hàng ngày để đạt kết quả tốt nhất
               </Text>
             </View>
 
@@ -283,8 +284,8 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
           </ScrollView>
 
           <View style={styles.stickyFooter}>
-            <TouchableOpacity style={styles.limeButton} onPress={() => setStep(4)}>
-              <Text style={styles.limeButtonText}>CONTINUE</Text>
+            <TouchableOpacity style={styles.limeButton} onPress={() => setStep(4)} activeOpacity={0.85}>
+              <Text style={styles.limeButtonText}>TIẾP TỤC</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -292,36 +293,56 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
 
       {/* STEP 4: Ready Summary & Start */}
       {step === 4 && (
-        <View style={styles.readyWrapper}>
+        <ScrollView
+          contentContainerStyle={styles.readyScrollContent}
+          showsVerticalScrollIndicator={false}
+          bounces={true}
+        >
           <View style={styles.readyCard}>
             <View style={styles.sparkleIconWrapper}>
               <Feather name="star" size={44} color={DropsPalette.accentLime} />
             </View>
-            <Text style={styles.readyTitle}>Your English Plan is Ready! 🎉</Text>
+
+            <Text style={styles.readyTitle}>Lộ trình học đã sẵn sàng!</Text>
+
             <Text style={styles.readySubtitle}>
               Vocam đã cá nhân hóa lộ trình học phù hợp nhất cho bạn.
             </Text>
 
             <View style={styles.summaryBox}>
               <View style={styles.summaryRow}>
-                <Feather name="bar-chart-2" size={18} color={DropsPalette.accentLime} />
-                <Text style={styles.summaryText}>Trình độ: <Text style={styles.summaryHighlight}>{selectedLevel}</Text></Text>
+                <View style={styles.summaryIconBadge}>
+                  <Feather name="bar-chart-2" size={18} color={DropsPalette.accentLime} />
+                </View>
+                <Text style={styles.summaryText}>
+                  Trình độ: <Text style={styles.summaryHighlight}>{selectedLevel}</Text>
+                </Text>
               </View>
+
               <View style={styles.summaryRow}>
-                <Feather name="target" size={18} color={DropsPalette.accentLime} />
-                <Text style={styles.summaryText}>Mục tiêu: <Text style={styles.summaryHighlight}>{selectedGoals.length} mục tiêu</Text></Text>
+                <View style={styles.summaryIconBadge}>
+                  <Feather name="target" size={18} color={DropsPalette.accentLime} />
+                </View>
+                <Text style={styles.summaryText}>
+                  Mục tiêu: <Text style={styles.summaryHighlight}>{selectedGoals.length} mục tiêu</Text>
+                </Text>
               </View>
+
               <View style={styles.summaryRow}>
-                <Feather name="clock" size={18} color={DropsPalette.accentLime} />
-                <Text style={styles.summaryText}>Thời lượng: <Text style={styles.summaryHighlight}>{selectedTime}</Text></Text>
+                <View style={styles.summaryIconBadge}>
+                  <Feather name="clock" size={18} color={DropsPalette.accentLime} />
+                </View>
+                <Text style={styles.summaryText}>
+                  Thời lượng: <Text style={styles.summaryHighlight}>{selectedTime}</Text>
+                </Text>
               </View>
             </View>
 
-            <TouchableOpacity style={styles.limeButton} onPress={handleNext}>
-              <Text style={styles.limeButtonText}>START LEARNING NOW</Text>
+            <TouchableOpacity style={styles.limeButton} onPress={handleNext} activeOpacity={0.85}>
+              <Text style={styles.limeButtonText}>BẮT ĐẦU HỌC NGAY</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </ScrollView>
       )}
     </SafeAreaView>
   );
@@ -414,6 +435,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   waveEmoji: {
+    fontFamily: Platform.OS === 'ios' ? 'Apple Color Emoji' : undefined,
     fontSize: 22,
   },
   welcomeTextSection: {
@@ -545,6 +567,7 @@ const styles = StyleSheet.create({
     backgroundColor: DropsPalette.accentLime,
     borderRadius: 30,
     height: 56,
+    width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: DropsPalette.accentLime,
@@ -562,20 +585,22 @@ const styles = StyleSheet.create({
   },
 
   // Summary Step 4 Styles
-  readyWrapper: {
-    flex: 1,
+  readyScrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.five,
   },
   readyCard: {
     width: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
     borderRadius: 32,
-    padding: Spacing.four,
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.five,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.22)',
   },
   sparkleIconWrapper: {
     width: 80,
@@ -600,19 +625,30 @@ const styles = StyleSheet.create({
     color: DropsPalette.textMuted,
     textAlign: 'center',
     marginBottom: Spacing.four,
+    lineHeight: 20,
   },
   summaryBox: {
     width: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-    borderRadius: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.25)',
+    borderRadius: 24,
     padding: Spacing.three,
     marginBottom: Spacing.four,
-    gap: Spacing.two,
+    gap: Spacing.three,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.two,
+    gap: Spacing.three,
+  },
+  summaryIconBadge: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(229, 245, 84, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   summaryText: {
     fontFamily: Fonts.sans,

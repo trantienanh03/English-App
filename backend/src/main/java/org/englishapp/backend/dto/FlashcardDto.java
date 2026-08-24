@@ -1,5 +1,6 @@
 package org.englishapp.backend.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 
 public record FlashcardDto(
@@ -10,4 +11,10 @@ public record FlashcardDto(
         int intervalDays,
         Instant nextReviewAt,
         Instant createdAt
-) {}
+) {
+    @JsonProperty("interval")
+    public int interval() {
+        return intervalDays;
+    }
+}
+

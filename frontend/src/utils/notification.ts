@@ -39,11 +39,14 @@ export async function cancelReviewNotification(): Promise<void> {
 
 export async function scheduleReviewNotification(dueCount: number, delaySeconds = 3600): Promise<string | null> {
   await cancelReviewNotification();
-  if (dueCount <= 0 || !(await registerForReviewNotifications())) return null;
+  const isTest = delaySeconds <= 10;
+  if (!isTest && dueCount <= 0) return null;
+  if (!(await registerForReviewNotifications())) return null;
+  
   const identifier = await Notifications.scheduleNotificationAsync({
     content: {
-      title: 'Đến giờ ôn từ cùng Vocam',
-      body: `Bạn có ${dueCount} thẻ từ đến hạn ôn tập.`,
+      title: isTest ? 'Thông báo thử nghiệm Vocam 🔔' : 'Đến giờ ôn từ cùng Vocam',
+      body: isTest ? 'Hệ thống thông báo hoạt động bình thường!' : `Bạn có ${dueCount} thẻ từ đến hạn ôn tập.`,
       sound: true,
       data: { destination: 'cards' },
     },

@@ -6,6 +6,7 @@ import org.englishapp.backend.entity.SavedFlashcard;
 import org.englishapp.backend.repository.AppUserRepository;
 import org.englishapp.backend.repository.SavedFlashcardRepository;
 import org.englishapp.backend.repository.WordRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class FlashcardService {
     private final WordService wordService;
     private final Clock clock;
 
+    @Autowired
     public FlashcardService(SavedFlashcardRepository flashcards, AppUserRepository users,
                             WordRepository words, WordService wordService) {
         this(flashcards, users, words, wordService, Clock.systemUTC());

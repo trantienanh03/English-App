@@ -5,6 +5,7 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -21,6 +22,7 @@ interface DashboardScreenProps {
   onNavigate: (tab: string) => void;
   onSelectLesson: (lessonId: string) => void;
   onOpenWordDetail: (word: VocabularyWord) => void;
+  onOpenSearch: () => void;
 }
 
 export default function DashboardScreen({
@@ -33,17 +35,26 @@ export default function DashboardScreen({
   onNavigate,
   onSelectLesson,
   onOpenWordDetail,
+  onOpenSearch,
 }: DashboardScreenProps) {
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* HEADER */}
         <View style={styles.header}>
-          <View>
-            <Text style={styles.greetingTitle}>Xin chào, {userName || 'Học viên'}! 👋</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.greetingTitle}>
+              Xin chào, {userName || 'Học viên'}! <Text style={styles.emoji}>👋</Text>
+            </Text>
             <Text style={styles.greetingSub}>Hôm nay bạn muốn khám phá từ vựng gì?</Text>
           </View>
         </View>
+
+        {/* SEARCH BAR CTA */}
+        <TouchableOpacity style={styles.searchBarCta} onPress={onOpenSearch} activeOpacity={0.8}>
+          <Feather name="search" size={16} color="#94A3B8" />
+          <Text style={styles.searchPlaceholder}>Tìm kiếm từ vựng, chủ đề học...</Text>
+        </TouchableOpacity>
 
         {/* PROMINENT SCANNER AI CTA BANNER */}
         <TouchableOpacity style={styles.scannerBanner} onPress={() => onNavigate('scan')} activeOpacity={0.88}>
@@ -87,14 +98,16 @@ export default function DashboardScreen({
               <Feather name="check-circle" size={20} color="#10B981" />
             </View>
             <Text style={styles.statVal}>{wordsLearnedCount}</Text>
-            <Text style={styles.statLbl}>Từ đã thuộc (SM-2)</Text>
+            <Text style={styles.statLbl}>Từ đã ghi nhớ</Text>
           </TouchableOpacity>
         </View>
 
         {/* WORD OF THE DAY */}
         {wordOfTheDay && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>💡 Từ vựng của ngày</Text>
+            <Text style={styles.sectionTitle}>
+              <Text style={styles.emoji}>💡</Text> Từ vựng của ngày
+            </Text>
             <TouchableOpacity
               style={styles.wordOfTheDayCard}
               onPress={() => onOpenWordDetail(wordOfTheDay)}
@@ -109,7 +122,10 @@ export default function DashboardScreen({
                   <Text style={styles.posBadgeText}>{wordOfTheDay.pos}</Text>
                 </View>
               </View>
-              <Text style={styles.wordTranslation}>🇻🇳 {wordOfTheDay.vn}</Text>
+              <Text style={styles.wordTranslation}>
+                <Text style={styles.emoji}>🇻🇳 </Text>
+                {wordOfTheDay.vn}
+              </Text>
               <Text style={styles.wordExample}>“{wordOfTheDay.sentence}”</Text>
             </TouchableOpacity>
           </View>
@@ -118,7 +134,9 @@ export default function DashboardScreen({
         {/* TOPIC LESSONS */}
         <View style={styles.section}>
           <View style={styles.rowBetween}>
-            <Text style={styles.sectionTitle}>📚 Bài học theo Chủ đề</Text>
+            <Text style={styles.sectionTitle}>
+              <Text style={styles.emoji}>📚</Text> Bài học theo Chủ đề
+            </Text>
             <TouchableOpacity onPress={() => onNavigate('learn')}>
               <Text style={styles.seeAllText}>Xem tất cả ({lessons.length})</Text>
             </TouchableOpacity>
@@ -152,7 +170,27 @@ export default function DashboardScreen({
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#F8FAFC' },
-  scrollContent: { padding: 16, gap: 16 },
+  scrollContent: { padding: 16, paddingBottom: 110, gap: 16 },
+  emoji: {
+    fontFamily: Platform.OS === 'ios' ? 'Apple Color Emoji' : undefined,
+  },
+
+  searchBarCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    paddingHorizontal: 14,
+    height: 48,
+    gap: 8,
+    marginBottom: 4,
+  },
+  searchPlaceholder: {
+    fontSize: 14,
+    color: '#94A3B8',
+  },
 
   header: { marginBottom: 4 },
   greetingTitle: { fontSize: 22, fontWeight: '800', color: '#1E293B' },

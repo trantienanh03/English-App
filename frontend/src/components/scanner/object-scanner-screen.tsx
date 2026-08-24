@@ -63,7 +63,7 @@ export default function ObjectScannerScreen({
       }
     }
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       quality: 0.8,
       allowsEditing: false,
     });
@@ -81,7 +81,7 @@ export default function ObjectScannerScreen({
       }
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       quality: 0.8,
       allowsEditing: false,
     });
@@ -328,7 +328,7 @@ export default function ObjectScannerScreen({
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#0F172A' },
-  container: { flex: 1 },
+  container: { flex: 1, paddingBottom: 80 },
 
   topHeader: { padding: 16, borderBottomWidth: 1, borderColor: '#1E293B' },
   headerTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import * as Linking from 'expo-linking';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import OnboardingScreen from '@/components/onboarding/onboarding-screen';
 import SignupScreen from '@/components/auth/signup-screen';
 import LoginScreen from '@/components/auth/login-screen';
@@ -47,7 +48,7 @@ export default function HomeScreen() {
         setUserEmail(email);
         setUserName(session.user.user_metadata?.display_name || email.split('@')[0] || 'Học Viên Vocam');
         setCurrentScreen('dashboard');
-      } else {
+      } else if (event === 'SIGNED_OUT') {
         setCurrentScreen('login');
       }
     });
@@ -90,61 +91,69 @@ export default function HomeScreen() {
     }
   };
 
-  if (isBooting) {
-    return (
-      <View style={styles.splash}>
-        <DotsLoader color="#FFFFFF" size={14} gap={12} />
-      </View>
-    );
-  }
+  const renderContent = () => {
+    if (isBooting) {
+      return (
+        <View style={styles.splash}>
+          <DotsLoader color="#FFFFFF" size={14} gap={12} />
+        </View>
+      );
+    }
 
-  if (currentScreen === 'dashboard') {
-    return (
-      <MainContainer
-        userName={userName}
-        userEmail={userEmail}
-        onLogout={handleLogout}
-      />
-    );
-  }
+    if (currentScreen === 'dashboard') {
+      return (
+        <MainContainer
+          userName={userName}
+          userEmail={userEmail}
+          onLogout={handleLogout}
+        />
+      );
+    }
 
-  if (currentScreen === 'onboarding') {
-    return (
-      <OnboardingScreen
-        onLoginPress={() => setCurrentScreen('login')}
-        onComplete={() => {
-          setCurrentScreen('signup');
-        }}
-      />
-    );
-  }
+    if (currentScreen === 'onboarding') {
+      return (
+        <OnboardingScreen
+          onLoginPress={() => setCurrentScreen('login')}
+          onComplete={() => {
+            setCurrentScreen('signup');
+          }}
+        />
+      );
+    }
 
-  if (currentScreen === 'signup') {
+    if (currentScreen === 'signup') {
+      return (
+        <SignupScreen
+          onSignupSuccess={(name, email) => {
+            setUserName(name || '');
+            setUserEmail(email || '');
+            setCurrentScreen('dashboard');
+          }}
+          onLoginPress={() => setCurrentScreen('login')}
+        />
+      );
+    }
+
+    if (currentScreen === 'recovery') {
+      return <RecoveryPasswordScreen onComplete={() => setCurrentScreen('login')} />;
+    }
+
     return (
-      <SignupScreen
-        onSignupSuccess={(name, email) => {
+      <LoginScreen
+        onLoginSuccess={(name, email) => {
           setUserName(name || '');
           setUserEmail(email || '');
           setCurrentScreen('dashboard');
         }}
-        onLoginPress={() => setCurrentScreen('login')}
+        onSignupPress={() => setCurrentScreen('signup')}
       />
     );
-  }
-
-  if (currentScreen === 'recovery') {
-    return <RecoveryPasswordScreen onComplete={() => setCurrentScreen('login')} />;
-  }
+  };
 
   return (
-    <LoginScreen
-      onLoginSuccess={(name, email) => {
-        setUserName(name || '');
-        setUserEmail(email || '');
-        setCurrentScreen('dashboard');
-      }}
-      onSignupPress={() => setCurrentScreen('signup')}
-    />
+    <SafeAreaProvider style={{ flex: 1 }}>
+      {renderContent()}
+    </SafeAreaProvider>
   );
 }
 

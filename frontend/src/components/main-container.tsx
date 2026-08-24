@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { Lesson, VocabularyWord } from '@/types';
 import { api, ReviewRating, UserProfileDto } from '@/services/api';
@@ -25,6 +26,7 @@ interface MainContainerProps {
 type Tab = 'home' | 'learn' | 'scan' | 'cards' | 'profile';
 
 export default function MainContainer({ userName, userEmail, onLogout }: MainContainerProps) {
+  const insets = useSafeAreaInsets();
   const [profile, setProfile] = useState<UserProfileDto | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('home');
   const [allWords, setAllWords] = useState<VocabularyWord[]>([]);
@@ -50,6 +52,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
       setDueWords(due);
       setLessons(lessonData);
     } catch (error) {
+      console.error('loadData error details:', error);
       const message = error instanceof Error && error.message === 'NETWORK_UNAVAILABLE'
         ? 'Không thể kết nối máy chủ. Kiểm tra mạng rồi thử lại.'
         : 'Không thể tải dữ liệu học tập. Vui lòng thử lại.';
@@ -131,41 +134,122 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
 
   const screen = (() => {
     switch (activeTab) {
-      case 'home': return <DashboardScreen userName={profile.displayName || userName} userEmail={userEmail} wordsSavedCount={profile.wordsSaved} wordsLearnedCount={profile.wordsLearned} dueCardsCount={profile.dueCards} lessons={lessons} wordOfTheDay={wordOfTheDay} onNavigate={tab => setActiveTab(tab as Tab)} onSelectLesson={openLesson} onOpenWordDetail={() => setActiveTab('cards')} />;
-      case 'learn': return <LessonGridScreen lessons={lessons} onStartLesson={openLesson} />;
-      case 'scan': return <ObjectScannerScreen onAddWordToFlashcards={handleSaveWord} />;
-      case 'cards': return <FlashcardDeckScreen words={savedWords} dueWords={dueWords} onReview={handleReview} onRemoveWord={handleRemove} onStartQuiz={() => { const lesson = selectedLesson ?? lessons[0] ?? null; setSelectedLesson(lesson); if (lesson) setShowQuiz(true); }} />;
-      case 'profile': return <ProfileScreen userName={profile.displayName || userName} userEmail={userEmail} wordsSavedCount={profile.wordsSaved} wordsLearnedCount={profile.wordsLearned} dueCardsCount={profile.dueCards} onLogout={onLogout} />;
+      case 'home':
+        return (
+          <DashboardScreen
+            userName={profile.displayName || userName}
+            userEmail={userEmail}
+            wordsSavedCount={profile.wordsSaved}
+            wordsLearnedCount={profile.wordsLearned}
+            dueCardsCount={profile.dueCards}
+            lessons={lessons}
+            wordOfTheDay={wordOfTheDay}
+            onNavigate={tab => setActiveTab(tab as Tab)}
+            onSelectLesson={openLesson}
+            onOpenWordDetail={() => setActiveTab('cards')}
+            onOpenSearch={() => setShowSearch(true)}
+          />
+        );
+      case 'learn':
+        return <LessonGridScreen lessons={lessons} onStartLesson={openLesson} />;
+      case 'scan':
+        return <ObjectScannerScreen onAddWordToFlashcards={handleSaveWord} />;
+      case 'cards':
+        return (
+          <FlashcardDeckScreen
+            words={savedWords}
+            dueWords={dueWords}
+            onReview={handleReview}
+            onRemoveWord={handleRemove}
+            onStartQuiz={() => {
+              const lesson = selectedLesson ?? lessons[0] ?? null;
+              setSelectedLesson(lesson);
+              if (lesson) setShowQuiz(true);
+            }}
+          />
+        );
+      case 'profile':
+        return (
+          <ProfileScreen
+            userName={profile.displayName || userName}
+            userEmail={userEmail}
+            wordsSavedCount={profile.wordsSaved}
+            wordsLearnedCount={profile.wordsLearned}
+            dueCardsCount={profile.dueCards}
+            onLogout={onLogout}
+          />
+        );
     }
   })();
 
   return (
     <View style={styles.container}>
       {screen}
-      <View style={styles.bottomTabContainer}>
-        <TouchableOpacity style={styles.searchPill} onPress={() => setShowSearch(true)}><Feather name="search" size={15} color={Palette.text.muted} /><Text style={styles.searchPillText}>Tìm từ vựng, bài học...</Text></TouchableOpacity>
+      <View style={[styles.bottomTabContainer, { bottom: insets.bottom > 0 ? insets.bottom + 8 : 16 }]}>
         <View style={styles.floatingTabBar}>
           {([
-            ['home', 'home', 'Trang chủ'], ['learn', 'book-open', 'Bài học'], ['scan', 'aperture', 'Quét AI'], ['cards', 'layers', 'Sổ từ'], ['profile', 'user', 'Cá nhân'],
-          ] as const).map(([key, icon, label]) => key === 'scan' ? (
-            <TouchableOpacity key={key} style={styles.scannerTabBtn} onPress={() => setActiveTab(key)}><Feather name={icon} size={24} color="#FFFFFF" /></TouchableOpacity>
-          ) : (
-            <TouchableOpacity key={key} style={[styles.tabItem, activeTab === key && styles.tabItemActive]} onPress={() => setActiveTab(key)}>
-              <Feather name={icon} size={20} color={activeTab === key ? Palette.primary[500] : Palette.text.muted} />
-              <Text style={[styles.tabLabel, activeTab === key && styles.tabLabelActive]}>{label}</Text>
-            </TouchableOpacity>
-          ))}
+            ['home', 'home', 'Trang chủ'],
+            ['learn', 'book-open', 'Bài học'],
+            ['scan', 'aperture', 'Quét AI'],
+            ['cards', 'layers', 'Sổ từ'],
+            ['profile', 'user', 'Cá nhân'],
+          ] as const).map(([key, icon, label]) =>
+            key === 'scan' ? (
+              <TouchableOpacity
+                key={key}
+                style={styles.scannerTabBtn}
+                onPress={() => setActiveTab(key)}
+              >
+                <Feather name={icon} size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                key={key}
+                style={[styles.tabItem, activeTab === key && styles.tabItemActive]}
+                onPress={() => setActiveTab(key)}
+              >
+                <Feather
+                  name={icon}
+                  size={20}
+                  color={activeTab === key ? Palette.primary[500] : Palette.text.muted}
+                />
+                <Text style={[styles.tabLabel, activeTab === key && styles.tabLabelActive]}>
+                  {label}
+                </Text>
+              </TouchableOpacity>
+            )
+          )}
         </View>
       </View>
 
       <Modal visible={!!selectedLesson && !showQuiz} animationType="slide">
-        {selectedLesson && <LessonDetailScreen lesson={selectedLesson} onClose={() => setSelectedLesson(null)} onStartLesson={() => setShowQuiz(true)} onSaveWord={handleSaveWord} />}
+        {selectedLesson && (
+          <LessonDetailScreen
+            lesson={selectedLesson}
+            onClose={() => setSelectedLesson(null)}
+            onStartLesson={() => setShowQuiz(true)}
+            onSaveWord={handleSaveWord}
+          />
+        )}
       </Modal>
       <Modal visible={showQuiz} animationType="slide">
-        {selectedLesson && <PracticeQuizScreen lessonTitle={selectedLesson.name} words={selectedLesson.words} onClose={() => setShowQuiz(false)} onQuizComplete={score => handleLessonProgress(selectedLesson.id, score)} />}
+        {selectedLesson && (
+          <PracticeQuizScreen
+            lessonTitle={selectedLesson.name}
+            words={selectedLesson.words}
+            onClose={() => setShowQuiz(false)}
+            onQuizComplete={score => handleLessonProgress(selectedLesson.id, score)}
+          />
+        )}
       </Modal>
       <Modal visible={showSearch} animationType="slide">
-        <SearchScreen words={allWords} lessons={lessons} onClose={() => setShowSearch(false)} onStartLesson={startLessonFromSearch} onSaveWord={handleSaveWord} />
+        <SearchScreen
+          words={allWords}
+          lessons={lessons}
+          onClose={() => setShowSearch(false)}
+          onStartLesson={startLessonFromSearch}
+          onSaveWord={handleSaveWord}
+        />
       </Modal>
     </View>
   );
@@ -179,7 +263,7 @@ const styles = StyleSheet.create({
   retryButton: { backgroundColor: Palette.primary[500], borderRadius: 12, paddingHorizontal: 22, paddingVertical: 11 },
   retryText: { color: '#FFFFFF', fontWeight: '700' },
   logoutText: { color: Palette.error.text, fontWeight: '600' },
-  bottomTabContainer: { position: 'absolute', bottom: Platform.OS === 'ios' ? 24 : 16, left: 0, right: 0, alignItems: 'center', zIndex: 100 },
+  bottomTabContainer: { position: 'absolute', left: 0, right: 0, alignItems: 'center', zIndex: 100 },
   floatingTabBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: Palette.surfaceWhite, borderRadius: 32, paddingHorizontal: Spacing.two, paddingVertical: 6, borderWidth: 1, borderColor: Palette.border, shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.1, shadowRadius: 16, elevation: 8, gap: 4 },
   tabItem: { alignItems: 'center', justifyContent: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
   tabItemActive: { backgroundColor: Palette.primary[100] },
