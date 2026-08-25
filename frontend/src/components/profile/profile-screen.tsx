@@ -93,25 +93,20 @@ export default function ProfileScreen({
 
         {/* LEARNING PROGRESS SUMMARY */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            <Text style={styles.emoji}>📈</Text> Tiến độ Học tập
-          </Text>
+          <Text style={styles.sectionTitle}>Tiến độ Học tập</Text>
 
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
-              <Feather name="bookmark" size={24} color="#4F46E5" />
               <Text style={styles.statNumber}>{wordsSavedCount}</Text>
               <Text style={styles.statLabel}>Từ đã lưu vào Sổ từ</Text>
             </View>
 
             <View style={styles.statBox}>
-              <Feather name="check-circle" size={24} color="#10B981" />
               <Text style={styles.statNumber}>{wordsLearnedCount}</Text>
               <Text style={styles.statLabel}>Từ đã ghi nhớ</Text>
             </View>
 
             <View style={styles.statBox}>
-              <Feather name="clock" size={24} color="#F59E0B" />
               <Text style={styles.statNumber}>{dueCardsCount}</Text>
               <Text style={styles.statLabel}>Từ cần ôn hôm nay</Text>
             </View>
@@ -120,13 +115,10 @@ export default function ProfileScreen({
 
         {/* SETTINGS */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>
-            <Text style={styles.emoji}>⚙️</Text> Cài đặt & Nhắc nhở
-          </Text>
+          <Text style={styles.sectionTitle}>Cài đặt & Nhắc nhở</Text>
 
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Feather name="bell" size={20} color="#475569" />
               <View>
                 <Text style={styles.settingTitle}>Thông báo Nhắc ôn tập</Text>
                 <Text style={styles.settingSub}>Báo khi có từ SM-2 đến hạn ôn</Text>
@@ -142,19 +134,16 @@ export default function ProfileScreen({
 
           <TouchableOpacity style={styles.settingItem} onPress={() => Alert.alert('Vocam App', 'Phiên bản 2.0.0 — Hệ thống Học Từ vựng Tiếng Anh AI Scanner & SM-2')}>
             <View style={styles.settingLeft}>
-              <Feather name="info" size={20} color="#475569" />
               <View>
                 <Text style={styles.settingTitle}>Về ứng dụng Vocam</Text>
                 <Text style={styles.settingSub}>Phiên bản 2.0.0 (Objects365 & SM-2)</Text>
               </View>
             </View>
-            <Feather name="chevron-right" size={18} color="#94A3B8" />
           </TouchableOpacity>
         </View>
 
         {/* LOGOUT BUTTON */}
         <TouchableOpacity style={styles.logoutButton} onPress={onLogout}>
-          <Feather name="log-out" size={18} color="#EF4444" />
           <Text style={styles.logoutText}>Đăng xuất khỏi ứng dụng</Text>
         </TouchableOpacity>
       </ScrollView>

@@ -291,14 +291,14 @@ export default function ObjectScannerScreen({
 
                   <View style={styles.vnBox}>
                     <Text style={styles.vnTitle}>Nghĩa tiếng Việt:</Text>
-                    <Text style={styles.vnText}>🇻🇳 {scannedResult.vn}</Text>
+                    <Text style={styles.vnText}>{scannedResult.vn}</Text>
                   </View>
 
                   {/* ENGLISH DEFINITION */}
                   {scannedResult.definition ? (
                     <View style={styles.definitionBox}>
-                      <Text style={styles.definitionTitle}>Definition:</Text>
-                      <Text style={styles.definitionText}>{scannedResult.definition}</Text>
+                       <Text style={styles.definitionTitle}>Definition:</Text>
+                       <Text style={styles.definitionText}>{scannedResult.definition}</Text>
                     </View>
                   ) : null}
 
@@ -313,7 +313,6 @@ export default function ObjectScannerScreen({
                   )}
 
                   <TouchableOpacity disabled={isSaving} style={[styles.saveFlashcardBtn, isSaving && { opacity: 0.6 }]} onPress={() => void handleSaveToDeck()}>
-                    <Feather name="bookmark" size={18} color="#FFFFFF" />
                     <Text style={styles.saveFlashcardText}>Lưu vào Sổ từ Flashcard</Text>
                   </TouchableOpacity>
                 </ScrollView>

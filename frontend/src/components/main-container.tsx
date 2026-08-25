@@ -190,7 +190,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
           {([
             ['home', 'home', 'Trang chủ'],
             ['learn', 'book-open', 'Bài học'],
-            ['scan', 'aperture', 'Quét AI'],
+            ['scan', 'camera', 'Quét AI'],
             ['cards', 'layers', 'Sổ từ'],
             ['profile', 'user', 'Cá nhân'],
           ] as const).map(([key, icon, label]) =>

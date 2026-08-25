@@ -22,6 +22,9 @@ from PIL import Image
 import numpy as np
 from ultralytics import YOLO
 from contextlib import asynccontextmanager
+import torch
+
+DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
 
 # Load .env manually if present
 env_path = Path(__file__).resolve().parent / ".env"
@@ -111,6 +114,7 @@ def load_ai_model():
     if model_labels != EXPANDED_VOCABULARY:
         model = None
         raise RuntimeError("The loaded detector class list does not exactly match the 365 canonical labels")
+    print(f"🚀 AI Service configured to run inference on device: {DEVICE}")
 
 # Schemas
 class BoundingBox(BaseModel):
@@ -123,6 +127,8 @@ class DetectedObject(BaseModel):
     label: str
     confidence: float
     box: BoundingBox
+    sentence_en: Optional[str] = None
+    sentence_vn: Optional[str] = None
 
 class ContextSentenceRequest(BaseModel):
     labels: List[str]
@@ -218,6 +224,79 @@ def generate_context_sentence(req: ContextSentenceRequest):
 
     return generate_fallback_context(unique_labels)
 
+def generate_context_and_individual_sentences(labels: List[str]):
+    unique_labels = list(dict.fromkeys(labels))
+    individual = {}
+    for label in unique_labels:
+        individual[label] = {
+            "sentence_en": f"I can see a {label} here.",
+            "sentence_vn": f"Tôi có thể nhìn thấy {label} ở đây."
+        }
+    
+    contextual_en = "No items detected."
+    contextual_vn = "Không phát hiện vật thể."
+    if unique_labels:
+        if len(unique_labels) == 1:
+            contextual_en = f"I can see a {unique_labels[0]} in this image."
+            contextual_vn = f"Tôi nhìn thấy một {unique_labels[0]} trong bức hình này."
+        else:
+            items_str = ", ".join(unique_labels[:-1]) + f" and {unique_labels[-1]}"
+            contextual_en = f"There are several items in this scene including {items_str}."
+            contextual_vn = f"Có một số vật thể trong khung hình này bao gồm {items_str}."
+
+    if gemini_model:
+        try:
+            prompt = (
+                f"You are an English language tutor for an AI English learning app. "
+                f"A student took a photo containing these objects: {', '.join(unique_labels)}. "
+                f"Please generate:\n"
+                f"1. A natural, descriptive 1-sentence English example sentence combining these objects (under keys 'contextual_en' and 'contextual_vn').\n"
+                f"2. For each unique object, a simple, beginner-friendly English example sentence (max 8 words, using easy vocabulary) and its Vietnamese translation.\n"
+                f"Format the exact response in JSON with this structure:\n"
+                f"{{\n"
+                f"  \"contextual_en\": \"...\",\n"
+                f"  \"contextual_vn\": \"...\",\n"
+                f"  \"individual_sentences\": {{\n"
+                f"    \"object_name\": {{\n"
+                f"      \"sentence_en\": \"...\",\n"
+                f"      \"sentence_vn\": \"...\"\n"
+                f"    }}\n"
+                f"  }}\n"
+                f"}}\n"
+                f"Do not include markdown codeblocks or extra commentary."
+            )
+            response = gemini_model.generate_content(prompt)
+            text = response.text.strip()
+            if text.startswith("```json"):
+                text = text.replace("```json", "").replace("```", "").strip()
+            elif text.startswith("```"):
+                text = text.replace("```", "").strip()
+            
+            import json
+            data = json.loads(text)
+            c_en = data.get("contextual_en", contextual_en)
+            c_vn = data.get("contextual_vn", contextual_vn)
+            ind_data = data.get("individual_sentences", {})
+            for label in unique_labels:
+                if label in ind_data:
+                    individual[label] = {
+                        "sentence_en": ind_data[label].get("sentence_en", individual[label]["sentence_en"]),
+                        "sentence_vn": ind_data[label].get("sentence_vn", individual[label]["sentence_vn"])
+                    }
+            return {
+                "contextual_en": c_en,
+                "contextual_vn": c_vn,
+                "individual": individual
+            }
+        except Exception as e:
+            print(f"⚠️ Gemini API Call Exception: {e}, fallback to template.")
+
+    return {
+        "contextual_en": contextual_en,
+        "contextual_vn": contextual_vn,
+        "individual": individual
+    }
+
 @app.post("/predict-multi", response_model=MultiPredictionResponse, summary="Nhận diện Đa vật thể & Tương tác Bounding Box")
 async def predict_multi_objects(
     file: UploadFile = File(...),
@@ -242,7 +321,7 @@ async def predict_multi_objects(
         image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         img_width, img_height = image.size
 
-        results = model(image, conf=confidence_threshold)
+        results = model(image, conf=confidence_threshold, device=DEVICE)
         predictions: List[DetectedObject] = []
         labels_list: List[str] = []
 
@@ -273,8 +352,20 @@ async def predict_multi_objects(
         inference_time_ms = round((time.time() - start_time) * 1000, 2)
 
         context_res = None
+        result_sentences = None
         if generate_sentence and labels_list:
-            context_res = generate_context_sentence(ContextSentenceRequest(labels=labels_list))
+            result_sentences = generate_context_and_individual_sentences(labels_list)
+            context_res = ContextSentenceResponse(
+                sentence_en=result_sentences["contextual_en"],
+                sentence_vn=result_sentences["contextual_vn"],
+                source="gemini-ai" if gemini_model else "template-fallback"
+            )
+
+        # Update predictions with individual sentences
+        for pred in predictions:
+            if result_sentences and pred.label in result_sentences["individual"]:
+                pred.sentence_en = result_sentences["individual"][pred.label]["sentence_en"]
+                pred.sentence_vn = result_sentences["individual"][pred.label]["sentence_vn"]
 
         return MultiPredictionResponse(
             success=True,

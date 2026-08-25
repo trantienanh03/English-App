@@ -85,6 +85,14 @@ public class WordService {
         );
     }
 
+    public void updateExampleSentences(String detectionLabel, String exampleEn, String exampleVn) {
+        wordRepository.findByDetectionLabel(normalizeLabel(detectionLabel)).ifPresent(word -> {
+            word.setExampleEn(exampleEn.trim());
+            word.setExampleVn(exampleVn.trim());
+            wordRepository.save(word);
+        });
+    }
+
     private String normalizeLabel(String label) {
         return label.toLowerCase().trim().replaceAll("\\s+", " ");
     }

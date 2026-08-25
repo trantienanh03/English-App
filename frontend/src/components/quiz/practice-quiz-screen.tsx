@@ -222,23 +222,23 @@ export default function PracticeQuizScreen({
           <ScrollView contentContainerStyle={styles.resultsContent}>
             <View style={styles.resultCard}>
               <Feather name="award" size={56} color="#4F46E5" />
-              <Text style={styles.resultTitle}>Hoàn thành Bài Quiz! 🎉</Text>
+              <Text style={styles.resultTitle}>Hoàn thành bài luyện tập</Text>
               <Text style={styles.resultScoreText}>{score} / {totalQuestions} câu đúng ({percentageScore}%)</Text>
 
               {wrongAnswers.length > 0 ? (
                 <View style={styles.wrongSection}>
-                  <Text style={styles.wrongTitle}>📌 Ôn lại câu làm sai ({wrongAnswers.length}):</Text>
+                  <Text style={styles.wrongTitle}>Xem lại câu trả lời chưa chính xác ({wrongAnswers.length}):</Text>
                   {wrongAnswers.map((w, idx) => (
                     <View key={idx} style={styles.wrongCard}>
                       <Text style={styles.wrongQuestion}>• {w.question}</Text>
-                      <Text style={styles.wrongUserAns}>❌ Bạn chọn: {w.selectedOption}</Text>
-                      <Text style={styles.wrongCorrectAns}>✅ Đáp án đúng: {w.correctAnswer}</Text>
+                      <Text style={styles.wrongUserAns}>Đã chọn: {w.selectedOption}</Text>
+                      <Text style={styles.wrongCorrectAns}>Đáp án chính xác: {w.correctAnswer}</Text>
                     </View>
                   ))}
                 </View>
               ) : (
                 <View style={styles.perfectBox}>
-                  <Text style={styles.perfectText}>🌟 Xuất sắc! Bạn làm đúng 100% tất cả các câu hỏi.</Text>
+                  <Text style={styles.perfectText}>Xuất sắc! Bạn đã hoàn thành chính xác 100% các câu hỏi.</Text>
                 </View>
               )}
 

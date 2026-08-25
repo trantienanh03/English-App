@@ -122,7 +122,7 @@ export default function WordDetailScreen({
             <Feather name="globe" size={15} color={Palette.primary[500]} />
             <Text style={styles.sectionTitle}>Nghĩa tiếng Việt</Text>
           </View>
-          <Text style={styles.meaningText}>🇻🇳 {word.vn}</Text>
+          <Text style={styles.meaningText}>{word.vn}</Text>
         </View>
 
         {/* EXAMPLE SENTENCE CARD */}

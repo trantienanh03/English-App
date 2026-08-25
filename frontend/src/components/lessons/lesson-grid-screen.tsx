@@ -80,7 +80,7 @@ export default function LessonGridScreen({
             >
               <View style={styles.cardTop}>
                 <View style={styles.iconBox}>
-                  <Text style={styles.lessonIcon}>{lesson.icon}</Text>
+                  <Feather name={(lesson.icon as any) || 'book-open'} size={22} color={Palette.primary[500]} />
                 </View>
 
                 <View style={{ flex: 1 }}>
@@ -122,7 +122,10 @@ export default function LessonGridScreen({
           <View style={styles.modalOverlay}>
             <View style={styles.modalSheet}>
               <View style={styles.modalHeader}>
-                <Text style={styles.modalTitle}>{selectedLessonPreview?.icon} {selectedLessonPreview?.name}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <Feather name={(selectedLessonPreview?.icon as any) || 'book-open'} size={24} color={Palette.primary[500]} />
+                  <Text style={styles.modalTitle}>{selectedLessonPreview?.name}</Text>
+                </View>
                 <TouchableOpacity onPress={() => setSelectedLessonPreview(null)}>
                   <Feather name="x" size={20} color={Palette.text.muted} />
                 </TouchableOpacity>
@@ -137,7 +140,7 @@ export default function LessonGridScreen({
                     <View style={{ flex: 1 }}>
                       <Text style={styles.previewWordText}>{word.word}</Text>
                       <Text style={styles.previewPhoneticText}>{word.phonetic}</Text>
-                      <Text style={styles.previewVnText}>🇻🇳 {word.vn}</Text>
+                      <Text style={styles.previewVnText}>{word.vn}</Text>
                     </View>
                     <TouchableOpacity onPress={() => playAudio(word.word)} style={styles.audioBtn}>
                       <Feather name="volume-2" size={18} color={Palette.primary[500]} />
@@ -173,8 +176,8 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.two,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   header: {
     marginBottom: Spacing.two,
@@ -195,7 +198,7 @@ const styles = StyleSheet.create({
   // Category Scroll
   catScroll: {
     maxHeight: 44,
-    marginBottom: Spacing.one,
+    marginBottom: 8,
   },
   catContainer: {
     gap: Spacing.two,
@@ -262,6 +265,7 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     borderWidth: 1,
     borderColor: Palette.border,
+    gap: 12,
   },
   cardTop: {
     flexDirection: 'row',
@@ -294,7 +298,7 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 11,
     color: Palette.text.muted,
-    marginTop: 1,
+    marginTop: 4,
   },
   difficultyBadge: {
     backgroundColor: Palette.secondary[100],
@@ -312,13 +316,12 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.sans,
     fontSize: 12,
     color: Palette.text.secondary,
-    marginVertical: Spacing.two,
+    lineHeight: 18,
   },
   cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: Spacing.one,
   },
   progressRow: {
     gap: 4,

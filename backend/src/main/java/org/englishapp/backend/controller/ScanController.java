@@ -79,6 +79,13 @@ public class ScanController {
 
                     try {
                         WordDto wordDto = wordService.findByDetectionLabel(label);
+                        String geminiSentenceEn = (String) pred.get("sentence_en");
+                        String geminiSentenceVn = (String) pred.get("sentence_vn");
+                        if (geminiSentenceEn != null && !geminiSentenceEn.isEmpty()) {
+                            wordDto.setExampleEn(geminiSentenceEn);
+                            wordDto.setExampleVn(geminiSentenceVn);
+                            wordService.updateExampleSentences(label, geminiSentenceEn, geminiSentenceVn);
+                        }
                         enriched.put("wordData", wordDto);
                     } catch (org.springframework.web.server.ResponseStatusException notMapped) {
                         // Keep the detection visible, but never present fabricated vocabulary as a real DB record.

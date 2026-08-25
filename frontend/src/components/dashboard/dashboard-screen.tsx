@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Lesson, VocabularyWord } from '@/types';
+import { Palette } from '@/constants/theme';
 
 interface DashboardScreenProps {
   userName: string;
@@ -44,7 +45,7 @@ export default function DashboardScreen({
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
             <Text style={styles.greetingTitle}>
-              Xin chào, {userName || 'Học viên'}! <Text style={styles.emoji}>👋</Text>
+              Xin chào, {userName || 'Học viên'}!
             </Text>
             <Text style={styles.greetingSub}>Hôm nay bạn muốn khám phá từ vựng gì?</Text>
           </View>
@@ -60,7 +61,7 @@ export default function DashboardScreen({
         <TouchableOpacity style={styles.scannerBanner} onPress={() => onNavigate('scan')} activeOpacity={0.88}>
           <View style={styles.scannerBannerLeft}>
             <View style={styles.scannerIconBadge}>
-              <Feather name="aperture" size={28} color="#FFFFFF" />
+              <Feather name="camera" size={28} color="#FFFFFF" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.scannerBannerTitle}>AI Object Scanner</Text>
@@ -78,25 +79,16 @@ export default function DashboardScreen({
         {/* LEARNING STATS OVERVIEW CARDS */}
         <View style={styles.statsRow}>
           <TouchableOpacity style={[styles.statCard, styles.dueCard]} onPress={() => onNavigate('cards')}>
-            <View style={styles.statIconBadgeDue}>
-              <Feather name="clock" size={20} color="#F59E0B" />
-            </View>
             <Text style={styles.statVal}>{dueCardsCount}</Text>
             <Text style={styles.statLbl}>Thẻ cần ôn hôm nay</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.statCard} onPress={() => onNavigate('cards')}>
-            <View style={styles.statIconBadgeSaved}>
-              <Feather name="bookmark" size={20} color="#4F46E5" />
-            </View>
             <Text style={styles.statVal}>{wordsSavedCount}</Text>
             <Text style={styles.statLbl}>Từ đã lưu vào Sổ từ</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.statCard} onPress={() => onNavigate('cards')}>
-            <View style={styles.statIconBadgeLearned}>
-              <Feather name="check-circle" size={20} color="#10B981" />
-            </View>
             <Text style={styles.statVal}>{wordsLearnedCount}</Text>
             <Text style={styles.statLbl}>Từ đã ghi nhớ</Text>
           </TouchableOpacity>
@@ -105,9 +97,7 @@ export default function DashboardScreen({
         {/* WORD OF THE DAY */}
         {wordOfTheDay && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              <Text style={styles.emoji}>💡</Text> Từ vựng của ngày
-            </Text>
+            <Text style={styles.sectionTitle}>Từ vựng của ngày</Text>
             <TouchableOpacity
               style={styles.wordOfTheDayCard}
               onPress={() => onOpenWordDetail(wordOfTheDay)}
@@ -123,7 +113,6 @@ export default function DashboardScreen({
                 </View>
               </View>
               <Text style={styles.wordTranslation}>
-                <Text style={styles.emoji}>🇻🇳 </Text>
                 {wordOfTheDay.vn}
               </Text>
               <Text style={styles.wordExample}>“{wordOfTheDay.sentence}”</Text>
@@ -134,9 +123,7 @@ export default function DashboardScreen({
         {/* TOPIC LESSONS */}
         <View style={styles.section}>
           <View style={styles.rowBetween}>
-            <Text style={styles.sectionTitle}>
-              <Text style={styles.emoji}>📚</Text> Bài học theo Chủ đề
-            </Text>
+            <Text style={styles.sectionTitle}>Bài học theo Chủ đề</Text>
             <TouchableOpacity onPress={() => onNavigate('learn')}>
               <Text style={styles.seeAllText}>Xem tất cả ({lessons.length})</Text>
             </TouchableOpacity>
@@ -149,8 +136,8 @@ export default function DashboardScreen({
               onPress={() => onSelectLesson(lesson.id)}
               activeOpacity={0.8}
             >
-              <View style={[styles.lessonIconBadge, { backgroundColor: '#EEF2FF' }]}>
-                <Feather name={(lesson.icon as any) || 'book-open'} size={24} color="#4F46E5" />
+              <View style={[styles.lessonIconBadge, { backgroundColor: Palette.primary[100] }]}>
+                <Feather name={(lesson.icon as any) || 'book-open'} size={24} color={Palette.primary[500]} />
               </View>
               <View style={styles.lessonInfo}>
                 <Text style={styles.lessonTitle}>{lesson.name}</Text>
@@ -197,11 +184,11 @@ const styles = StyleSheet.create({
   greetingSub: { fontSize: 13, color: '#64748B', marginTop: 2 },
 
   scannerBanner: {
-    backgroundColor: '#4F46E5',
+    backgroundColor: Palette.primary[500],
     borderRadius: 18,
     padding: 18,
     gap: 14,
-    shadowColor: '#4F46E5',
+    shadowColor: Palette.primary[500],
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.25,
     shadowRadius: 10,
@@ -219,7 +206,7 @@ const styles = StyleSheet.create({
   scannerBannerTitle: { fontSize: 18, fontWeight: '800', color: '#FFFFFF' },
   scannerBannerSub: { fontSize: 12, color: 'rgba(255, 255, 255, 0.85)', marginTop: 2, lineHeight: 16 },
   scanNowBtn: {
-    backgroundColor: '#6366F1',
+    backgroundColor: Palette.primary[400],
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
@@ -234,23 +221,22 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: '#FFFFFF',
-    padding: 12,
+    paddingVertical: 16,
+    paddingHorizontal: 8,
     borderRadius: 14,
     borderWidth: 1,
     borderColor: '#E2E8F0',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   dueCard: { borderColor: '#FDE68A', backgroundColor: '#FFFBEB' },
-  statIconBadgeDue: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#FEF3C7', alignItems: 'center', justifyContent: 'center' },
-  statIconBadgeSaved: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#EEF2FF', alignItems: 'center', justifyContent: 'center' },
-  statIconBadgeLearned: { width: 36, height: 36, borderRadius: 10, backgroundColor: '#ECFDF5', alignItems: 'center', justifyContent: 'center' },
-  statVal: { fontSize: 20, fontWeight: '800', color: '#1E293B', marginTop: 6 },
-  statLbl: { fontSize: 11, color: '#64748B', textAlign: 'center', marginTop: 2 },
+  statVal: { fontSize: 22, fontWeight: '800', color: '#1E293B' },
+  statLbl: { fontSize: 11, color: '#64748B', textAlign: 'center', marginTop: 4 },
 
   section: { gap: 10 },
   rowBetween: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1E293B' },
-  seeAllText: { fontSize: 12, fontWeight: '600', color: '#4F46E5' },
+  seeAllText: { fontSize: 12, fontWeight: '600', color: Palette.primary[500] },
 
   wordOfTheDayCard: {
     backgroundColor: '#FFFFFF',
@@ -263,8 +249,8 @@ const styles = StyleSheet.create({
   wordHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
   wordTitle: { fontSize: 18, fontWeight: '800', color: '#1E293B' },
   wordPhonetic: { fontSize: 12, color: '#64748B', fontStyle: 'italic' },
-  posBadge: { backgroundColor: '#EEF2FF', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  posBadgeText: { color: '#4F46E5', fontSize: 11, fontWeight: '700' },
+  posBadge: { backgroundColor: Palette.primary[100], paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  posBadgeText: { color: Palette.primary[500], fontSize: 11, fontWeight: '700' },
   wordTranslation: { fontSize: 14, fontWeight: '700', color: '#10B981' },
   wordExample: { fontSize: 13, color: '#475569', fontStyle: 'italic', marginTop: 4 },
 
@@ -282,6 +268,6 @@ const styles = StyleSheet.create({
   lessonTitle: { fontSize: 14, fontWeight: '700', color: '#1E293B' },
   lessonDesc: { fontSize: 12, color: '#64748B' },
   lessonFooter: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 },
-  wordCountText: { fontSize: 11, fontWeight: '600', color: '#4F46E5' },
+  wordCountText: { fontSize: 11, fontWeight: '600', color: Palette.primary[500] },
   progressText: { fontSize: 11, color: '#10B981', fontWeight: '600' },
 });

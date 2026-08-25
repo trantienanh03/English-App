@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   appContainer: {
     flex: 1,
     width: '100%',
-    maxWidth: Platform.OS === 'web' ? 480 : '100%',
+    maxWidth: Platform.OS === 'web' ? 600 : '100%',
     alignSelf: 'center',
     backgroundColor: '#F4F6F3',
   },

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Platform,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
@@ -23,6 +24,9 @@ export const DropsPalette = {
   borderSelected: Palette.primary[300],
   progressBarBg: 'rgba(255, 255, 255, 0.15)',
 };
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const isSmallDevice = SCREEN_HEIGHT < 680;
 
 export interface OnboardingData {
   level: string;
@@ -141,9 +145,6 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
           <View style={styles.illustrationContainer}>
             <View style={styles.avatarCircle}>
               <Feather name="user" size={72} color="#FFFFFF" />
-              <View style={styles.waveBadge}>
-                <Text style={styles.waveEmoji}>👋</Text>
-              </View>
             </View>
           </View>
 
@@ -311,27 +312,18 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
 
             <View style={styles.summaryBox}>
               <View style={styles.summaryRow}>
-                <View style={styles.summaryIconBadge}>
-                  <Feather name="bar-chart-2" size={18} color={DropsPalette.accentLime} />
-                </View>
                 <Text style={styles.summaryText}>
                   Trình độ: <Text style={styles.summaryHighlight}>{selectedLevel}</Text>
                 </Text>
               </View>
 
               <View style={styles.summaryRow}>
-                <View style={styles.summaryIconBadge}>
-                  <Feather name="target" size={18} color={DropsPalette.accentLime} />
-                </View>
                 <Text style={styles.summaryText}>
                   Mục tiêu: <Text style={styles.summaryHighlight}>{selectedGoals.length} mục tiêu</Text>
                 </Text>
               </View>
 
               <View style={styles.summaryRow}>
-                <View style={styles.summaryIconBadge}>
-                  <Feather name="clock" size={18} color={DropsPalette.accentLime} />
-                </View>
                 <Text style={styles.summaryText}>
                   Thời lượng: <Text style={styles.summaryHighlight}>{selectedTime}</Text>
                 </Text>
@@ -357,8 +349,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: Spacing.four,
-    paddingTop: Platform.OS === 'android' ? Spacing.four : Spacing.two,
-    paddingBottom: Spacing.three,
+    paddingTop: Platform.OS === 'android' ? Spacing.four : (isSmallDevice ? Spacing.one : Spacing.two),
+    paddingBottom: isSmallDevice ? Spacing.two : Spacing.three,
   },
   backButton: {
     padding: Spacing.one,
@@ -382,8 +374,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     paddingHorizontal: Spacing.four,
-    paddingBottom: Spacing.five,
-    paddingTop: Spacing.three,
+    paddingBottom: isSmallDevice ? Spacing.three : Spacing.five,
+    paddingTop: isSmallDevice ? Spacing.two : Spacing.three,
     position: 'relative',
   },
   welcomeTopBar: {
@@ -392,7 +384,7 @@ const styles = StyleSheet.create({
   },
   loginQuestion: {
     fontFamily: Fonts.sans,
-    fontSize: 14,
+    fontSize: isSmallDevice ? 13 : 14,
     color: DropsPalette.textMuted,
   },
   loginLink: {
@@ -404,13 +396,13 @@ const styles = StyleSheet.create({
   illustrationContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: Spacing.four,
+    marginVertical: isSmallDevice ? Spacing.two : Spacing.four,
     zIndex: 5,
   },
   avatarCircle: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+    width: isSmallDevice ? 100 : 140,
+    height: isSmallDevice ? 100 : 140,
+    borderRadius: isSmallDevice ? 50 : 70,
     backgroundColor: 'rgba(255, 255, 255, 0.18)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -423,9 +415,9 @@ const styles = StyleSheet.create({
     top: -5,
     right: -5,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: isSmallDevice ? 32 : 44,
+    height: isSmallDevice ? 32 : 44,
+    borderRadius: isSmallDevice ? 16 : 22,
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
@@ -436,25 +428,25 @@ const styles = StyleSheet.create({
   },
   waveEmoji: {
     fontFamily: Platform.OS === 'ios' ? 'Apple Color Emoji' : undefined,
-    fontSize: 22,
+    fontSize: isSmallDevice ? 16 : 22,
   },
   welcomeTextSection: {
     alignItems: 'center',
-    marginBottom: Spacing.four,
+    marginBottom: isSmallDevice ? Spacing.two : Spacing.four,
     zIndex: 5,
   },
   welcomeTitle: {
     fontFamily: Fonts.sans,
-    fontSize: 28,
+    fontSize: isSmallDevice ? 22 : 28,
     fontWeight: '800',
     color: DropsPalette.textLight,
     textAlign: 'center',
-    lineHeight: 36,
-    marginBottom: Spacing.two,
+    lineHeight: isSmallDevice ? 30 : 36,
+    marginBottom: isSmallDevice ? Spacing.one : Spacing.two,
   },
   welcomeSubtitle: {
     fontFamily: Fonts.sans,
-    fontSize: 16,
+    fontSize: isSmallDevice ? 14 : 16,
     color: DropsPalette.textMuted,
     textAlign: 'center',
   },
@@ -464,9 +456,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -40,
     left: -60,
-    width: 180,
-    height: 180,
-    borderRadius: 90,
+    width: isSmallDevice ? 120 : 180,
+    height: isSmallDevice ? 120 : 180,
+    borderRadius: isSmallDevice ? 60 : 90,
     backgroundColor: Palette.primary[500],
     opacity: 0.6,
   },
@@ -474,9 +466,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: '30%',
     right: -80,
-    width: 220,
-    height: 220,
-    borderRadius: 110,
+    width: isSmallDevice ? 150 : 220,
+    height: isSmallDevice ? 150 : 220,
+    borderRadius: isSmallDevice ? 75 : 110,
     backgroundColor: Palette.secondary[500],
     opacity: 0.5,
   },
@@ -484,9 +476,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 80,
     left: -40,
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+    width: isSmallDevice ? 100 : 140,
+    height: isSmallDevice ? 100 : 140,
+    borderRadius: isSmallDevice ? 50 : 70,
     backgroundColor: Palette.primary[400],
     opacity: 0.4,
   },
@@ -494,27 +486,27 @@ const styles = StyleSheet.create({
   // Question Step Styles
   scrollStepContent: {
     paddingHorizontal: Spacing.four,
-    paddingBottom: 100,
-    paddingTop: Spacing.two,
+    paddingBottom: isSmallDevice ? 80 : 100,
+    paddingTop: isSmallDevice ? Spacing.one : Spacing.two,
   },
   questionSection: {
-    marginBottom: Spacing.four,
+    marginBottom: isSmallDevice ? Spacing.two : Spacing.four,
   },
   questionTitle: {
     fontFamily: Fonts.sans,
-    fontSize: 26,
+    fontSize: isSmallDevice ? 20 : 26,
     fontWeight: '800',
     color: DropsPalette.textLight,
-    lineHeight: 34,
+    lineHeight: isSmallDevice ? 28 : 34,
     marginBottom: Spacing.one,
   },
   questionSubtitle: {
     fontFamily: Fonts.sans,
-    fontSize: 14,
+    fontSize: isSmallDevice ? 13 : 14,
     color: DropsPalette.textMuted,
   },
   optionsList: {
-    gap: Spacing.three,
+    gap: isSmallDevice ? Spacing.two : Spacing.three,
   },
   pillOption: {
     flexDirection: 'row',
@@ -522,11 +514,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: DropsPalette.bgCard,
     borderRadius: 30,
-    paddingVertical: Spacing.three,
+    paddingVertical: isSmallDevice ? Spacing.two : Spacing.three,
     paddingHorizontal: Spacing.four,
     borderWidth: 1.5,
     borderColor: 'transparent',
-    minHeight: 64,
+    minHeight: isSmallDevice ? 52 : 64,
   },
   pillOptionSelected: {
     backgroundColor: DropsPalette.bgCardSelected,
@@ -538,13 +530,13 @@ const styles = StyleSheet.create({
   },
   pillLabel: {
     fontFamily: Fonts.sans,
-    fontSize: 17,
+    fontSize: isSmallDevice ? 15 : 17,
     fontWeight: '700',
     color: DropsPalette.textLight,
   },
   pillSub: {
     fontFamily: Fonts.sans,
-    fontSize: 13,
+    fontSize: isSmallDevice ? 11 : 13,
     color: DropsPalette.textMuted,
     marginTop: 2,
   },
@@ -556,7 +548,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.four,
+    paddingVertical: isSmallDevice ? Spacing.three : Spacing.four,
     backgroundColor: DropsPalette.bgDark,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
@@ -566,7 +558,7 @@ const styles = StyleSheet.create({
   limeButton: {
     backgroundColor: DropsPalette.accentLime,
     borderRadius: 30,
-    height: 56,
+    height: isSmallDevice ? 48 : 56,
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
@@ -578,7 +570,7 @@ const styles = StyleSheet.create({
   },
   limeButtonText: {
     fontFamily: Fonts.sans,
-    fontSize: 16,
+    fontSize: isSmallDevice ? 15 : 16,
     fontWeight: '900',
     color: DropsPalette.textDark,
     letterSpacing: 0.8,
@@ -590,30 +582,30 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.five,
+    paddingVertical: isSmallDevice ? Spacing.four : Spacing.five,
   },
   readyCard: {
     width: '100%',
     backgroundColor: 'rgba(255, 255, 255, 0.12)',
     borderRadius: 32,
     paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.five,
+    paddingVertical: isSmallDevice ? Spacing.four : Spacing.five,
     alignItems: 'center',
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.22)',
   },
   sparkleIconWrapper: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: isSmallDevice ? 60 : 80,
+    height: isSmallDevice ? 60 : 80,
+    borderRadius: isSmallDevice ? 30 : 40,
     backgroundColor: 'rgba(229, 245, 84, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: Spacing.three,
+    marginBottom: isSmallDevice ? Spacing.two : Spacing.three,
   },
   readyTitle: {
     fontFamily: Fonts.sans,
-    fontSize: 22,
+    fontSize: isSmallDevice ? 18 : 22,
     fontWeight: '800',
     color: DropsPalette.textLight,
     textAlign: 'center',
@@ -621,38 +613,38 @@ const styles = StyleSheet.create({
   },
   readySubtitle: {
     fontFamily: Fonts.sans,
-    fontSize: 14,
+    fontSize: isSmallDevice ? 12 : 14,
     color: DropsPalette.textMuted,
     textAlign: 'center',
-    marginBottom: Spacing.four,
-    lineHeight: 20,
+    marginBottom: isSmallDevice ? Spacing.two : Spacing.four,
+    lineHeight: isSmallDevice ? 18 : 20,
   },
   summaryBox: {
     width: '100%',
     backgroundColor: 'rgba(0, 0, 0, 0.25)',
     borderRadius: 24,
-    padding: Spacing.three,
-    marginBottom: Spacing.four,
-    gap: Spacing.three,
+    padding: isSmallDevice ? Spacing.two : Spacing.three,
+    marginBottom: isSmallDevice ? Spacing.three : Spacing.four,
+    gap: isSmallDevice ? Spacing.two : Spacing.three,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
   },
   summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.three,
+    gap: isSmallDevice ? Spacing.two : Spacing.three,
   },
   summaryIconBadge: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: isSmallDevice ? 28 : 32,
+    height: isSmallDevice ? 28 : 32,
+    borderRadius: isSmallDevice ? 14 : 16,
     backgroundColor: 'rgba(229, 245, 84, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   summaryText: {
     fontFamily: Fonts.sans,
-    fontSize: 14,
+    fontSize: isSmallDevice ? 13 : 14,
     color: DropsPalette.textLight,
   },
   summaryHighlight: {

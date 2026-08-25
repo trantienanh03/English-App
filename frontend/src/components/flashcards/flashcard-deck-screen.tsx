@@ -125,7 +125,6 @@ export default function FlashcardDeckScreen({
               style={[styles.modeTab, activeMode === 'session' && styles.modeTabActive]}
               onPress={() => setActiveMode('session')}
             >
-              <Feather name="layers" size={14} color={activeMode === 'session' ? Palette.primary[500] : Palette.text.muted} />
               <Text style={[styles.modeTabText, activeMode === 'session' && styles.modeTabTextActive]}>Ôn tập</Text>
             </TouchableOpacity>
 
@@ -133,7 +132,6 @@ export default function FlashcardDeckScreen({
               style={[styles.modeTab, activeMode === 'library' && styles.modeTabActive]}
               onPress={() => setActiveMode('library')}
             >
-              <Feather name="grid" size={14} color={activeMode === 'library' ? Palette.primary[500] : Palette.text.muted} />
               <Text style={[styles.modeTabText, activeMode === 'library' && styles.modeTabTextActive]}>Thư viện</Text>
             </TouchableOpacity>
           </View>
@@ -143,10 +141,10 @@ export default function FlashcardDeckScreen({
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll} contentContainerStyle={styles.filterContainer}>
           {[
             { key: 'all', label: 'Tất cả' },
-            { key: 'easy', label: '🟢 Dễ' },
-            { key: 'medium', label: '🟡 Vừa' },
-            { key: 'hard', label: '🔴 Khó' },
-            { key: 'captured', label: '📷 Từ vừa quét' },
+            { key: 'easy', label: 'Dễ' },
+            { key: 'medium', label: 'Vừa' },
+            { key: 'hard', label: 'Khó' },
+            { key: 'captured', label: 'Từ vừa quét' },
           ].map(item => (
             <TouchableOpacity
               key={item.key}
@@ -174,7 +172,7 @@ export default function FlashcardDeckScreen({
             ) : sessionFinished ? (
               <View style={styles.finishedCard}>
                 <Feather name="award" size={52} color={Palette.warning.text} />
-                <Text style={styles.finishedTitle}>Hoàn thành buổi ôn tập! 🎉</Text>
+                <Text style={styles.finishedTitle}>Hoàn thành buổi ôn tập</Text>
                 <Text style={styles.finishedSub}>Bạn vừa luyện tập xong {filteredWords.length} thẻ từ vựng.</Text>
 
                 <View style={styles.finishedBtnRow}>
@@ -207,7 +205,6 @@ export default function FlashcardDeckScreen({
                   onPress={() => setIsFlipped(!isFlipped)}
                 >
                   <View style={styles.flipHint}>
-                    <Feather name="rotate-cw" size={14} color={Palette.text.muted} />
                     <Text style={styles.flipHintText}>{isFlipped ? 'Chạm để xem từ' : 'Chạm để lật mặt sau'}</Text>
                   </View>
 
@@ -233,7 +230,7 @@ export default function FlashcardDeckScreen({
                     /* BACK OF CARD */
                     <View style={styles.cardBack}>
                       <Text style={styles.backVnTitle}>Nghĩa tiếng Việt:</Text>
-                      <Text style={styles.backVnText}>🇻🇳 {currentCard?.vn}</Text>
+                      <Text style={styles.backVnText}>{currentCard?.vn}</Text>
 
                       <View style={styles.sentenceBox}>
                         <Text style={styles.sentenceLabel}>Ví dụ câu:</Text>
@@ -250,18 +247,15 @@ export default function FlashcardDeckScreen({
                 {actionError && <Text style={{ color: Palette.error.text, textAlign: 'center' }}>{actionError}</Text>}
                 <View style={styles.ratingBar}>
                   <TouchableOpacity disabled={isSubmitting} style={[styles.rateBtn, styles.rateBtnAgain]} onPress={() => void handleRate('AGAIN')}>
-                    <Text style={styles.rateEmoji}>🔴</Text>
                     <Text style={styles.rateLabel}>Chưa thuộc</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity disabled={isSubmitting} style={[styles.rateBtn, styles.rateBtnGood]} onPress={() => void handleRate('GOOD')}>
-                    <Text style={styles.rateEmoji}>🟡</Text>
-                    <Text style={styles.rateLabel}>Tạm nhớ</Text>
+                    <Text style={styles.rateLabel}>Đã thuộc</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity disabled={isSubmitting} style={[styles.rateBtn, styles.rateBtnEasy]} onPress={() => void handleRate('EASY')}>
-                    <Text style={styles.rateEmoji}>🟢</Text>
-                    <Text style={styles.rateLabel}>Rất thuộc</Text>
+                    <Text style={styles.rateLabel}>Thành thạo</Text>
                   </TouchableOpacity>
                 </View>
 
@@ -317,7 +311,7 @@ export default function FlashcardDeckScreen({
                     </TouchableOpacity>
                   </View>
                   <Text style={styles.libPhonetic}>{word.phonetic}</Text>
-                  <Text style={styles.libVn}>🇻🇳 {word.vn}</Text>
+                  <Text style={styles.libVn}>{word.vn}</Text>
 
                   <View style={styles.libCardFoot}>
                     <TouchableOpacity onPress={() => playAudio(word.word)}>
@@ -344,8 +338,8 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    paddingTop: Spacing.two,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   headerBar: {
     flexDirection: 'row',
