@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="Kiến trúc hệ thống" id="vocam-system-architecture-final">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1280" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="KIẾN TRÚC TỔNG THỂ HỆ THỐNG VOCAM" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=20;fontStyle=1;fontColor=#1A237E;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="250" y="20" width="1150" height="40" />
+        </mxCell>
+        <mxCell id="subtitle" value="Kiến trúc logic và môi trường triển khai thực nghiệm của hệ thống" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=11;fontColor=#455A64;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="320" y="55" width="1010" height="25" />
+        </mxCell>
+        <mxCell id="mobile" value="THIẾT BỊ DI ĐỘNG THỬ NGHIỆM&#10;iPhone 15 Pro Max · iOS 26.0.1 · Expo Go&#10;React Native 0.86.2 · Expo SDK 57 · TypeScript 6.0.3" style="swimlane;startSize=62;horizontal=1;collapsible=0;rounded=1;whiteSpace=wrap;html=1;fillColor=#E8F5E9;strokeColor=#388E3C;fontStyle=1;fontSize=13;fontColor=#1B5E20;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="35" y="95" width="500" height="790" />
+        </mxCell>
+        <mxCell id="learner" value="Giao diện Người học" style="swimlane;startSize=28;horizontal=1;collapsible=0;rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8E9;strokeColor=#66BB6A;fontStyle=1;fontSize=11;" parent="mobile" vertex="1">
+          <mxGeometry as="geometry" x="18" y="55" width="225" height="520" />
+        </mxCell>
+        <mxCell id="m_auth" value="Xác thực &amp; điều hướng theo vai trò&#10;Đăng ký · Đăng nhập · Google OAuth · Khôi phục mật khẩu/phiên" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#43A047;fontSize=9.5;" parent="learner" vertex="1">
+          <mxGeometry as="geometry" x="12" y="40" width="200" height="55" />
+        </mxCell>
+        <mxCell id="m_scan" value="Nhận diện vật thể&#10;Camera/Thư viện · nhiều khung bao · chọn vật thể" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#43A047;fontSize=9.5;" parent="learner" vertex="1">
+          <mxGeometry as="geometry" x="12" y="110" width="200" height="55" />
+        </mxCell>
+        <mxCell id="m_vocab" value="Từ vựng&#10;Tra cứu 365 từ · chi tiết từ · nghe phát âm (TTS)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#43A047;fontSize=9.5;" parent="learner" vertex="1">
+          <mxGeometry as="geometry" x="12" y="180" width="200" height="55" />
+        </mxCell>
+        <mxCell id="m_flash" value="Sổ thẻ &amp; ôn tập&#10;Lưu/tra cứu/xóa thẻ · 3 mức phản hồi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#43A047;fontSize=9.5;" parent="learner" vertex="1">
+          <mxGeometry as="geometry" x="12" y="250" width="200" height="55" />
+        </mxCell>
+        <mxCell id="m_lessons" value="Bài học &amp; bài kiểm tra&#10;Anh → Việt / Việt → Anh · kết quả &amp; tiến độ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#43A047;fontSize=9.5;" parent="learner" vertex="1">
+          <mxGeometry as="geometry" x="12" y="320" width="200" height="55" />
+        </mxCell>
+        <mxCell id="m_profile" value="Hồ sơ &amp; nhắc ôn&#10;Số từ đã lưu · đạt tiêu chí đã học · thẻ đến hạn · thông báo cục bộ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#C8E6C9;strokeColor=#43A047;fontSize=9.5;" parent="learner" vertex="1">
+          <mxGeometry as="geometry" x="12" y="400" width="200" height="65" />
+        </mxCell>
+        <mxCell id="admin" value="Giao diện Quản trị viên" style="swimlane;startSize=28;horizontal=1;collapsible=0;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#FB8C00;fontStyle=1;fontSize=11;" parent="mobile" vertex="1">
+          <mxGeometry as="geometry" x="258" y="55" width="224" height="330" />
+        </mxCell>
+        <mxCell id="a_stats" value="Tổng quan hệ thống&#10;Tổng người dùng · đang hoạt động · bị khóa · tổng số từ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#FB8C00;fontSize=9.5;" parent="admin" vertex="1">
+          <mxGeometry as="geometry" x="12" y="45" width="200" height="62" />
+        </mxCell>
+        <mxCell id="a_vocab" value="Quản lý từ vựng&#10;Tìm kiếm · sửa IPA/nghĩa/định nghĩa/ví dụ · giữ nguyên nhãn" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#FB8C00;fontSize=9.5;" parent="admin" vertex="1">
+          <mxGeometry as="geometry" x="12" y="125" width="200" height="62" />
+        </mxCell>
+        <mxCell id="a_users" value="Quản lý người dùng&#10;Xem danh sách/thống kê học · khóa/mở khóa" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE0B2;strokeColor=#FB8C00;fontSize=9.5;" parent="admin" vertex="1">
+          <mxGeometry as="geometry" x="12" y="215" width="200" height="62" />
+        </mxCell>
+        <mxCell id="mobile_local" value="Dịch vụ cục bộ trên thiết bị&#10;Expo Notifications · Text-to-Speech · quyền camera/thư viện" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E0F2F1;strokeColor=#00897B;fontSize=9.5;fontStyle=2;" parent="mobile" vertex="1">
+          <mxGeometry as="geometry" x="258" y="405" width="224" height="72" />
+        </mxCell>
+        <mxCell id="mobile_note" value="Một ứng dụng duy nhất; giao diện được chọn theo vai trò Người học/Quản trị viên do máy chủ cung cấp." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#9E9E9E;dashed=1;fontSize=9;fontStyle=2;" parent="mobile" vertex="1">
+          <mxGeometry as="geometry" x="258" y="500" width="224" height="75" />
+        </mxCell>
+        <mxCell id="server_env" value="MÔI TRƯỜNG MÁY CHỦ THỰC NGHIỆM  ·  MacBook Pro 16 inch  ·  Apple M3 Pro (12 CPU / 18 GPU)  ·  36 GB bộ nhớ hợp nhất  ·  macOS Sequoia 15.7.7" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;fillOpacity=25;strokeColor=#607D8B;dashed=1;dashPattern=8 4;fontStyle=1;fontSize=11;fontColor=#37474F;verticalAlign=top;align=center;spacingTop=8;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="565" y="300" width="1060" height="595" />
+        </mxCell>
+        <mxCell id="spring" value="MÁY CHỦ NGHIỆP VỤ SPRING BOOT&#10;OpenJDK 21.0.11 LTS · Spring Boot 3.3.4 · cổng 8080" style="swimlane;startSize=52;horizontal=1;collapsible=0;rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#1976D2;fontStyle=1;fontSize=13;fontColor=#0D47A1;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="350" width="440" height="535" />
+        </mxCell>
+        <mxCell id="security" value="Xác thực &amp; phân quyền&#10;Kiểm tra JWT: chữ ký, thời hạn, issuer, audience&#10;Lấy mã người dùng từ sub · kiểm tra trạng thái khóa · phân quyền Người học/Quản trị viên" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;fontSize=9.5;" parent="spring" vertex="1">
+          <mxGeometry as="geometry" x="20" y="60" width="400" height="90" />
+        </mxCell>
+        <mxCell id="business" value="REST API &amp; nghiệp vụ&#10;Người dùng · Từ vựng · Nhận diện · Thẻ/SM-2 · Bài học/Tiến độ · Quản trị" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;fontSize=9.5;" parent="spring" vertex="1">
+          <mxGeometry as="geometry" x="20" y="170" width="400" height="80" />
+        </mxCell>
+        <mxCell id="data_access" value="Truy cập dữ liệu&#10;Spring Data JPA · Hibernate · Flyway&#10;Ràng buộc duy nhất người dùng – từ đối với thẻ ghi nhớ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#BBDEFB;strokeColor=#1976D2;fontSize=9.5;" parent="spring" vertex="1">
+          <mxGeometry as="geometry" x="20" y="270" width="400" height="80" />
+        </mxCell>
+        <mxCell id="gateway_note" value="Spring Boot là điểm trung tâm: xác thực trước khi gọi AI, xử lý lỗi/timeout và ánh xạ nhãn nhận diện với dữ liệu từ vựng." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8EAF6;strokeColor=#5C6BC0;fontSize=9.5;fontStyle=2;" parent="spring" vertex="1">
+          <mxGeometry as="geometry" x="20" y="375" width="400" height="90" />
+        </mxCell>
+        <mxCell id="supabase" value="SUPABASE CLOUD" style="swimlane;startSize=38;horizontal=1;collapsible=0;rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#8E24AA;fontStyle=1;fontSize=13;fontColor=#6A1B9A;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="600" y="95" width="440" height="225" />
+        </mxCell>
+        <mxCell id="s_auth" value="Supabase Auth&#10;Email/Mật khẩu · Google OAuth · Khôi phục mật khẩu · cấp JWT" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#8E24AA;fontSize=9.5;" parent="supabase" vertex="1">
+          <mxGeometry as="geometry" x="15" y="52" width="125" height="110" />
+        </mxCell>
+        <mxCell id="s_db" value="PostgreSQL&#10;Người dùng · 365 mục từ · Thẻ ghi nhớ&#10;Bài học · Quan hệ bài học–từ · Tiến độ bài học" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#8E24AA;fontSize=9.2;" parent="supabase" vertex="1">
+          <mxGeometry as="geometry" x="155" y="52" width="135" height="110" />
+        </mxCell>
+        <mxCell id="s_storage" value="Supabase Storage&#10;Ảnh minh họa từ vựng&#10;Quản trị viên tải ảnh; CSDL lưu đường dẫn" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1BEE7;strokeColor=#8E24AA;fontSize=9.2;" parent="supabase" vertex="1">
+          <mxGeometry as="geometry" x="305" y="52" width="120" height="110" />
+        </mxCell>
+        <mxCell id="ai" value="DỊCH VỤ NHẬN DIỆN FASTAPI" style="swimlane;startSize=42;horizontal=1;collapsible=0;rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF8E1;strokeColor=#F9A825;fontStyle=1;fontSize=13;fontColor=#F57F17;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1090" y="350" width="520" height="535" />
+        </mxCell>
+        <mxCell id="fastapi" value="FastAPI 0.128.8 · Python 3.9.6&#10;POST /predict-multi · kiểm tra ảnh · ngưỡng 0,25 · chuẩn hóa kết quả" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFECB3;strokeColor=#F9A825;fontSize=10;fontStyle=1;" parent="ai" vertex="1">
+          <mxGeometry as="geometry" x="25" y="60" width="470" height="70" />
+        </mxCell>
+        <mxCell id="yolo" value="YOLO-World v2 · biến thể trung bình&#10;yolov8m-worldv2.pt · Ultralytics 8.4.127 · PyTorch 2.8.0&#10;365 nhãn · suy luận trên GPU Apple M3 Pro qua MPS&#10;Trả nhãn + mức tin cậy + khung bao" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFE082;strokeColor=#F9A825;fontSize=10;" parent="ai" vertex="1">
+          <mxGeometry as="geometry" x="25" y="155" width="470" height="90" />
+        </mxCell>
+        <mxCell id="alignment" value="Ràng buộc đồng nhất 365 nhãn&#10;Tập nhãn dịch vụ AI = tập nhãn trong PostgreSQL&#10;Kiểm tra số lượng, tính duy nhất và chênh lệch khi vận hành" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFDE7;strokeColor=#FBC02D;dashed=1;fontSize=9.5;" parent="ai" vertex="1">
+          <mxGeometry as="geometry" x="25" y="275" width="470" height="85" />
+        </mxCell>
+        <mxCell id="gemini" value="Dịch vụ Gemini — thành phần hỗ trợ tùy chọn&#10;Sinh câu ngữ cảnh; không chặn luồng nhận diện – từ vựng – thẻ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#FB8C00;dashed=1;fontSize=9.5;fontStyle=2;" parent="ai" vertex="1">
+          <mxGeometry as="geometry" x="25" y="390" width="470" height="75" />
+        </mxCell>
+        <mxCell id="e_auth" value="Xác thực / cấp JWT" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=9;" parent="1" edge="1" source="m_auth" target="s_auth">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_rest" value="REST API + Bearer JWT&#10;Wi-Fi/LAN (môi trường thử nghiệm)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=9;" parent="1" edge="1" source="mobile" target="spring">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_db" value="JDBC / JPA" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=9;" parent="1" edge="1" source="data_access" target="s_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_ai" value="HTTP nội bộ&#10;Spring Boot → FastAPI" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=9;" parent="1" edge="1" source="business" target="fastapi">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_yolo" value="Suy luận trên MPS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=9;" parent="1" edge="1" source="fastapi" target="yolo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_gemini" value="Tạo ngữ cảnh (tùy chọn)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=9;dashed=1;" parent="1" edge="1" source="fastapi" target="gemini">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_storage" value="Tải ảnh trực tiếp; nhận URL" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=9;dashed=1;" parent="1" edge="1" source="a_vocab" target="s_storage">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e_align_db" value="đối chiếu nhãn" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;endArrow=block;endFill=1;strokeWidth=1.5;fontSize=9;dashed=1;" parent="1" edge="1" source="alignment" target="s_db">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" value="Chú giải: đường liền = luồng chính; đường nét đứt = luồng hỗ trợ/ràng buộc. Spring Boot và FastAPI là hai dịch vụ độc lập nhưng cùng chạy trên MacBook Pro trong môi trường thử nghiệm." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#BDBDBD;fontSize=9.5;fontStyle=2;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1090" y="910" width="520" height="130" />
+        </mxCell>
+        <mxCell id="scope_note" value="Phạm vi không gồm: XP, streak, huy hiệu, bảng xếp hạng, chatbot, nhận dạng/chấm phát âm, Web Admin riêng hoặc CMS bài học phức tạp." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#E57373;fontSize=9.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1090" y="1060" width="520" height="90" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

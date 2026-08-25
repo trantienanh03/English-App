@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" modified="2026-08-25T00:00:00.000Z" agent="OpenAI" version="26.0.0" type="device">
+  <diagram id="vocamUsecaseSimple" name="Page-1">
+    <mxGraphModel dx="1365" dy="767" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="sys" value="Vocam" style="whiteSpace=wrap;html=1;rounded=0;fillColor=#ffffff;strokeColor=#666666;fontSize=18;fontStyle=1;align=center;verticalAlign=top;spacingTop=12;" vertex="1" parent="1">
+          <mxGeometry x="420" y="40" width="360" height="720" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="learner" value="Người học" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;strokeColor=#000000;fillColor=none;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="210" y="250" width="60" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="admin" value="Quản trị viên" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;strokeColor=#b15d4f;fillColor=none;fontSize=14;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="900" y="420" width="70" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="uc1" value="Đăng ký, đăng nhập&#xa;và khôi phục mật khẩu" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5edc9;strokeColor=#b7a56a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="470" y="90" width="260" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc2" value="Quét ảnh và nhận diện&#xa;nhiều vật thể" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5edc9;strokeColor=#b7a56a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="470" y="165" width="260" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc3" value="Xem chi tiết từ vựng&#xa;và nghe phát âm" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5edc9;strokeColor=#b7a56a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="470" y="240" width="260" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc4" value="Lưu, tìm kiếm và xóa&#xa;thẻ ghi nhớ" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5edc9;strokeColor=#b7a56a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="470" y="315" width="260" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc5" value="Ôn tập thẻ ghi nhớ&#xa;theo ba mức phản hồi" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5edc9;strokeColor=#b7a56a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="470" y="390" width="260" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc6" value="Học bài học theo chủ đề&#xa;và làm bài kiểm tra" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5edc9;strokeColor=#b7a56a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="470" y="465" width="260" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc7" value="Bật/tắt và nhận&#xa;thông báo nhắc ôn" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5edc9;strokeColor=#b7a56a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="470" y="540" width="260" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc8" value="Quản lý người dùng" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5edc9;strokeColor=#b7a56a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="470" y="615" width="260" height="56" as="geometry"/>
+        </mxCell>
+        <mxCell id="uc9" value="Cập nhật từ vựng&#xa;và hình ảnh minh họa" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5edc9;strokeColor=#b7a56a;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="470" y="690" width="260" height="56" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e1" edge="1" parent="1" source="learner" target="uc1" style="endArrow=none;html=1;rounded=0;strokeColor=#333333;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="learner" target="uc2" style="endArrow=none;html=1;rounded=0;strokeColor=#333333;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="learner" target="uc3" style="endArrow=none;html=1;rounded=0;strokeColor=#333333;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="learner" target="uc4" style="endArrow=none;html=1;rounded=0;strokeColor=#333333;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="learner" target="uc5" style="endArrow=none;html=1;rounded=0;strokeColor=#333333;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="learner" target="uc6" style="endArrow=none;html=1;rounded=0;strokeColor=#333333;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="learner" target="uc7" style="endArrow=none;html=1;rounded=0;strokeColor=#333333;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e8" edge="1" parent="1" source="admin" target="uc1" style="endArrow=none;html=1;rounded=0;strokeColor=#333333;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="admin" target="uc8" style="endArrow=none;html=1;rounded=0;strokeColor=#333333;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="admin" target="uc9" style="endArrow=none;html=1;rounded=0;strokeColor=#333333;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

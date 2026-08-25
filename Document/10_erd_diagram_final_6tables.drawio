@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<mxfile host="drawio" version="26.0.0">
+  <diagram name="ERD Vocam - 6 bảng" id="vocam-erd-current-6tables">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="SƠ ĐỒ THỰC THỂ – LIÊN KẾT CỦA CƠ SỞ DỮ LIỆU VOCAM" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=20;fontStyle=1;fontColor=#1A237E;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="250" y="25" width="1150" height="40" />
+        </mxCell>
+        <mxCell id="subtitle" value="Mô hình dữ liệu hiện tại gồm 6 bảng nghiệp vụ chính; mật khẩu do Supabase Auth quản lý và không lưu trong PostgreSQL." style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=10.5;fontColor=#455A64;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="250" y="65" width="1150" height="30" />
+        </mxCell>
+        <mxCell id="app_users" value="app_users&#10;────────────&#10;PK  id : uuid  ← Supabase Auth&#10;display_name&#10;role : LEARNER / ADMIN&#10;status : ACTIVE / LOCKED&#10;created_at · updated_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E1D5E7;strokeColor=#9673A6;align=left;spacingLeft=12;fontSize=10.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="65" y="140" width="300" height="165" />
+        </mxCell>
+        <mxCell id="words" value="words&#10;────────────&#10;PK  id&#10;UK  detection_label&#10;en_word · phonetic (IPA) · part_of_speech&#10;meaning_vi · definition&#10;example_en · example_vi&#10;image_url" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D5E8D4;strokeColor=#82B366;align=left;spacingLeft=12;fontSize=10.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="500" y="120" width="340" height="205" />
+        </mxCell>
+        <mxCell id="lessons" value="lessons&#10;────────────&#10;PK  id&#10;title · description&#10;topic&#10;created_at · updated_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;align=left;spacingLeft=12;fontSize=10.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="980" y="140" width="290" height="150" />
+        </mxCell>
+        <mxCell id="saved_flashcards" value="saved_flashcards&#10;────────────&#10;PK  id&#10;FK  user_id → app_users&#10;FK  word_id → words&#10;ease_factor · repetitions&#10;interval_days · next_review_at&#10;UK  (user_id, word_id)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF2CC;strokeColor=#D6B656;align=left;spacingLeft=12;fontSize=10.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="65" y="475" width="320" height="200" />
+        </mxCell>
+        <mxCell id="lesson_words" value="lesson_words&#10;────────────&#10;FK  lesson_id → lessons&#10;FK  word_id → words&#10;sort_order&#10;PK/UK  (lesson_id, word_id)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#DAE8FC;strokeColor=#6C8EBF;align=left;spacingLeft=12;fontSize=10.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="560" y="475" width="290" height="155" />
+        </mxCell>
+        <mxCell id="user_lesson_progress" value="user_lesson_progress&#10;────────────&#10;PK  id&#10;FK  user_id → app_users&#10;FK  lesson_id → lessons&#10;latest_score · best_score&#10;completed_at&#10;UK  (user_id, lesson_id)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8CECC;strokeColor=#B85450;align=left;spacingLeft=12;fontSize=10.5;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="1010" y="475" width="320" height="190" />
+        </mxCell>
+        <mxCell id="r1" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;strokeWidth=1.4;fontSize=9;" parent="1" edge="1" source="app_users" target="saved_flashcards">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;strokeWidth=1.4;fontSize=9;" parent="1" edge="1" source="words" target="saved_flashcards">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r3" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;strokeWidth=1.4;fontSize=9;" parent="1" edge="1" source="lessons" target="lesson_words">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;strokeWidth=1.4;fontSize=9;" parent="1" edge="1" source="words" target="lesson_words">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r5" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;strokeWidth=1.4;fontSize=9;" parent="1" edge="1" source="app_users" target="user_lesson_progress">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r6" value="1 : N" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;endArrow=ERmany;endFill=0;startArrow=ERone;startFill=0;strokeWidth=1.4;fontSize=9;" parent="1" edge="1" source="lessons" target="user_lesson_progress">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="note" value="Ràng buộc chính: detection_label là duy nhất; một người dùng chỉ lưu một thẻ cho mỗi từ; một từ có thể thuộc nhiều bài học; tiến độ được lưu riêng theo cặp người dùng – bài học." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FAFAFA;strokeColor=#9E9E9E;dashed=1;fontSize=10;fontStyle=2;" parent="1" vertex="1">
+          <mxGeometry as="geometry" x="300" y="790" width="1000" height="80" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
