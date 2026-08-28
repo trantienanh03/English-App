@@ -13,6 +13,7 @@ import FlashcardDeckScreen from './flashcards/flashcard-deck-screen';
 import ObjectScannerScreen from './scanner/object-scanner-screen';
 import LessonGridScreen from './lessons/lesson-grid-screen';
 import LessonDetailScreen from './lessons/lesson-detail-screen';
+import WordDetailScreen from './flashcards/word-detail-screen';
 import PracticeQuizScreen from './quiz/practice-quiz-screen';
 import ProfileScreen from './profile/profile-screen';
 import SearchScreen from './ui/search-screen';
@@ -36,6 +37,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
   const [showQuiz, setShowQuiz] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [selectedWordDetail, setSelectedWordDetail] = useState<VocabularyWord | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -146,7 +148,7 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
             wordOfTheDay={wordOfTheDay}
             onNavigate={tab => setActiveTab(tab as Tab)}
             onSelectLesson={openLesson}
-            onOpenWordDetail={() => setActiveTab('cards')}
+            onOpenWordDetail={word => setSelectedWordDetail(word)}
             onOpenSearch={() => setShowSearch(true)}
           />
         );
@@ -250,6 +252,15 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
           onStartLesson={startLessonFromSearch}
           onSaveWord={handleSaveWord}
         />
+      </Modal>
+      <Modal visible={!!selectedWordDetail} animationType="slide">
+        {selectedWordDetail && (
+          <WordDetailScreen
+            word={selectedWordDetail}
+            onClose={() => setSelectedWordDetail(null)}
+            onSaveToFlashcards={handleSaveWord}
+          />
+        )}
       </Modal>
     </View>
   );
