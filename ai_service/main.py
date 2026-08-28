@@ -276,6 +276,62 @@ LOCAL_DICTIONARY_FALLBACKS = {
         "definition": "A border for enclosing a picture or photograph.",
         "sentence_en": "She placed the family photo in a wooden frame.",
         "sentence_vn": "Cô ấy đặt bức ảnh gia đình vào một khung gỗ."
+    },
+    "cell phone": {
+        "translation": "điện thoại di động",
+        "phonetic": "/ˈsel.foʊn/",
+        "pos": "Noun",
+        "definition": "A portable telephone that can make and receive calls over a radio link.",
+        "sentence_en": "He answered a call on his cell phone.",
+        "sentence_vn": "Anh ấy trả lời cuộc gọi trên điện thoại di động."
+    },
+    "chair": {
+        "translation": "cái ghế",
+        "phonetic": "/tʃeər/",
+        "pos": "Noun",
+        "definition": "A separate seat for one person, typically with four legs and a back.",
+        "sentence_en": "Please sit down on the comfortable chair.",
+        "sentence_vn": "Vui lòng ngồi xuống chiếc ghế êm ái."
+    },
+    "table": {
+        "translation": "cái bàn",
+        "phonetic": "/ˈteɪ.bəl/",
+        "pos": "Noun",
+        "definition": "A piece of furniture with a flat top and one or more legs.",
+        "sentence_en": "The food is served on the table.",
+        "sentence_vn": "Thức ăn được dọn sẵn trên bàn."
+    },
+    "book": {
+        "translation": "cuốn sách",
+        "phonetic": "/bʊk/",
+        "pos": "Noun",
+        "definition": "A written or printed work consisting of pages glued or sewn together.",
+        "sentence_en": "I am reading an interesting book.",
+        "sentence_vn": "Tôi đang đọc một cuốn sách thú vị."
+    },
+    "cup": {
+        "translation": "cái cốc / cái tách",
+        "phonetic": "/kʌp/",
+        "pos": "Noun",
+        "definition": "A small bowl-shaped container for drinking from, typically having a handle.",
+        "sentence_en": "He drank a hot cup of tea.",
+        "sentence_vn": "Anh ấy đã uống một tách trà nóng."
+    },
+    "bottle": {
+        "translation": "chai nước",
+        "phonetic": "/ˈbɒt.əl/",
+        "pos": "Noun",
+        "definition": "A container, typically made of glass or plastic, with a narrow neck.",
+        "sentence_en": "This bottle is filled with mineral water.",
+        "sentence_vn": "Chai này đựng đầy nước khoáng."
+    },
+    "mouse": {
+        "translation": "con chuột máy tính",
+        "phonetic": "/maʊs/",
+        "pos": "Noun",
+        "definition": "A small handheld device that controls the cursor on a computer screen.",
+        "sentence_en": "Move the computer mouse to select items.",
+        "sentence_vn": "Di chuyển chuột máy tính để chọn các mục."
     }
 }
 
