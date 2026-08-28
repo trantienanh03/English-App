@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Palette } from '@/constants/theme';
 import { VocabularyWord } from '@/types';
 import DotsLoader from '@/components/ui/dots-loader';
@@ -56,6 +57,30 @@ export default function ObjectScannerScreen({
   const [permission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState<'back' | 'front'>('back');
   const cameraRef = useRef<any>(null);
+  const [showGuide, setShowGuide] = useState(true);
+
+  React.useEffect(() => {
+    const checkGuideStatus = async () => {
+      try {
+        const value = await AsyncStorage.getItem('has_seen_scanner_guide');
+        if (value === 'true') {
+          setShowGuide(false);
+        }
+      } catch (err) {
+        console.error('AsyncStorage read error:', err);
+      }
+    };
+    checkGuideStatus();
+  }, []);
+
+  const handleDismissGuide = async () => {
+    setShowGuide(false);
+    try {
+      await AsyncStorage.setItem('has_seen_scanner_guide', 'true');
+    } catch (err) {
+      console.error('AsyncStorage write error:', err);
+    }
+  };
 
   const toggleCameraFacing = () => {
     setFacing(current => (current === 'back' ? 'front' : 'back'));
@@ -322,12 +347,17 @@ export default function ObjectScannerScreen({
                   </View>
 
                   {/* Camera Instruction Box */}
-                  <View style={styles.cameraInstructions}>
-                    <Feather name="info" size={16} color="#818CF8" style={{ marginRight: 4 }} />
-                    <Text style={styles.cameraInstructionsText}>
-                      Hướng camera vào các vật thể và nhấn chụp. Nhấn vào vật thể hoặc danh sách sau khi quét để học từ vựng.
-                    </Text>
-                  </View>
+                  {showGuide && (
+                    <View style={styles.cameraInstructions}>
+                      <Feather name="info" size={16} color="#818CF8" style={{ marginRight: 4 }} />
+                      <Text style={styles.cameraInstructionsText}>
+                        Hướng camera vào các vật thể và nhấn chụp. Nhấn vào vật thể hoặc danh sách sau khi quét để học từ vựng.
+                      </Text>
+                      <TouchableOpacity style={styles.closeGuideBtn} onPress={handleDismissGuide}>
+                        <Feather name="x" size={16} color="#94A3B8" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
 
                   {/* Shutter controls bar */}
                   <View style={styles.shutterControlsBar}>
@@ -575,6 +605,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     flex: 1,
+  },
+  closeGuideBtn: {
+    padding: 4,
+    marginLeft: 6,
   },
   shutterControlsBar: {
     position: 'absolute',
