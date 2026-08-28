@@ -227,24 +227,66 @@ export default function ObjectScannerScreen({
         {/* CAMERA / VIEWFINDER STAGE */}
         <View style={styles.viewfinderContainer}>
           {selectedImageUri ? (
-            <View style={styles.imageWrapper}>
-              <Image source={{ uri: selectedImageUri }} style={styles.previewImage} resizeMode="contain" />
-              
-              {/* Floating Close Button */}
-              <TouchableOpacity style={styles.closePreviewBtn} onPress={handleResetScan}>
-                <Feather name="x" size={24} color="#FFFFFF" />
-              </TouchableOpacity>
+            <View style={styles.resultsContainer}>
+              {/* Image Preview Area */}
+              <View style={styles.imagePreviewWrapper}>
+                <Image source={{ uri: selectedImageUri }} style={styles.previewImage} resizeMode="contain" />
+                
+                {/* Floating Close Button */}
+                <TouchableOpacity style={styles.closePreviewBtn} onPress={handleResetScan}>
+                  <Feather name="x" size={24} color="#FFFFFF" />
+                </TouchableOpacity>
 
-              {detections.length > 0 && (
-                <BoundingBoxOverlay
-                  imageWidth={imageDimensions.width}
-                  imageHeight={imageDimensions.height}
-                  detections={detections}
-                  selectedLabel={selectedBox?.label}
-                  selectedId={selectedBox?.id}
-                  onSelectBox={handleSelectBox}
-                />
-              )}
+                {detections.length > 0 && (
+                  <BoundingBoxOverlay
+                    imageWidth={imageDimensions.width}
+                    imageHeight={imageDimensions.height}
+                    detections={detections}
+                    selectedLabel={selectedBox?.label}
+                    selectedId={selectedBox?.id}
+                    onSelectBox={handleSelectBox}
+                  />
+                )}
+              </View>
+
+              {/* Guide & Object list Area */}
+              <View style={styles.resultsInfoPanel}>
+                <Text style={styles.guideText}>
+                  👉 Chạm vào vật thể trên hình hoặc chọn trong danh sách dưới đây:
+                </Text>
+                
+                <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.detectedList}
+                >
+                  {detections.map((item) => {
+                    const isSelected = selectedBox?.id === item.id;
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
+                        style={[
+                          styles.detectedChip,
+                          isSelected && styles.detectedChipSelected
+                        ]}
+                        onPress={() => handleSelectBox(item)}
+                      >
+                        <Feather 
+                          name="tag" 
+                          size={14} 
+                          color={isSelected ? '#FFFFFF' : '#818CF8'} 
+                        />
+                        <Text style={[
+                          styles.detectedChipText,
+                          isSelected && styles.detectedChipTextSelected
+                        ]}>
+                          {item.label}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
             </View>
           ) : (
             !permission ? (
@@ -279,12 +321,12 @@ export default function ObjectScannerScreen({
                     <Text style={styles.instructionText}>Căn giữa vật thể trong khung hình</Text>
                   </View>
 
-                  {/* Target Frame Corners */}
-                  <View style={styles.targetFrame}>
-                    <View style={[styles.corner, styles.topLeft]} />
-                    <View style={[styles.corner, styles.topRight]} />
-                    <View style={[styles.corner, styles.bottomLeft]} />
-                    <View style={[styles.corner, styles.bottomRight]} />
+                  {/* Camera Instruction Box */}
+                  <View style={styles.cameraInstructions}>
+                    <Feather name="info" size={16} color="#818CF8" style={{ marginRight: 4 }} />
+                    <Text style={styles.cameraInstructionsText}>
+                      Hướng camera vào các vật thể và nhấn chụp. Nhấn vào vật thể hoặc danh sách sau khi quét để học từ vựng.
+                    </Text>
                   </View>
 
                   {/* Shutter controls bar */}
@@ -458,46 +500,81 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 0.5,
   },
-  targetFrame: {
-    width: 240,
-    height: 240,
+  resultsContainer: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePreviewWrapper: {
+    flex: 8,
+    borderRadius: 20,
+    overflow: 'hidden',
     position: 'relative',
-    justifyContent: 'center',
+    backgroundColor: '#000000',
+  },
+  resultsInfoPanel: {
+    padding: 12,
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
+    marginTop: 12,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  guideText: {
+    color: '#94A3B8',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  detectedList: {
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: 8,
+    paddingVertical: 4,
   },
-  corner: {
+  detectedChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#334155',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#475569',
+  },
+  detectedChipSelected: {
+    backgroundColor: '#4F46E5',
+    borderColor: '#6366F1',
+  },
+  detectedChipText: {
+    color: '#E2E8F0',
+    fontSize: 13,
+    fontWeight: '700',
+    textTransform: 'capitalize',
+  },
+  detectedChipTextSelected: {
+    color: '#FFFFFF',
+  },
+  cameraInstructions: {
     position: 'absolute',
-    width: 32,
-    height: 32,
-    borderColor: '#EF4444',
+    bottom: 112,
+    left: 20,
+    right: 20,
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(129, 140, 248, 0.2)',
   },
-  topLeft: {
-    top: 0,
-    left: 0,
-    borderLeftWidth: 4,
-    borderTopWidth: 4,
-    borderTopLeftRadius: 12,
-  },
-  topRight: {
-    top: 0,
-    right: 0,
-    borderRightWidth: 4,
-    borderTopWidth: 4,
-    borderTopRightRadius: 12,
-  },
-  bottomLeft: {
-    bottom: 0,
-    left: 0,
-    borderLeftWidth: 4,
-    borderBottomWidth: 4,
-    borderBottomLeftRadius: 12,
-  },
-  bottomRight: {
-    bottom: 0,
-    right: 0,
-    borderRightWidth: 4,
-    borderBottomWidth: 4,
-    borderBottomRightRadius: 12,
+  cameraInstructionsText: {
+    color: '#E2E8F0',
+    fontSize: 12,
+    lineHeight: 18,
+    flex: 1,
   },
   shutterControlsBar: {
     position: 'absolute',
