@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -14,12 +14,27 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Palette } from '@/constants/theme';
 import { VocabularyWord } from '@/types';
 import DotsLoader from '@/components/ui/dots-loader';
 import { playAudio, playSoundEffect } from '@/utils/audio';
 import { api } from '@/services/api';
 import { BoundingBoxOverlay, BoundingBoxItem } from './bounding-box-overlay';
+
+const translatePos = (pos: string) => {
+  const map: Record<string, string> = {
+    'noun': 'Danh từ',
+    'verb': 'Động từ',
+    'adjective': 'Tính từ',
+    'adverb': 'Trạng từ',
+    'preposition': 'Giới từ',
+    'pronoun': 'Đại từ',
+    'conjunction': 'Liên từ',
+    'interjection': 'Thán từ',
+  };
+  return map[pos.toLowerCase().trim()] || pos;
+};
 
 interface ObjectScannerScreenProps {
   onAddWordToFlashcards: (word: VocabularyWord) => Promise<void>;
@@ -38,38 +53,41 @@ export default function ObjectScannerScreen({
   const [addedToast, setAddedToast] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  const [pulseAnim] = useState(() => new Animated.Value(1));
+  const [permission, requestPermission] = useCameraPermissions();
+  const [facing, setFacing] = useState<'back' | 'front'>('back');
+  const cameraRef = useRef<any>(null);
 
-  const startPulse = () => {
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, { toValue: 1.08, duration: 600, useNativeDriver: true }),
-        Animated.timing(pulseAnim, { toValue: 1, duration: 600, useNativeDriver: true }),
-      ])
-    ).start();
+  const toggleCameraFacing = () => {
+    setFacing(current => (current === 'back' ? 'front' : 'back'));
   };
 
-  const stopPulse = () => {
-    pulseAnim.stopAnimation();
-    Animated.timing(pulseAnim, { toValue: 1, duration: 200, useNativeDriver: true }).start();
-  };
-
-  const handleCameraCapture = async () => {
-    if (Platform.OS !== 'web') {
-      const { status } = await ImagePicker.requestCameraPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Cần quyền Camera', 'Vui lòng cấp quyền camera trong cài đặt thiết bị.');
-        return;
+  const handleLiveCapture = async () => {
+    if (isScanning) return;
+    if (!cameraRef.current) return;
+    try {
+      setIsScanning(true);
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.8,
+        skipProcessing: false,
+      });
+      if (photo && photo.uri) {
+        await processScan(photo.uri);
+      } else {
+        setIsScanning(false);
       }
+    } catch (err) {
+      console.error('Live capture error:', err);
+      Alert.alert('Lỗi', 'Không thể chụp ảnh từ camera.');
+      setIsScanning(false);
     }
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-      allowsEditing: false,
-    });
-    if (!result.canceled && result.assets[0]) {
-      await processScan(result.assets[0].uri);
-    }
+  };
+
+  const handleResetScan = () => {
+    setSelectedImageUri(null);
+    setDetections([]);
+    setSelectedBox(null);
+    setScannedResult(null);
+    setShowResultSheet(false);
   };
 
   const handleGalleryPick = async () => {
@@ -98,7 +116,6 @@ export default function ObjectScannerScreen({
     setSelectedBox(null);
     setScannedResult(null);
     setShowResultSheet(false);
-    startPulse();
 
     try {
       const response = await api.scanImage(fileUri);
@@ -148,7 +165,6 @@ export default function ObjectScannerScreen({
       Alert.alert('Lỗi nhận diện', message);
     } finally {
       setIsScanning(false);
-      stopPulse();
     }
   };
 
@@ -193,10 +209,10 @@ export default function ObjectScannerScreen({
         <View style={styles.topHeader}>
           <View style={styles.headerTitleRow}>
             <Feather name="aperture" size={22} color={Palette.primary[300]} />
-            <Text style={styles.headerTitle}>AI Object Scanner</Text>
+            <Text style={styles.headerTitle}>Quét vật thể AI</Text>
           </View>
           <Text style={styles.headerSubtitle}>
-            Chụp hoặc chọn ảnh để nhận diện đa vật thể & học từ vựng trực quan
+            Nhận diện đa vật thể & học từ vựng trực quan thông qua hình ảnh
           </Text>
         </View>
 
@@ -213,6 +229,12 @@ export default function ObjectScannerScreen({
           {selectedImageUri ? (
             <View style={styles.imageWrapper}>
               <Image source={{ uri: selectedImageUri }} style={styles.previewImage} resizeMode="contain" />
+              
+              {/* Floating Close Button */}
+              <TouchableOpacity style={styles.closePreviewBtn} onPress={handleResetScan}>
+                <Feather name="x" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+
               {detections.length > 0 && (
                 <BoundingBoxOverlay
                   imageWidth={imageDimensions.width}
@@ -225,11 +247,68 @@ export default function ObjectScannerScreen({
               )}
             </View>
           ) : (
-            <Animated.View style={[styles.viewfinder, { transform: [{ scale: pulseAnim }] }]}>
-              <Feather name="camera" size={56} color="#818CF8" />
-              <Text style={styles.viewfinderText}>Chưa có hình ảnh</Text>
-              <Text style={styles.viewfinderSubText}>Bấm nút bên dưới để Chụp hoặc Chọn ảnh</Text>
-            </Animated.View>
+            !permission ? (
+              <View style={styles.loadingContainer}>
+                <DotsLoader color="#FFFFFF" size={14} gap={10} />
+                <Text style={styles.loadingText}>Đang khởi tạo camera...</Text>
+              </View>
+            ) : !permission.granted ? (
+              <View style={styles.permissionContainer}>
+                <Feather name="camera-off" size={48} color="#64748B" />
+                <Text style={styles.permissionText}>Chưa cấp quyền Camera</Text>
+                <Text style={styles.permissionSubText}>Vui lòng cấp quyền truy cập camera để quét vật thể trực tiếp.</Text>
+                
+                <TouchableOpacity style={styles.permissionBtn} onPress={requestPermission}>
+                  <Text style={styles.permissionBtnText}>Cấp quyền truy cập</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.galleryFallbackBtn} onPress={handleGalleryPick}>
+                  <Feather name="image" size={18} color="#818CF8" style={{ marginRight: 6 }} />
+                  <Text style={styles.galleryFallbackBtnText}>Chọn ảnh từ thư viện</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <View style={styles.cameraWrapper}>
+                <CameraView
+                  style={styles.cameraView}
+                  facing={facing}
+                  ref={cameraRef}
+                >
+                  {/* Instruction Pill */}
+                  <View style={styles.instructionPill}>
+                    <Text style={styles.instructionText}>Căn giữa vật thể trong khung hình</Text>
+                  </View>
+
+                  {/* Target Frame Corners */}
+                  <View style={styles.targetFrame}>
+                    <View style={[styles.corner, styles.topLeft]} />
+                    <View style={[styles.corner, styles.topRight]} />
+                    <View style={[styles.corner, styles.bottomLeft]} />
+                    <View style={[styles.corner, styles.bottomRight]} />
+                  </View>
+
+                  {/* Shutter controls bar */}
+                  <View style={styles.shutterControlsBar}>
+                    <TouchableOpacity style={styles.sideControlBtn} onPress={toggleCameraFacing} disabled={isScanning}>
+                      <Feather name="refresh-cw" size={20} color="#FFFFFF" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                      style={styles.shutterOuterRing} 
+                      onPress={handleLiveCapture} 
+                      disabled={isScanning}
+                      activeOpacity={0.8}
+                    >
+                      <View style={[styles.shutterInnerCircle, isScanning && { backgroundColor: '#94A3B8', transform: [{ scale: 0.85 }] }]} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.sideControlBtn} onPress={handleGalleryPick} disabled={isScanning}>
+                      <Feather name="image" size={20} color="#FFFFFF" />
+                    </TouchableOpacity>
+                  </View>
+                </CameraView>
+              </View>
+            )
           )}
 
           {isScanning && (
@@ -238,19 +317,6 @@ export default function ObjectScannerScreen({
               <Text style={styles.scanningText}>AI đang phân tích đa vật thể...</Text>
             </View>
           )}
-        </View>
-
-        {/* ACTION BUTTONS BAR */}
-        <View style={styles.controlsBar}>
-          <TouchableOpacity style={styles.actionBtn} onPress={handleCameraCapture} disabled={isScanning}>
-            <Feather name="camera" size={20} color="#FFFFFF" />
-            <Text style={styles.actionBtnText}>Chụp ảnh</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={[styles.actionBtn, styles.galleryBtn]} onPress={handleGalleryPick} disabled={isScanning}>
-            <Feather name="image" size={20} color="#4F46E5" />
-            <Text style={[styles.actionBtnText, styles.galleryBtnText]}>Thư viện</Text>
-          </TouchableOpacity>
         </View>
 
         {/* WORD DETAIL BOTTOM SHEET */}
@@ -286,7 +352,7 @@ export default function ObjectScannerScreen({
                   </View>
 
                   <View style={styles.posTag}>
-                    <Text style={styles.posTagText}>{scannedResult.pos || 'Noun'}</Text>
+                    <Text style={styles.posTagText}>{translatePos(scannedResult.pos || 'Noun')}</Text>
                   </View>
 
                   <View style={styles.vnBox}>
@@ -297,7 +363,7 @@ export default function ObjectScannerScreen({
                   {/* ENGLISH DEFINITION */}
                   {scannedResult.definition ? (
                     <View style={styles.definitionBox}>
-                       <Text style={styles.definitionTitle}>Definition:</Text>
+                       <Text style={styles.definitionTitle}>Định nghĩa tiếng Anh:</Text>
                        <Text style={styles.definitionText}>{scannedResult.definition}</Text>
                     </View>
                   ) : null}
@@ -353,19 +419,187 @@ const styles = StyleSheet.create({
   imageWrapper: { width: '100%', height: '100%', borderRadius: 16, overflow: 'hidden' },
   previewImage: { width: '100%', height: '100%' },
 
-  viewfinder: {
+  closePreviewBtn: {
+    position: 'absolute',
+    top: 16,
+    left: 16,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  cameraWrapper: {
     width: '100%',
     height: '100%',
-    borderWidth: 2,
-    borderColor: '#312E81',
     borderRadius: 20,
+    overflow: 'hidden',
+  },
+  cameraView: {
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#1E1B4B',
-    padding: 20,
   },
-  viewfinderText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', marginTop: 12 },
-  viewfinderSubText: { color: '#818CF8', fontSize: 12, textAlign: 'center', marginTop: 4 },
+  instructionPill: {
+    position: 'absolute',
+    top: 24,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    zIndex: 10,
+  },
+  instructionText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  targetFrame: {
+    width: 240,
+    height: 240,
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  corner: {
+    position: 'absolute',
+    width: 32,
+    height: 32,
+    borderColor: '#EF4444',
+  },
+  topLeft: {
+    top: 0,
+    left: 0,
+    borderLeftWidth: 4,
+    borderTopWidth: 4,
+    borderTopLeftRadius: 12,
+  },
+  topRight: {
+    top: 0,
+    right: 0,
+    borderRightWidth: 4,
+    borderTopWidth: 4,
+    borderTopRightRadius: 12,
+  },
+  bottomLeft: {
+    bottom: 0,
+    left: 0,
+    borderLeftWidth: 4,
+    borderBottomWidth: 4,
+    borderBottomLeftRadius: 12,
+  },
+  bottomRight: {
+    bottom: 0,
+    right: 0,
+    borderRightWidth: 4,
+    borderBottomWidth: 4,
+    borderBottomRightRadius: 12,
+  },
+  shutterControlsBar: {
+    position: 'absolute',
+    bottom: 24,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-evenly',
+    paddingHorizontal: 20,
+  },
+  shutterOuterRing: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    borderWidth: 4,
+    borderColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  shutterInnerCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#FFFFFF',
+  },
+  sideControlBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: 'rgba(15, 23, 42, 0.5)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    color: '#94A3B8',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  permissionContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 32,
+    gap: 16,
+  },
+  permissionText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: 8,
+  },
+  permissionSubText: {
+    color: '#94A3B8',
+    fontSize: 13,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  permissionBtn: {
+    backgroundColor: '#4F46E5',
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+    marginTop: 8,
+    width: '100%',
+    alignItems: 'center',
+  },
+  permissionBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+  galleryFallbackBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderColor: '#4F46E5',
+    borderWidth: 1,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 10,
+    width: '100%',
+    marginTop: 10,
+  },
+  galleryFallbackBtnText: {
+    color: '#818CF8',
+    fontWeight: '700',
+    fontSize: 14,
+  },
 
   scanningOverlay: {
     ...StyleSheet.absoluteFill,
@@ -376,21 +610,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   scanningText: { color: '#FFFFFF', fontSize: 14, fontWeight: '700' },
-
-  controlsBar: { flexDirection: 'row', padding: 16, gap: 12 },
-  actionBtn: {
-    flex: 1,
-    backgroundColor: '#4F46E5',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    padding: 14,
-    borderRadius: 12,
-  },
-  actionBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14 },
-  galleryBtn: { backgroundColor: '#FFFFFF' },
-  galleryBtnText: { color: '#4F46E5' },
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   sheetContainer: { backgroundColor: '#FFFFFF', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '75%' },
