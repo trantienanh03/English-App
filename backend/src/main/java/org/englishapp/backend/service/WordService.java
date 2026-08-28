@@ -93,6 +93,18 @@ public class WordService {
         });
     }
 
+    public void updateFullDetails(String detectionLabel, String translation, String phonetic, String pos, String definition, String exampleEn, String exampleVn) {
+        wordRepository.findByDetectionLabel(normalizeLabel(detectionLabel)).ifPresent(word -> {
+            if (translation != null) word.setTranslation(translation.trim());
+            if (phonetic != null) word.setPhonetic(phonetic.trim());
+            if (pos != null) word.setPos(pos.trim());
+            if (definition != null) word.setDefinition(definition.trim());
+            if (exampleEn != null) word.setExampleEn(exampleEn.trim());
+            if (exampleVn != null) word.setExampleVn(exampleVn.trim());
+            wordRepository.save(word);
+        });
+    }
+
     private String normalizeLabel(String label) {
         return label.toLowerCase().trim().replaceAll("\\s+", " ");
     }

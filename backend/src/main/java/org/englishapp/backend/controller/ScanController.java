@@ -79,13 +79,52 @@ public class ScanController {
 
                     try {
                         WordDto wordDto = wordService.findByDetectionLabel(label);
+                        
                         String geminiSentenceEn = (String) pred.get("sentence_en");
                         String geminiSentenceVn = (String) pred.get("sentence_vn");
                         if (geminiSentenceEn != null && !geminiSentenceEn.isEmpty()) {
                             wordDto.setExampleEn(geminiSentenceEn);
                             wordDto.setExampleVn(geminiSentenceVn);
-                            wordService.updateExampleSentences(label, geminiSentenceEn, geminiSentenceVn);
                         }
+
+                        // Override placeholders dynamically using Gemini details
+                        boolean isPlaceholder = wordDto.getDefinition() == null || 
+                                                wordDto.getDefinition().contains("representing") ||
+                                                wordDto.getDefinition().contains("category") ||
+                                                wordDto.getTranslation().equalsIgnoreCase(label);
+                        
+                        if (isPlaceholder) {
+                            String geminiTranslation = (String) pred.get("translation");
+                            String geminiPhonetic = (String) pred.get("phonetic");
+                            String geminiPos = (String) pred.get("pos");
+                            String geminiDefinition = (String) pred.get("definition");
+                            
+                            if (geminiTranslation != null && !geminiTranslation.isEmpty() && !geminiTranslation.equalsIgnoreCase(label)) {
+                                wordDto.setTranslation(geminiTranslation);
+                                wordDto.setPhonetic(geminiPhonetic != null ? geminiPhonetic : "");
+                                wordDto.setPos(geminiPos != null ? geminiPos : "Noun");
+                                wordDto.setDefinition(geminiDefinition != null ? geminiDefinition : "");
+                                
+                                wordService.updateFullDetails(
+                                    label, 
+                                    geminiTranslation, 
+                                    geminiPhonetic, 
+                                    geminiPos, 
+                                    geminiDefinition, 
+                                    geminiSentenceEn, 
+                                    geminiSentenceVn
+                                );
+                            } else {
+                                if (geminiSentenceEn != null && !geminiSentenceEn.isEmpty()) {
+                                    wordService.updateExampleSentences(label, geminiSentenceEn, geminiSentenceVn);
+                                }
+                            }
+                        } else {
+                            if (geminiSentenceEn != null && !geminiSentenceEn.isEmpty()) {
+                                wordService.updateExampleSentences(label, geminiSentenceEn, geminiSentenceVn);
+                            }
+                        }
+
                         enriched.put("wordData", wordDto);
                     } catch (org.springframework.web.server.ResponseStatusException notMapped) {
                         // Keep the detection visible, but never present fabricated vocabulary as a real DB record.

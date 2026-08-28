@@ -127,6 +127,10 @@ class DetectedObject(BaseModel):
     label: str
     confidence: float
     box: BoundingBox
+    translation: Optional[str] = None
+    phonetic: Optional[str] = None
+    pos: Optional[str] = None
+    definition: Optional[str] = None
     sentence_en: Optional[str] = None
     sentence_vn: Optional[str] = None
 
@@ -224,14 +228,72 @@ def generate_context_sentence(req: ContextSentenceRequest):
 
     return generate_fallback_context(unique_labels)
 
+LOCAL_DICTIONARY_FALLBACKS = {
+    "jug": {
+        "translation": "cái ca / cái bình",
+        "phonetic": "/dʒʌɡ/",
+        "pos": "Noun",
+        "definition": "A large container with a handle and a lip, used for holding and pouring liquids.",
+        "sentence_en": "She poured fresh water from the jug.",
+        "sentence_vn": "Cô ấy rót nước mát từ chiếc bình."
+    },
+    "glasses": {
+        "translation": "kính mắt",
+        "phonetic": "/ˈɡlæs·əz/",
+        "pos": "Noun",
+        "definition": "A pair of lenses in a frame that help someone to see better.",
+        "sentence_en": "He wears glasses to read books.",
+        "sentence_vn": "Anh ấy đeo kính để đọc sách."
+    },
+    "lamp": {
+        "translation": "cái đèn",
+        "phonetic": "/læmp/",
+        "pos": "Noun",
+        "definition": "A device that produces light, especially an electric light.",
+        "sentence_en": "She turned on the desk lamp.",
+        "sentence_vn": "Cô ấy đã bật đèn bàn."
+    },
+    "necklace": {
+        "translation": "vòng cổ",
+        "phonetic": "/ˈnek.ləs/",
+        "pos": "Noun",
+        "definition": "A piece of jewelry worn around the neck.",
+        "sentence_en": "She wore a beautiful gold necklace.",
+        "sentence_vn": "Cô ấy đã đeo một chiếc vòng cổ bằng vàng tuyệt đẹp."
+    },
+    "person": {
+        "translation": "người",
+        "phonetic": "/ˈpɜː.sən/",
+        "pos": "Noun",
+        "definition": "A human being regarded as an individual.",
+        "sentence_en": "A friendly person greeted us at the door.",
+        "sentence_vn": "Một người thân thiện đã chào đón chúng tôi ở cửa."
+    },
+    "picture/frame": {
+        "translation": "khung tranh / khung ảnh",
+        "phonetic": "/ˈpɪk.tʃər freɪm/",
+        "pos": "Noun",
+        "definition": "A border for enclosing a picture or photograph.",
+        "sentence_en": "She placed the family photo in a wooden frame.",
+        "sentence_vn": "Cô ấy đặt bức ảnh gia đình vào một khung gỗ."
+    }
+}
+
 def generate_context_and_individual_sentences(labels: List[str]):
     unique_labels = list(dict.fromkeys(labels))
     individual = {}
     for label in unique_labels:
-        individual[label] = {
-            "sentence_en": f"I can see a {label} here.",
-            "sentence_vn": f"Tôi có thể nhìn thấy {label} ở đây."
-        }
+        if label in LOCAL_DICTIONARY_FALLBACKS:
+            individual[label] = LOCAL_DICTIONARY_FALLBACKS[label].copy()
+        else:
+            individual[label] = {
+                "translation": label,
+                "phonetic": "",
+                "pos": "Noun",
+                "definition": f"A vocabulary word representing {label}",
+                "sentence_en": f"I can see a {label} here.",
+                "sentence_vn": f"Tôi có thể nhìn thấy {label} ở đây."
+            }
     
     contextual_en = "No items detected."
     contextual_vn = "Không phát hiện vật thể."
@@ -251,13 +313,23 @@ def generate_context_and_individual_sentences(labels: List[str]):
                 f"A student took a photo containing these objects: {', '.join(unique_labels)}. "
                 f"Please generate:\n"
                 f"1. A natural, descriptive 1-sentence English example sentence combining these objects (under keys 'contextual_en' and 'contextual_vn').\n"
-                f"2. For each unique object, a simple, beginner-friendly English example sentence (max 8 words, using easy vocabulary) and its Vietnamese translation.\n"
+                f"2. For each unique object, generate its real-world dictionary details:\n"
+                f"   - 'translation': the real Vietnamese translation (e.g. 'cái bình' or 'ca đựng nước' for 'jug', do not repeat the English label).\n"
+                f"   - 'phonetic': the English phonetic transcription (e.g. /dʒʌɡ/ for 'jug').\n"
+                f"   - 'pos': the part of speech in English (e.g. 'Noun', 'Verb').\n"
+                f"   - 'definition': a simple, beginner-friendly English definition (max 12 words).\n"
+                f"   - 'sentence_en': a simple English example sentence (max 8 words, using easy words).\n"
+                f"   - 'sentence_vn': the Vietnamese translation of that example sentence.\n"
                 f"Format the exact response in JSON with this structure:\n"
                 f"{{\n"
                 f"  \"contextual_en\": \"...\",\n"
                 f"  \"contextual_vn\": \"...\",\n"
-                f"  \"individual_sentences\": {{\n"
+                f"  \"individual_details\": {{\n"
                 f"    \"object_name\": {{\n"
+                f"      \"translation\": \"...\",\n"
+                f"      \"phonetic\": \"...\",\n"
+                f"      \"pos\": \"...\",\n"
+                f"      \"definition\": \"...\",\n"
                 f"      \"sentence_en\": \"...\",\n"
                 f"      \"sentence_vn\": \"...\"\n"
                 f"    }}\n"
@@ -265,7 +337,15 @@ def generate_context_and_individual_sentences(labels: List[str]):
                 f"}}\n"
                 f"Do not include markdown codeblocks or extra commentary."
             )
-            response = gemini_model.generate_content(prompt)
+            try:
+                response = gemini_model.generate_content(prompt)
+            except Exception as inner_e:
+                if "gemini-1.5-flash" in str(inner_e):
+                    print("⚠️ gemini-1.5-flash not supported or not found, trying gemini-pro...")
+                    alt_model = genai.GenerativeModel('gemini-pro')
+                    response = alt_model.generate_content(prompt)
+                else:
+                    raise inner_e
             text = response.text.strip()
             if text.startswith("```json"):
                 text = text.replace("```json", "").replace("```", "").strip()
@@ -276,10 +356,14 @@ def generate_context_and_individual_sentences(labels: List[str]):
             data = json.loads(text)
             c_en = data.get("contextual_en", contextual_en)
             c_vn = data.get("contextual_vn", contextual_vn)
-            ind_data = data.get("individual_sentences", {})
+            ind_data = data.get("individual_details", {})
             for label in unique_labels:
                 if label in ind_data:
                     individual[label] = {
+                        "translation": ind_data[label].get("translation", individual[label]["translation"]),
+                        "phonetic": ind_data[label].get("phonetic", individual[label]["phonetic"]),
+                        "pos": ind_data[label].get("pos", individual[label]["pos"]),
+                        "definition": ind_data[label].get("definition", individual[label]["definition"]),
                         "sentence_en": ind_data[label].get("sentence_en", individual[label]["sentence_en"]),
                         "sentence_vn": ind_data[label].get("sentence_vn", individual[label]["sentence_vn"])
                     }
@@ -361,11 +445,16 @@ async def predict_multi_objects(
                 source="gemini-ai" if gemini_model else "template-fallback"
             )
 
-        # Update predictions with individual sentences
+        # Update predictions with individual details
         for pred in predictions:
             if result_sentences and pred.label in result_sentences["individual"]:
-                pred.sentence_en = result_sentences["individual"][pred.label]["sentence_en"]
-                pred.sentence_vn = result_sentences["individual"][pred.label]["sentence_vn"]
+                details = result_sentences["individual"][pred.label]
+                pred.translation = details.get("translation")
+                pred.phonetic = details.get("phonetic")
+                pred.pos = details.get("pos")
+                pred.definition = details.get("definition")
+                pred.sentence_en = details.get("sentence_en")
+                pred.sentence_vn = details.get("sentence_vn")
 
         return MultiPredictionResponse(
             success=True,
