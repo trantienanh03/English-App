@@ -28,10 +28,6 @@ const DIFFICULTY_CONFIG = {
   hard: { label: 'Khó nhớ', bg: Palette.error.bg, text: Palette.error.text },
 } as const;
 
-const EXAMPLE_SENTENCES = [
-  { en: 'Can you give me an example of how to use this word?', vn: 'Bạn có thể cho tôi ví dụ về cách dùng từ này không?' },
-  { en: 'Learning vocabulary in context helps you remember better.', vn: 'Học từ vựng trong ngữ cảnh giúp bạn ghi nhớ tốt hơn.' },
-];
 
 export default function WordDetailScreen({
   word,
@@ -137,14 +133,6 @@ export default function WordDetailScreen({
               <Text style={styles.sentenceVn}>{word.sentenceVn}</Text>
             )}
           </View>
-
-          {/* Extra example sentences */}
-          {EXAMPLE_SENTENCES.map((ex, i) => (
-            <View key={i} style={[styles.sentenceBox, styles.sentenceBoxAlt]}>
-              <Text style={styles.sentenceEn}>“{ex.en}”</Text>
-              <Text style={styles.sentenceVn}>{ex.vn}</Text>
-            </View>
-          ))}
         </View>
 
         {/* MEMORY TIP CARD */}
