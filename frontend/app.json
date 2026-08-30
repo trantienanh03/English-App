@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "icon": "./assets/expo.icon",
-      "bundleIdentifier": "com.anonymous.vocam"
+      "bundleIdentifier": "com.tanhtran.vocam"
     },
     "android": {
       "adaptiveIcon": {
