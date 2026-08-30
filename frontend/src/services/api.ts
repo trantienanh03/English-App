@@ -1,5 +1,5 @@
 import Constants from 'expo-constants';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { Lesson, VocabularyWord } from '@/types';
 
@@ -296,12 +296,19 @@ export const api = {
       token = await generateDevJwt(devUserId, 'tienanhtran1003@gmail.com', 'Trần Tiến Anh');
     }
     const send = async (accessToken: string) => {
-      const fileResponse = await fetch(fileUri);
-      const blob = await fileResponse.blob();
-      const file = new File([blob], 'scan.jpg', { type: 'image/jpeg' });
-
       const formData = new FormData();
-      formData.append('file', file);
+      if (Platform.OS === 'web') {
+        const fileResponse = await fetch(fileUri);
+        const blob = await fileResponse.blob();
+        const file = new File([blob], 'scan.jpg', { type: 'image/jpeg' });
+        formData.append('file', file);
+      } else {
+        formData.append('file', {
+          uri: fileUri,
+          name: 'scan.jpg',
+          type: 'image/jpeg',
+        } as any);
+      }
       try {
         return await fetch(`${API_BASE_URL}/api/scan`, {
           method: 'POST',
