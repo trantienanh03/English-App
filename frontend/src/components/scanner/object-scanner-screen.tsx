@@ -11,7 +11,7 @@ import {
   Alert,
   Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { CameraView, useCameraPermissions } from 'expo-camera';
@@ -58,6 +58,7 @@ export default function ObjectScannerScreen({
   const [facing, setFacing] = useState<'back' | 'front'>('back');
   const cameraRef = useRef<any>(null);
   const [showGuide, setShowGuide] = useState(true);
+  const insets = useSafeAreaInsets();
 
   React.useEffect(() => {
     const checkGuideStatus = async () => {
@@ -361,8 +362,8 @@ export default function ObjectScannerScreen({
                   </View>
                 )}
 
-                {/* Shutter controls bar */}
-                <View style={styles.shutterControlsBar}>
+                {/* Shutter controls bar — bottom respects Home Indicator safe area */}
+                <View style={[styles.shutterControlsBar, { bottom: Math.max(insets.bottom, 16) + 8 }]}>
                   <TouchableOpacity style={styles.sideControlBtn} onPress={toggleCameraFacing} disabled={isScanning}>
                     <Feather name="refresh-cw" size={20} color="#FFFFFF" />
                   </TouchableOpacity>
@@ -613,7 +614,7 @@ const styles = StyleSheet.create({
   },
   shutterControlsBar: {
     position: 'absolute',
-    bottom: 24,
+    // bottom is set dynamically via insets in component JSX
     left: 0,
     right: 0,
     flexDirection: 'row',
