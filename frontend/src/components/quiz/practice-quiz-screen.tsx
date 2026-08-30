@@ -146,7 +146,7 @@ export default function PracticeQuizScreen({
   const percentageScore = Math.round((score / totalQuestions) * 100);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       <View style={styles.container}>
         {/* HEADER BAR */}
         <View style={styles.headerBar}>

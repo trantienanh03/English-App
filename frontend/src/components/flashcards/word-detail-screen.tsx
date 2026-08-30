@@ -62,7 +62,7 @@ export default function WordDetailScreen({
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.closeBtn} onPress={onClose}>

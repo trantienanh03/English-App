@@ -90,7 +90,7 @@ export default function SearchScreen({
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
       {/* SEARCH BAR */}
       <View style={styles.searchBar}>
         <View style={styles.inputWrapper}>
