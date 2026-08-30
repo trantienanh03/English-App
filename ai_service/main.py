@@ -43,24 +43,22 @@ if env_path.exists():
     except Exception as e:
         print(f"⚠️ Cảnh báo đọc file .env: {e}")
 
-# Gemini AI SDK
+# Gemini AI SDK (new google-genai package — supports AQ. key format)
 try:
-    import google.generativeai as genai
+    from google import genai as google_genai
     HAS_GEMINI_SDK = True
 except ImportError:
     HAS_GEMINI_SDK = False
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+gemini_client = None
 if HAS_GEMINI_SDK and GEMINI_API_KEY:
     try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+        gemini_client = google_genai.Client(api_key=GEMINI_API_KEY)
         print("✨ Đã cấu hình Google Gemini API thành công!")
     except Exception as e:
-        print(f"⚠️ Không thể khởi tạo Gemini Model: {e}")
-        gemini_model = None
-else:
-    gemini_model = None
+        print(f"⚠️ Không thể khởi tạo Gemini Client: {e}")
+        gemini_client = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -163,7 +161,7 @@ def health_check():
     return {
         "status": "UP",
         "service": "English App AI Multi-Object & Gemini Service",
-        "gemini_active": bool(gemini_model),
+        "gemini_active": bool(gemini_client),
         "loaded_model": model_name
     }
 
@@ -201,7 +199,7 @@ def generate_context_sentence(req: ContextSentenceRequest):
 
     unique_labels = list(dict.fromkeys(req.labels))
 
-    if gemini_model:
+    if gemini_client:
         try:
             prompt = (
                 f"You are an English language tutor for an AI English learning app. "
@@ -210,12 +208,17 @@ def generate_context_sentence(req: ContextSentenceRequest):
                 f"Provide the exact output in JSON format with keys 'sentence_en' and 'sentence_vn' (Vietnamese translation). "
                 f"Do not include markdown codeblocks or extra commentary."
             )
-            response = gemini_model.generate_content(prompt)
+            response = gemini_client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+            )
             text = response.text.strip()
             # Clean JSON string if formatted in markdown
             if text.startswith("```json"):
                 text = text.replace("```json", "").replace("```", "").strip()
-            
+            elif text.startswith("```"):
+                text = text.replace("```", "").strip()
+
             import json
             data = json.loads(text)
             return ContextSentenceResponse(
@@ -362,7 +365,7 @@ def generate_context_and_individual_sentences(labels: List[str]):
             contextual_en = f"There are several items in this scene including {items_str}."
             contextual_vn = f"Có một số vật thể trong khung hình này bao gồm {items_str}."
 
-    if gemini_model:
+    if gemini_client:
         try:
             prompt = (
                 f"You are an English language tutor for an AI English learning app. "
@@ -394,14 +397,13 @@ def generate_context_and_individual_sentences(labels: List[str]):
                 f"Do not include markdown codeblocks or extra commentary."
             )
             try:
-                response = gemini_model.generate_content(prompt)
+                response = gemini_client.models.generate_content(
+                    model="gemini-2.0-flash",
+                    contents=prompt
+                )
             except Exception as inner_e:
-                if "gemini-1.5-flash" in str(inner_e):
-                    print("⚠️ gemini-1.5-flash not supported or not found, trying gemini-pro...")
-                    alt_model = genai.GenerativeModel('gemini-pro')
-                    response = alt_model.generate_content(prompt)
-                else:
-                    raise inner_e
+                print(f"⚠️ Gemini generate_content exception: {inner_e}")
+                raise inner_e
             text = response.text.strip()
             if text.startswith("```json"):
                 text = text.replace("```json", "").replace("```", "").strip()
@@ -498,7 +500,7 @@ async def predict_multi_objects(
             context_res = ContextSentenceResponse(
                 sentence_en=result_sentences["contextual_en"],
                 sentence_vn=result_sentences["contextual_vn"],
-                source="gemini-ai" if gemini_model else "template-fallback"
+                source="gemini-ai" if gemini_client else "template-fallback"
             )
 
         # Update predictions with individual details
@@ -524,8 +526,11 @@ async def predict_multi_objects(
 
     except HTTPException:
         raise
-    except Exception:
-        raise HTTPException(status_code=503, detail="Dịch vụ nhận diện tạm thời không khả dụng")
+    except Exception as e:
+        print(f"❌ Exception in predict_multi_objects: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=503, detail=f"Dịch vụ nhận diện tạm thời không khả dụng: {e}")
 
 if __name__ == "__main__":
     import uvicorn
