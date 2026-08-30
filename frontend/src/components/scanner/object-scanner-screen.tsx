@@ -336,49 +336,50 @@ export default function ObjectScannerScreen({
               </View>
             ) : (
               <View style={styles.cameraWrapper}>
+                {/* CameraView — no children (iOS native does not support children) */}
                 <CameraView
-                  style={styles.cameraView}
+                  style={StyleSheet.absoluteFill}
                   facing={facing}
                   ref={cameraRef}
-                >
-                  {/* Instruction Pill */}
-                  <View style={styles.instructionPill}>
-                    <Text style={styles.instructionText}>Căn giữa vật thể trong khung hình</Text>
-                  </View>
+                />
 
-                  {/* Camera Instruction Box */}
-                  {showGuide && (
-                    <View style={styles.cameraInstructions}>
-                      <Feather name="info" size={16} color="#818CF8" style={{ marginRight: 4 }} />
-                      <Text style={styles.cameraInstructionsText}>
-                        Hướng camera vào các vật thể và nhấn chụp. Nhấn vào vật thể hoặc danh sách sau khi quét để học từ vựng.
-                      </Text>
-                      <TouchableOpacity style={styles.closeGuideBtn} onPress={handleDismissGuide}>
-                        <Feather name="x" size={16} color="#94A3B8" />
-                      </TouchableOpacity>
-                    </View>
-                  )}
+                {/* Instruction Pill */}
+                <View style={styles.instructionPill}>
+                  <Text style={styles.instructionText}>Căn giữa vật thể trong khung hình</Text>
+                </View>
 
-                  {/* Shutter controls bar */}
-                  <View style={styles.shutterControlsBar}>
-                    <TouchableOpacity style={styles.sideControlBtn} onPress={toggleCameraFacing} disabled={isScanning}>
-                      <Feather name="refresh-cw" size={20} color="#FFFFFF" />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity 
-                      style={styles.shutterOuterRing} 
-                      onPress={handleLiveCapture} 
-                      disabled={isScanning}
-                      activeOpacity={0.8}
-                    >
-                      <View style={[styles.shutterInnerCircle, isScanning && { backgroundColor: '#94A3B8', transform: [{ scale: 0.85 }] }]} />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.sideControlBtn} onPress={handleGalleryPick} disabled={isScanning}>
-                      <Feather name="image" size={20} color="#FFFFFF" />
+                {/* Camera Instruction Box */}
+                {showGuide && (
+                  <View style={styles.cameraInstructions}>
+                    <Feather name="info" size={16} color="#818CF8" style={{ marginRight: 4 }} />
+                    <Text style={styles.cameraInstructionsText}>
+                      Hướng camera vào các vật thể và nhấn chụp. Nhấn vào vật thể hoặc danh sách sau khi quét để học từ vựng.
+                    </Text>
+                    <TouchableOpacity style={styles.closeGuideBtn} onPress={handleDismissGuide}>
+                      <Feather name="x" size={16} color="#94A3B8" />
                     </TouchableOpacity>
                   </View>
-                </CameraView>
+                )}
+
+                {/* Shutter controls bar */}
+                <View style={styles.shutterControlsBar}>
+                  <TouchableOpacity style={styles.sideControlBtn} onPress={toggleCameraFacing} disabled={isScanning}>
+                    <Feather name="refresh-cw" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.shutterOuterRing}
+                    onPress={handleLiveCapture}
+                    disabled={isScanning}
+                    activeOpacity={0.8}
+                  >
+                    <View style={[styles.shutterInnerCircle, isScanning && { backgroundColor: '#94A3B8', transform: [{ scale: 0.85 }] }]} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.sideControlBtn} onPress={handleGalleryPick} disabled={isScanning}>
+                    <Feather name="image" size={20} color="#FFFFFF" />
+                  </TouchableOpacity>
+                </View>
               </View>
             )
           )}
