@@ -487,8 +487,8 @@ const styles = StyleSheet.create({
   },
   toastText: { color: '#FFFFFF', fontWeight: '700', fontSize: 13 },
 
-  viewfinderContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', margin: 16 },
-  imageWrapper: { width: '100%', height: '100%', borderRadius: 16, overflow: 'hidden' },
+  viewfinderContainer: { flex: 1, margin: 16, alignSelf: 'stretch' },
+  imageWrapper: { flex: 1, width: '100%', borderRadius: 16, overflow: 'hidden' },
   previewImage: { width: '100%', height: '100%' },
 
   closePreviewBtn: {
@@ -504,20 +504,19 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   cameraWrapper: {
+    flex: 1,
     width: '100%',
-    height: '100%',
     borderRadius: 20,
     overflow: 'hidden',
   },
   cameraView: {
+    flex: 1,
     width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   instructionPill: {
     position: 'absolute',
     top: 24,
+    alignSelf: 'center',
     backgroundColor: 'rgba(15, 23, 42, 0.75)',
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -531,11 +530,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   resultsContainer: {
+    flex: 1,
     width: '100%',
-    height: '100%',
   },
   imagePreviewWrapper: {
-    flex: 8,
+    flex: 1,
+    width: '100%',
     borderRadius: 20,
     overflow: 'hidden',
     position: 'relative',
