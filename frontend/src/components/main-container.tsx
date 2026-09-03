@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets, SafeAreaProvider } from 'react-native-safe-area-context';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { Lesson, VocabularyWord } from '@/types';
 import { api, ReviewRating, UserProfileDto } from '@/services/api';
@@ -226,40 +226,48 @@ export default function MainContainer({ userName, userEmail, onLogout }: MainCon
 
       <Modal visible={!!selectedLesson && !showQuiz} animationType="slide">
         {selectedLesson && (
-          <LessonDetailScreen
-            lesson={selectedLesson}
-            onClose={() => setSelectedLesson(null)}
-            onStartLesson={() => setShowQuiz(true)}
-            onSaveWord={handleSaveWord}
-          />
+          <SafeAreaProvider>
+            <LessonDetailScreen
+              lesson={selectedLesson}
+              onClose={() => setSelectedLesson(null)}
+              onStartLesson={() => setShowQuiz(true)}
+              onSaveWord={handleSaveWord}
+            />
+          </SafeAreaProvider>
         )}
       </Modal>
       <Modal visible={showQuiz} animationType="slide">
         {selectedLesson && (
-          <PracticeQuizScreen
-            lessonTitle={selectedLesson.name}
-            words={selectedLesson.words}
-            onClose={() => setShowQuiz(false)}
-            onQuizComplete={score => handleLessonProgress(selectedLesson.id, score)}
-          />
+          <SafeAreaProvider>
+            <PracticeQuizScreen
+              lessonTitle={selectedLesson.name}
+              words={selectedLesson.words}
+              onClose={() => setShowQuiz(false)}
+              onQuizComplete={score => handleLessonProgress(selectedLesson.id, score)}
+            />
+          </SafeAreaProvider>
         )}
       </Modal>
       <Modal visible={showSearch} animationType="slide">
-        <SearchScreen
-          words={allWords}
-          lessons={lessons}
-          onClose={() => setShowSearch(false)}
-          onStartLesson={startLessonFromSearch}
-          onSaveWord={handleSaveWord}
-        />
+        <SafeAreaProvider>
+          <SearchScreen
+            words={allWords}
+            lessons={lessons}
+            onClose={() => setShowSearch(false)}
+            onStartLesson={startLessonFromSearch}
+            onSaveWord={handleSaveWord}
+          />
+        </SafeAreaProvider>
       </Modal>
       <Modal visible={!!selectedWordDetail} animationType="slide">
         {selectedWordDetail && (
-          <WordDetailScreen
-            word={selectedWordDetail}
-            onClose={() => setSelectedWordDetail(null)}
-            onSaveToFlashcards={handleSaveWord}
-          />
+          <SafeAreaProvider>
+            <WordDetailScreen
+              word={selectedWordDetail}
+              onClose={() => setSelectedWordDetail(null)}
+              onSaveToFlashcards={handleSaveWord}
+            />
+          </SafeAreaProvider>
         )}
       </Modal>
     </View>

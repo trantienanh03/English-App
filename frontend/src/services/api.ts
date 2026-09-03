@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Alert, Platform } from 'react-native';
 import { supabase } from '@/lib/supabase';
 import { Lesson, VocabularyWord } from '@/types';
@@ -296,21 +297,39 @@ export const api = {
       token = await generateDevJwt(devUserId, 'tienanhtran1003@gmail.com', 'Trần Tiến Anh');
     }
     const send = async (accessToken: string) => {
-      const formData = new FormData();
-      if (Platform.OS === 'web') {
-        const fileResponse = await fetch(fileUri);
-        const blob = await fileResponse.blob();
-        const file = new File([blob], 'scan.jpg', { type: 'image/jpeg' });
-        formData.append('file', file);
-      } else {
-        formData.append('file', {
-          uri: fileUri,
-          name: 'scan.jpg',
-          type: 'image/jpeg',
-        } as any);
+      if (Platform.OS !== 'web') {
+        try {
+          const uploadResult = await FileSystem.uploadAsync(`${API_BASE_URL}/api/scan`, fileUri, {
+            httpMethod: 'POST',
+            uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+            fieldName: 'file',
+            mimeType: 'image/jpeg',
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              'Bypass-Tunnel-Reminder': 'true',
+            },
+          });
+          return {
+            status: uploadResult.status,
+            ok: uploadResult.status >= 200 && uploadResult.status < 300,
+            text: async () => uploadResult.body,
+            json: async () => JSON.parse(uploadResult.body),
+          };
+        } catch (err: any) {
+          console.warn(`[scanImage Native Error] Failed uploadAsync to ${API_BASE_URL}/api/scan:`, err);
+          throw new Error('NETWORK_UNAVAILABLE');
+        }
       }
+
+      // Web upload using standard Web API
+      const formData = new FormData();
+      const fileResponse = await fetch(fileUri);
+      const blob = await fileResponse.blob();
+      const file = new File([blob], 'scan.jpg', { type: 'image/jpeg' });
+      formData.append('file', file);
+
       try {
-        return await fetch(`${API_BASE_URL}/api/scan`, {
+        const res = await fetch(`${API_BASE_URL}/api/scan`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -318,8 +337,14 @@ export const api = {
           },
           body: formData,
         });
+        return {
+          status: res.status,
+          ok: res.ok,
+          text: async () => res.text(),
+          json: async () => res.json(),
+        };
       } catch (err: any) {
-        console.warn(`[scanImage Error] Fetch failed from: ${API_BASE_URL}/api/scan. Error:`, err);
+        console.warn(`[scanImage Web Error] Fetch failed from: ${API_BASE_URL}/api/scan. Error:`, err);
         throw new Error('NETWORK_UNAVAILABLE');
       }
     };

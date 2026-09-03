@@ -29,7 +29,7 @@ class FakeModel:
         self.results = results or []
         self.error = error
 
-    def __call__(self, _image, conf):
+    def __call__(self, _image, conf, **kwargs):
         if self.error:
             raise self.error
         return self.results
@@ -83,6 +83,18 @@ class DetectionEndpointTest(unittest.TestCase):
             self.predict(image_upload())
         self.assertEqual(503, raised.exception.status_code)
         self.assertNotIn("provider secret", str(raised.exception.detail))
+
+    def test_exif_orientation_is_transposed_correctly(self):
+        main.model = FakeModel([FakeResult([])])
+        img = Image.new("RGB", (400, 200), "white")
+        exif = img.getexif()
+        exif[0x0112] = 6
+        buf = io.BytesIO()
+        img.save(buf, format="JPEG", exif=exif)
+        buf.seek(0)
+        upload = UploadFile(file=buf, filename="ios_photo.jpg", headers=Headers({"content-type": "image/jpeg"}))
+        result = self.predict(upload)
+        self.assertEqual((200, 400), (result.image_width, result.image_height))
 
 
 if __name__ == "__main__":

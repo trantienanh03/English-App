@@ -73,7 +73,7 @@ export const BoundingBoxOverlay: React.FC<Props> = ({
             ]}
           >
             <View style={[styles.labelBadge, { backgroundColor: isSelected ? '#F59E0B' : '#10B981' }]}>
-              <Text style={styles.labelText}>{item.label}</Text>
+              <Text style={styles.labelText} numberOfLines={1}>{item.label}</Text>
             </View>
           </TouchableOpacity>
         );
@@ -92,16 +92,20 @@ const styles = StyleSheet.create({
   },
   labelBadge: {
     position: 'absolute',
-    top: -22,
+    top: -24,
     left: -2,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    zIndex: 10,
   },
   labelText: {
     color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '700',
+    flexShrink: 0,
   },
 });
 

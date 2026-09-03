@@ -6,8 +6,9 @@ import {
   TouchableOpacity,
   ScrollView,
   Modal,
+  Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets, SafeAreaProvider } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { Lesson, VocabularyWord } from '@/types';
@@ -51,11 +52,20 @@ export default function LessonDetailScreen({
     ? Palette.warning.text
     : Palette.primary[500];
 
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, Platform.OS === 'ios' ? 48 : 20);
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'ios' ? 24 : 16);
+
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <View style={[styles.safeArea, { paddingTop: topPadding, paddingBottom: bottomPadding }]}>
       {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={onClose}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={onClose}
+          hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+          activeOpacity={0.7}
+        >
           <Feather name="arrow-left" size={22} color={Palette.text.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{lesson.name}</Text>
@@ -142,14 +152,16 @@ export default function LessonDetailScreen({
       {/* WORD DETAIL MODAL */}
       <Modal visible={!!selectedWord} animationType="slide">
         {selectedWord && (
-          <WordDetailScreen
-            word={selectedWord}
-            onClose={() => setSelectedWord(null)}
-            onSaveToFlashcards={handleSaveWord}
-          />
+          <SafeAreaProvider>
+            <WordDetailScreen
+              word={selectedWord}
+              onClose={() => setSelectedWord(null)}
+              onSaveToFlashcards={handleSaveWord}
+            />
+          </SafeAreaProvider>
         )}
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 

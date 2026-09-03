@@ -8,8 +8,9 @@ import {
   Image,
   Modal,
   Alert,
+  Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { VocabularyWord } from '@/types';
@@ -61,16 +62,30 @@ export default function WordDetailScreen({
     }
   };
 
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, Platform.OS === 'ios' ? 48 : 20);
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'ios' ? 24 : 16);
+
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <View style={[styles.safeArea, { paddingTop: topPadding, paddingBottom: bottomPadding }]}>
       {/* HEADER */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.closeBtn} onPress={onClose}>
+        <TouchableOpacity
+          style={styles.closeBtn}
+          onPress={onClose}
+          hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+          activeOpacity={0.7}
+        >
           <Feather name="x" size={22} color={Palette.text.primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Chi tiết từ vựng</Text>
         {onSaveToFlashcards && (
-          <TouchableOpacity style={styles.saveBtn} onPress={() => void handleSave()} disabled={saving}>
+          <TouchableOpacity
+            style={styles.saveBtn}
+            onPress={() => void handleSave()}
+            disabled={saving}
+            hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+          >
             <Feather name={saving ? 'clock' : 'bookmark'} size={20} color={Palette.primary[500]} />
           </TouchableOpacity>
         )}
@@ -192,7 +207,7 @@ export default function WordDetailScreen({
           </View>
         </TouchableOpacity>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 

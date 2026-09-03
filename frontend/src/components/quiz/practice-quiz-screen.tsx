@@ -5,8 +5,9 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
+  Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { VocabularyWord } from '@/types';
 import { playSoundEffect } from '@/utils/audio';
@@ -145,12 +146,21 @@ export default function PracticeQuizScreen({
 
   const percentageScore = Math.round((score / totalQuestions) * 100);
 
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, Platform.OS === 'ios' ? 48 : 20);
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'ios' ? 24 : 16);
+
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <View style={[styles.safeArea, { paddingTop: topPadding, paddingBottom: bottomPadding }]}>
       <View style={styles.container}>
         {/* HEADER BAR */}
         <View style={styles.headerBar}>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+          <TouchableOpacity
+            onPress={onClose}
+            style={styles.closeBtn}
+            hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+            activeOpacity={0.7}
+          >
             <Feather name="x" size={24} color="#1E293B" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Quiz: {lessonTitle}</Text>
@@ -256,7 +266,7 @@ export default function PracticeQuizScreen({
           </ScrollView>
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 

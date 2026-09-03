@@ -18,7 +18,7 @@ from typing import List, Optional
 from fastapi import FastAPI, File, UploadFile, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from PIL import Image
+from PIL import Image, ImageOps
 import numpy as np
 from ultralytics import YOLO
 from contextlib import asynccontextmanager
@@ -460,7 +460,12 @@ async def predict_multi_objects(
 
     try:
         image_bytes = await file.read()
-        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        raw_image = Image.open(io.BytesIO(image_bytes))
+        image = ImageOps.exif_transpose(raw_image)
+        if image is None:
+            image = raw_image
+        if image.mode != "RGB":
+            image = image.convert("RGB")
         img_width, img_height = image.size
 
         results = model(image, conf=confidence_threshold, device=DEVICE)
@@ -529,8 +534,7 @@ async def predict_multi_objects(
     except Exception as e:
         print(f"❌ Exception in predict_multi_objects: {e}")
         import traceback
-        traceback.print_exc()
-        raise HTTPException(status_code=503, detail=f"Dịch vụ nhận diện tạm thời không khả dụng: {e}")
+        raise HTTPException(status_code=503, detail="Dịch vụ nhận diện tạm thời không khả dụng.")
 
 if __name__ == "__main__":
     import uvicorn

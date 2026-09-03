@@ -7,8 +7,9 @@ import {
   ScrollView,
   TextInput,
   Modal,
+  Platform,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { Palette, Fonts, Spacing } from '@/constants/theme';
 import { VocabularyWord, Lesson } from '@/types';
@@ -89,8 +90,12 @@ export default function SearchScreen({
     );
   };
 
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, Platform.OS === 'ios' ? 48 : 20);
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'ios' ? 24 : 16);
+
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+    <View style={[styles.safeArea, { paddingTop: topPadding, paddingBottom: bottomPadding }]}>
       {/* SEARCH BAR */}
       <View style={styles.searchBar}>
         <View style={styles.inputWrapper}>
@@ -105,12 +110,17 @@ export default function SearchScreen({
             returnKeyType="search"
           />
           {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery('')} style={styles.clearBtn}>
+            <TouchableOpacity onPress={() => setQuery('')} style={styles.clearBtn} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
               <Feather name="x-circle" size={16} color={Palette.text.muted} />
             </TouchableOpacity>
           )}
         </View>
-        <TouchableOpacity onPress={onClose} style={styles.cancelBtn}>
+        <TouchableOpacity
+          onPress={onClose}
+          style={styles.cancelBtn}
+          hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+          activeOpacity={0.7}
+        >
           <Text style={styles.cancelText}>Huỷ</Text>
         </TouchableOpacity>
       </View>
@@ -235,7 +245,7 @@ export default function SearchScreen({
           />
         )}
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }
 
