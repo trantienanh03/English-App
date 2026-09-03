@@ -233,10 +233,7 @@ export default function ObjectScannerScreen({
       <View style={styles.container}>
         {/* TOP HEADER */}
         <View style={styles.topHeader}>
-          <View style={styles.headerTitleRow}>
-            <Feather name="aperture" size={22} color={Palette.primary[300]} />
-            <Text style={styles.headerTitle}>Quét vật thể AI</Text>
-          </View>
+          <Text style={styles.headerTitle}>Quét vật thể AI</Text>
           <Text style={styles.headerSubtitle}>
             Nhận diện đa vật thể & học từ vựng trực quan thông qua hình ảnh
           </Text>
@@ -245,7 +242,6 @@ export default function ObjectScannerScreen({
         {/* TOAST */}
         {addedToast && (
           <View style={styles.toastBox}>
-            <Feather name="check-circle" size={18} color="#FFFFFF" />
             <Text style={styles.toastText}>{addedToast}</Text>
           </View>
         )}
@@ -278,7 +274,7 @@ export default function ObjectScannerScreen({
               {/* Guide & Object list Area */}
               <View style={styles.resultsInfoPanel}>
                 <Text style={styles.guideText}>
-                  👉 Chạm vào vật thể trên hình hoặc chọn trong danh sách dưới đây:
+                  Chạm vào vật thể trên hình hoặc chọn trong danh sách dưới đây:
                 </Text>
                 
                 <ScrollView 
@@ -297,11 +293,6 @@ export default function ObjectScannerScreen({
                         ]}
                         onPress={() => handleSelectBox(item)}
                       >
-                        <Feather 
-                          name="tag" 
-                          size={14} 
-                          color={isSelected ? '#FFFFFF' : '#818CF8'} 
-                        />
                         <Text style={[
                           styles.detectedChipText,
                           isSelected && styles.detectedChipTextSelected
@@ -322,7 +313,6 @@ export default function ObjectScannerScreen({
               </View>
             ) : !permission.granted ? (
               <View style={styles.permissionContainer}>
-                <Feather name="camera-off" size={48} color="#64748B" />
                 <Text style={styles.permissionText}>Chưa cấp quyền Camera</Text>
                 <Text style={styles.permissionSubText}>Vui lòng cấp quyền truy cập camera để quét vật thể trực tiếp.</Text>
                 
@@ -331,7 +321,6 @@ export default function ObjectScannerScreen({
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.galleryFallbackBtn} onPress={handleGalleryPick}>
-                  <Feather name="image" size={18} color="#818CF8" style={{ marginRight: 6 }} />
                   <Text style={styles.galleryFallbackBtnText}>Chọn ảnh từ thư viện</Text>
                 </TouchableOpacity>
               </View>
@@ -352,7 +341,6 @@ export default function ObjectScannerScreen({
                 {/* Camera Instruction Box */}
                 {showGuide && (
                   <View style={styles.cameraInstructions}>
-                    <Feather name="info" size={16} color="#818CF8" style={{ marginRight: 4 }} />
                     <Text style={styles.cameraInstructionsText}>
                       Hướng camera vào các vật thể và nhấn chụp. Nhấn vào vật thể hoặc danh sách sau khi quét để học từ vựng.
                     </Text>

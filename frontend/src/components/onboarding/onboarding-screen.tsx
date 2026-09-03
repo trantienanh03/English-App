@@ -63,7 +63,7 @@ export default function OnboardingScreen({ onComplete, onLoginPress }: Onboardin
     { key: 'Xem phim không cần phụ đề', label: 'Xem phim không cần phụ đề', sub: 'Thưởng thức phim ảnh & âm nhạc' },
     { key: 'Phục vụ du lịch & khám phá', label: 'Phục vụ du lịch & khám phá', sub: 'Tự tin du lịch nước ngoài' },
     { key: 'Kết nối bạn bè quốc tế', label: 'Kết nối bạn bè quốc tế', sub: 'Giao lưu văn hóa toàn cầu' },
-    { key: 'Nâng cao khả năng công sở', label: 'Nâng cao khả năng công sở', sub: 'Thăng tiến trong công việc' },
+    { key: 'Tiếng Anh đi làm & văn phòng', label: 'Tiếng Anh đi làm & văn phòng', sub: 'Tự tin giao tiếp trong công việc' },
     { key: 'Luyện thi chứng chỉ', label: 'Luyện thi chứng chỉ', sub: 'Ôn thi các bằng cấp tiếng Anh' },
     { key: 'Phản xạ giao tiếp tự nhiên', label: 'Phản xạ giao tiếp tự nhiên', sub: 'Phát âm chuẩn và phản xạ nhanh' },
   ];

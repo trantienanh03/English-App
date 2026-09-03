@@ -23,17 +23,20 @@ export default function LessonGridScreen({
   onStartLesson,
 }: LessonGridScreenProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('Tất cả');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('Tất cả');
   const [selectedLessonPreview, setSelectedLessonPreview] = useState<Lesson | null>(null);
 
-  const categories = ['Tất cả', 'Giao tiếp hàng ngày', 'Công sở & Sự nghiệp', 'Học tập & Giáo dục', 'Tâm lý & Đời sống'];
-  const difficulties = ['Tất cả', 'Sơ cấp', 'Trung cấp', 'Cao cấp'];
+  const categories = [
+    'Tất cả',
+    'Giao tiếp hàng ngày',
+    'Đi làm & Công việc',
+    'Trường học & Học tập',
+    'Đời sống & Gia đình',
+    'Du lịch & Giao thông',
+  ];
 
-  const filteredLessons = lessons.filter(l => {
-    let catMatch = selectedCategory === 'Tất cả' || l.category === selectedCategory;
-    let diffMatch = selectedDifficulty === 'Tất cả' || l.difficulty === selectedDifficulty;
-    return catMatch && diffMatch;
-  });
+  const filteredLessons = selectedCategory === 'Tất cả'
+    ? lessons
+    : lessons.filter(l => l.category === selectedCategory);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -57,18 +60,12 @@ export default function LessonGridScreen({
           ))}
         </ScrollView>
 
-        {/* DIFFICULTY SCROLL */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.diffScroll} contentContainerStyle={styles.diffContainer}>
-          {difficulties.map(diff => (
-            <TouchableOpacity
-              key={diff}
-              style={[styles.diffChip, selectedDifficulty === diff && styles.diffChipActive]}
-              onPress={() => setSelectedDifficulty(diff)}
-            >
-              <Text style={[styles.diffChipText, selectedDifficulty === diff && styles.diffChipTextActive]}>{diff}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
+        {/* TOPIC INFO BAR */}
+        <View style={styles.topicInfoRow}>
+          <Text style={styles.topicInfoText}>
+            {selectedCategory === 'Tất cả' ? 'Tất cả bài học' : selectedCategory} ({filteredLessons.length} bài học)
+          </Text>
+        </View>
 
         {/* LESSONS GRID LIST */}
         <ScrollView contentContainerStyle={styles.lessonsList} showsVerticalScrollIndicator={false}>
@@ -79,10 +76,6 @@ export default function LessonGridScreen({
               onPress={() => setSelectedLessonPreview(lesson)}
             >
               <View style={styles.cardTop}>
-                <View style={styles.iconBox}>
-                  <Feather name={(lesson.icon as any) || 'book-open'} size={22} color={Palette.primary[500]} />
-                </View>
-
                 <View style={{ flex: 1 }}>
                   <View style={styles.titleRow}>
                     <Text style={styles.lessonTitle}>{lesson.name}</Text>
@@ -122,10 +115,7 @@ export default function LessonGridScreen({
           <View style={styles.modalOverlay}>
             <View style={styles.modalSheet}>
               <View style={styles.modalHeader}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                  <Feather name={(selectedLessonPreview?.icon as any) || 'book-open'} size={24} color={Palette.primary[500]} />
-                  <Text style={styles.modalTitle}>{selectedLessonPreview?.name}</Text>
-                </View>
+                <Text style={styles.modalTitle}>{selectedLessonPreview?.name}</Text>
                 <TouchableOpacity onPress={() => setSelectedLessonPreview(null)}>
                   <Feather name="x" size={20} color={Palette.text.muted} />
                 </TouchableOpacity>
@@ -197,61 +187,54 @@ const styles = StyleSheet.create({
 
   // Category Scroll
   catScroll: {
-    maxHeight: 44,
-    marginBottom: 8,
+    flexGrow: 0,
+    marginBottom: 6,
   },
   catContainer: {
     gap: Spacing.two,
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    alignItems: 'center',
   },
   catChip: {
+    height: 38,
     backgroundColor: Palette.surfaceWhite,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingHorizontal: 16,
+    borderRadius: 19,
     borderWidth: 1,
     borderColor: Palette.border,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   catChipActive: {
     backgroundColor: Palette.primary[500],
     borderColor: Palette.primary[500],
   },
   catChipText: {
-    fontFamily: Fonts.sans,
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
     color: Palette.text.secondary,
+    includeFontPadding: false,
   },
   catChipTextActive: {
     color: '#FFFFFF',
-    fontWeight: '800',
+    fontWeight: '700',
   },
 
-  // Diff Scroll
-  diffScroll: {
-    maxHeight: 38,
-    marginBottom: Spacing.three,
+  // Topic Info
+  topicInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 4,
+    marginBottom: 10,
+    paddingHorizontal: 4,
   },
-  diffContainer: {
-    gap: 8,
-  },
-  diffChip: {
-    backgroundColor: Palette.canvas,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  diffChipActive: {
-    backgroundColor: Palette.primary[100],
-  },
-  diffChipText: {
+  topicInfoText: {
     fontFamily: Fonts.sans,
-    fontSize: 11,
-    fontWeight: '600',
-    color: Palette.text.muted,
-  },
-  diffChipTextActive: {
-    color: Palette.primary[500],
-    fontWeight: '800',
+    fontSize: 13,
+    fontWeight: '700',
+    color: Palette.text.secondary,
   },
 
   // Lessons List

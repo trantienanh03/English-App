@@ -31,8 +31,8 @@ export default function RecoveryPasswordScreen({ onComplete }: RecoveryPasswordS
       await supabase.auth.signOut();
       Alert.alert('Đã đổi mật khẩu', 'Bạn có thể đăng nhập bằng mật khẩu mới.');
       onComplete();
-    } catch {
-      setError('Liên kết đã hết hạn hoặc không thể đổi mật khẩu. Hãy yêu cầu email mới.');
+    } catch (err: any) {
+      setError(err?.message || 'Liên kết đã hết hạn hoặc không thể đổi mật khẩu. Hãy yêu cầu email mới.');
     } finally {
       setSaving(false);
     }

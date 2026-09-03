@@ -79,7 +79,6 @@ export default function LessonDetailScreen({
       >
         {/* LESSON META CARD */}
         <View style={styles.metaCard}>
-          <Text style={styles.lessonIcon}>{lesson.icon}</Text>
           <Text style={styles.lessonName}>{lesson.name}</Text>
           <Text style={styles.lessonDesc}>{lesson.description}</Text>
 
