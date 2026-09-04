@@ -1,201 +1,140 @@
-# KỊCH BẢN QUAY VIDEO DEMO VOCAM (5 PHÚT)
-**Đề tài:** Ứng dụng học từ vựng tiếng Anh ngữ cảnh qua thị giác máy tính và thuật toán lặp lại ngắt quãng SM-2  
-**Thời lượng chuẩn:** 5 phút (300 giây)  
-**Thiết bị quay:** iPhone (kết nối trực tiếp hệ thống Vocam Full-stack)
+============================================================
+KỊCH BẢN THAO TÁC QUAY VIDEO DEMO VOCAM (CHUẨN 5 PHÚT)
+============================================================
 
----
+Đề tài: Ứng dụng học từ vựng tiếng Anh ngữ cảnh qua thị giác máy tính và SM-2
+Thời lượng: 5 phút (300 giây)
+Thiết bị: iPhone kết nối trực tiếp hệ thống Vocam Full-stack
 
-## ⏱️ BẢNG PHÂN BỔ THỜI GIAN TỔNG QUAN
+------------------------------------------------------------
+TỔNG QUAN PHÂN BỔ THỜI GIAN
+------------------------------------------------------------
+0:00 – 0:30 (30s): Phần 1 - Đăng nhập tài khoản Học viên & Quên mật khẩu
+0:30 – 2:00 (90s): Phần 2 - Quét đa vật thể AI, Bounding box & Lưu Flashcard
+2:00 – 3:15 (75s): Phần 3 - Ôn tập Flashcard thuật toán SM-2 (3 mức đánh giá)
+3:15 – 4:00 (45s): Phần 4 - 20 Bài học chủ đề đời thực & Quiz trắc nghiệm
+4:00 – 4:30 (30s): Phần 5 - Tìm kiếm tức thì, Thông báo nhắc nhở 3s & Cá nhân
+4:30 – 5:00 (30s): Phần 6 - Phân quyền & Bảng điều khiển Quản trị Admin
 
-| Thời gian | Phân đoạn | Nội dung trọng tâm |
-|---|---|---|
-| **0:00 – 0:30** (30s) | **Phần 1: Mở đầu & Đăng nhập** | Giới thiệu đề tài, kiến trúc hệ thống & bảo mật Supabase Auth |
-| **0:30 – 2:00** (90s) | **Phần 2: Quét vật thể AI & Bounding Box** | Nhận diện đa vật thể YOLO Objects365, chi tiết từ vựng & lưu Flashcard |
-| **2:00 – 3:15** (75s) | **Phần 3: Thuật toán Spaced Repetition (SM-2)** | Cơ chế tính toán thẻ đến hạn, phiên ôn tập Flashcard 3 mức đánh giá |
-| **3:15 – 4:15** (60s) | **Phần 4: 20 Bài học chủ đề & Quiz tương tác** | Lộ trình 5 chủ đề đời thực, làm bài trắc nghiệm & cập nhật tiến độ DB |
-| **4:15 – 4:45** (30s) | **Phần 5: Tìm kiếm & Hồ sơ cá nhân** | Tìm kiếm từ vựng toàn cục, thống kê chỉ số học tập bền vững |
-| **4:45 – 5:00** (15s) | **Phần 6: Kết luận & Lời cảm ơn** | Tóm tắt giá trị ứng dụng & sẵn sàng cho phần Q&A |
+------------------------------------------------------------
+CHUẨN BỊ TRƯỚC KHI QUAY (0:00)
+------------------------------------------------------------
+- 3 dịch vụ đã chạy ngầm: AI Service (8000), Backend (8080), Metro (8081).
+- Bàn làm việc có các vật thể: laptop, chuột, điện thoại, chai nước, sách...
+- App Vocam mở sẵn trên iPhone ở màn hình đăng nhập.
 
----
+============================================================
+CHI TIẾT 6 PHẦN THAO TÁC TRÊN MÀN HÌNH
+============================================================
 
-## 🛠️ BƯỚC CHUẨN BỊ TRƯỚC KHI BẮT ĐẦU (0:00)
+PHẦN 1: ĐĂNG NHẬP & QUÊN MẬT KHẨU (0:00 – 0:30 | 30 giây)
+------------------------------------------------------------
+1. Mở app Vocam -> Màn hình đăng nhập hiện ra.
+2. Bấm dòng "Quên mật khẩu?":
+   - Popup khôi phục mật khẩu mở ra (chứng minh hỗ trợ Deep Link).
+   - Bấm đóng popup quay lại form.
+3. Bấm nút: [Học viên (learner@vocam.app)]:
+   - Form tự động điền Email và Mật khẩu.
+4. Bấm nút [Đăng nhập]:
+   - Màn hình chuyển vào giao diện chính của Học viên.
 
-1. Mở 3 tab Terminal trên máy tính để chạy 3 service:
-   - **Tab 1 (AI Service):**
-     ```bash
-     cd /Users/tanhtran/HocTap/English-App/ai_service && ./venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 8000
-     ```
-   - **Tab 2 (Backend Spring Boot):**
-     ```bash
-     cd /Users/tanhtran/HocTap/English-App/backend && ./mvnw spring-boot:run
-     ```
-   - **Tab 3 (Frontend Expo Metro):**
-     ```bash
-     cd /Users/tanhtran/HocTap/English-App/frontend && npx expo start --host lan
-     ```
-2. Đảm bảo iPhone và máy Mac cùng kết nối chung một mạng Wi-Fi (hoặc cắm cáp USB).
-3. Chuẩn bị sẵn một góc bàn có các đồ vật quen thuộc: **laptop, chuột, bàn phím, cốc nước, điện thoại, sách, ghế...** (hoặc ảnh chụp sắc nét sẵn trong thư viện ảnh).
 
----
+PHẦN 2: QUÉT ĐA VẬT THỂ AI & LƯU FLASHCARD (0:30 – 2:00 | 90 giây)
+------------------------------------------------------------
+1. Bấm tab "Quét AI" ở thanh điều hướng dưới màn hình.
+2. Hướng camera vào khu vực bàn làm việc (laptop, chuột, chai nước...).
+3. Bấm nút chụp tròn màu trắng ở giữa:
+   - Màn hình hiển thị trạng thái AI đang phân tích.
+4. Quan sát kết quả:
+   - Ảnh chụp giữ đúng chiều dọc tự nhiên (Portrait).
+   - Khung Bounding Box ôm khít từng đồ vật (laptop, mouse, bottle...) kèm nhãn tên tiếng Anh rõ ràng.
+5. Thao tác chạm trực tiếp:
+   - Chạm ngón tay vào khung "laptop" trên hình: Khung sáng viền vàng cam và dải chip bên dưới tự cuộn đến từ laptop.
+6. Màn hình Chi tiết từ vựng mở lên:
+   - Từ vựng: laptop
+   - Phiên âm IPA chuẩn: /ˈlæp.tɒp/
+   - Nghĩa tiếng Việt: máy tính xách tay
+   - Định nghĩa học thuật tiếng Anh và câu ví dụ song ngữ Anh - Việt.
+7. Bấm nút Loa để nghe phát âm tiếng Anh bản xứ.
+8. Bấm nút [Lưu vào Sổ từ Flashcard]:
+   - Toast màu xanh thông báo: "Đã lưu vào sổ từ".
+9. Thử bấm nút Lưu lại lần nữa:
+   - Hệ thống báo từ này đã tồn tại trong sổ từ (chống lưu trùng lặp).
+10. Đóng popup chi tiết từ vựng để về màn hình quét.
 
-## 🎬 CHI TIẾT KỊCH BẢN THEO TỪNG GIÂY
 
-### 📍 PHẦN 1: MỞ ĐẦU & ĐĂNG NHẬP (0:00 – 0:30 | 30 giây)
+PHẦN 3: ÔN TẬP THUẬT TOÁN SM-2 (2:00 – 3:15 | 75 giây)
+------------------------------------------------------------
+1. Bấm tab "Sổ từ" (Cards):
+   - Xem số lượng "Cần ôn hôm nay" (lọc theo điều kiện đến hạn).
+   - Xem danh sách toàn bộ các từ đã lưu kèm thông số SM-2.
+2. Bấm nút [Bắt đầu ôn tập hôm nay]:
+   - Thẻ Flashcard xuất hiện.
+   - Mặt trước: Từ vựng tiếng Anh, phiên âm IPA, nút loa nghe phát âm.
+3. Chạm vào giữa thẻ để lật sang mặt sau:
+   - Hiển thị nghĩa tiếng Việt và câu ví dụ minh họa ngữ cảnh.
+4. Đánh giá trí nhớ theo 3 nút SM-2 dưới chân thẻ:
+   - Chưa thuộc (Again): Reset chu kỳ về 1 ngày.
+   - Nhớ tốt (Good): Tăng khoảng cách ôn tập theo hệ số nhân.
+   - Rất dễ (Easy): Tối ưu chu kỳ ôn tập xa hơn cho từ đã nhớ vững.
+5. Bấm chọn mức đánh giá -> Thẻ chuyển tiếp sang từ tiếp theo mượt mà.
+6. Sau khi hoàn thành thẻ cuối cùng:
+   - Màn hình thông báo hoàn thành phiên ôn tập hôm nay xuất hiện!
+   - Mục "Cần ôn hôm nay" chuyển về 0.
 
-* **Hành động trên màn hình:**
-  1. Mở app **Vocam** $\rightarrow$ Splash Screen hiện logo và chuyển sang màn hình Đăng nhập.
-  2. Bấm nhẹ vào nút **"Quên mật khẩu?"** để mở popup Khôi phục mật khẩu (chứng minh luồng Deep Link `vocam://reset-password`), sau đó đóng lại.
-  3. Nhập Email và Mật khẩu tài khoản Học viên $\rightarrow$ Bấm **"Đăng nhập"**.
-  4. Ứng dụng chuyển vào **Trang chủ** với lời chào cá nhân hóa.
 
-* **Lời thoại thuyết minh:**
-  > *"Kính chào quý Thầy Cô trong Hội đồng và các bạn. Em xin phép trình bày bản demo hoàn chỉnh của đề tài: Ứng dụng học từ vựng tiếng Anh ngữ cảnh Vocam.*  
-  > *Hệ thống được xây dựng trên kiến trúc Client - Server với React Native TypeScript ở frontend, Spring Boot 3 ở backend và AI Microservice xử lý thị giác máy tính.*  
-  > *Đầu tiên, người dùng đăng nhập bằng tài khoản bảo mật qua Supabase JWT. Hệ thống hỗ trợ đầy đủ cơ chế khôi phục mật khẩu qua deep link và phân quyền chặt chẽ trên máy chủ."*
+PHẦN 4: 20 BÀI HỌC CHỦ ĐỀ & QUIZ TRẮC NGHIỆM (3:15 – 4:00 | 45 giây)
+------------------------------------------------------------
+1. Bấm tab "Bài học" (Lessons).
+2. Lướt qua thanh tab chủ đề phía trên:
+   - Tất cả bài học (20 bài học hiển thị cân đối, không khoảng trắng thừa).
+   - Giao tiếp hàng ngày (4 bài học).
+   - Đi làm & Công việc (4 bài học).
+   - Trường học & Học tập (4 bài học).
+   - Đời sống & Gia đình (4 bài học).
+   - Du lịch & Giao thông (4 bài học).
+3. Bấm chọn bài: "Thiết bị & Công nghệ văn phòng":
+   - Xem danh sách từ vựng và tóm tắt bài học.
+4. Bấm nút [VÀO HỌC / Làm bài tập Quiz]:
+   - Màn hình câu hỏi trắc nghiệm 4 lựa chọn mở ra.
+   - Bấm chọn nhanh các đáp án đúng -> Bấm nộp bài.
+   - Màn hình tổng kết điểm số % hiển thị rõ ràng.
+5. Đóng Quiz quay về danh sách bài học:
+   - Thanh phần trăm tiến độ của bài học nhảy tăng % tương ứng.
 
----
 
-### 📍 PHẦN 2: QUÉT ĐA VẬT THỂ AI & BÁM KHUNG BOUNDING BOX (0:30 – 2:00 | 90 giây) — *TÍNH NĂNG ĐINH!*
+PHẦN 5: TÌM KIẾM, THÔNG BÁO 3S & CÁ NHÂN (4:00 – 4:30 | 30 giây)
+------------------------------------------------------------
+1. Tại thanh tìm kiếm trên cùng: Gõ từ "laptop" hoặc "camera":
+   - Kết quả trả về tức thì kèm nút phát âm và bài học chứa từ.
+2. Bấm tab "Cá nhân" (Profile):
+   - Xem thống kê thời gian thực: Số từ đã lưu, Số từ đã thuộc, Thẻ cần ôn.
+   - Cuộn xuống phần Cài đặt & Nhắc nhở.
+3. DEMO THÔNG BÁO THỜI GIAN THỰC (PUSH NOTIFICATION):
+   - Bấm nút: [Thử nghiệm thông báo ngay (sau 3 giây)].
+   - Hộp thoại thông báo đã lên lịch -> Bấm [Đã hiểu].
+   - Giữ nguyên màn hình hoặc vuốt nhẹ về Màn hình chính iPhone:
+     Sau đúng 3 giây, Banner thông báo iOS trượt xuống từ mép trên màn hình:
+     "Vocam: Đến giờ ôn từ vựng - Bạn có thẻ từ đến hạn ôn tập theo thuật toán SM-2."
+   - CHẠM TAY VÀO BANNER THÔNG BÁO:
+     App tự động Deep-link kích hoạt nhảy thẳng vào tab Sổ từ Flashcard!
+4. Quay lại tab Cá nhân -> Bấm [Đăng xuất khỏi ứng dụng] -> Về màn hình Đăng nhập.
 
-* **Hành động trên màn hình:**
-  1. Chạm vào tab **"Quét AI"** (icon máy ảnh ở thanh điều hướng dưới).
-  2. Camera mở lên tức thì. Hướng camera vào góc bàn làm việc (chứa laptop, chuột, điện thoại, cốc nước...).
-  3. Bấm **Nút chụp ảnh** (vòng tròn trắng chính giữa).
-  4. Hiển thị thông báo: *"AI đang phân tích đa vật thể..."*.
-  5. **Khoảnh khắc ấn tượng:** Ảnh hiện ra với **các khung chữ nhật Bounding Box chuẩn xác 100% bao quanh từng đồ vật**:
-     - Viền xanh lá/vàng ôm khít vật thể, nhãn tên rõ ràng: `laptop`, `mouse`, `keyboard`, `bottle`...
-     - Ảnh giữ đúng hướng dọc tự nhiên (Portrait), không bị xoay lệch 90 độ nhờ bộ xử lý EXIF transpose trên server.
-  6. **Tương tác trực quan:**
-     - Dùng ngón tay chạm trực tiếp vào khung chữ nhật của `laptop` trên hình $\rightarrow$ Khung viền sáng lên màu vàng cam.
-     - Dải chip tên vật thể bên dưới tự động cuộn và làm nổi bật chip `laptop`.
-  7. Modal **Chi tiết từ vựng** mở lên với đầy đủ dữ liệu học thuật:
-     - Từ vựng: **laptop**
-     - Phiên âm chuẩn IPA: `/ˈlæp.tɒp/`
-     - Loại từ: **Danh từ (Noun)**
-     - Nghĩa tiếng Việt: **máy tính xách tay**
-     - Định nghĩa tiếng Anh học thuật: *"A portable computer suitable for use while travelling."*
-     - Ví dụ câu song ngữ Anh - Việt.
-  8. Bấm vào nút **Loa (Audio)** để app phát âm từ bản xứ to rõ.
-  9. Bấm nút **"Lưu vào Sổ từ Flashcard"** $\rightarrow$ Toast màu xanh thông báo: *"Đã lưu vào sổ từ"*.
-  10. Thử bấm lại lần nữa để chứng minh tính năng **chống trùng lặp từ vựng** hoạt động chính xác.
 
-* **Lời thoại thuyết minh:**
-  > *"Điểm cốt lõi tạo nên sự đột phá của Vocam là khả năng biến bất kỳ không gian thực tế nào thành bài học từ vựng trực quan.*  
-  > *Khi người học chụp ảnh không gian xung quanh, ảnh được gửi đến AI Service xử lý góc xoay EXIF và chạy qua mô hình YOLO Objects365 với 365 nhãn chuẩn hóa xác định.*  
-  > *Hệ thống đồng thời phát hiện nhiều vật thể trong cùng một khung hình và vẽ chính xác bounding box theo đúng tỷ lệ màn hình điện thoại.*  
-  > *Người học chỉ cần chạm trực tiếp vào vật thể muốn học để xem đầy đủ phiên âm IPA, giải nghĩa tiếng Việt, định nghĩa học thuật, nghe phát âm bản xứ và lưu vào bộ thẻ flashcard cá nhân mà không lo bị lưu trùng lặp."*
+PHẦN 6: PHÂN QUYỀN & QUẢN TRỊ ADMIN (4:30 – 5:00 | 30 giây)
+------------------------------------------------------------
+1. Tại màn hình Đăng nhập:
+   - Bấm nút nhanh: [Admin (admin@vocam.app)] -> Tự động điền email và mật khẩu.
+2. Bấm nút [Đăng nhập]:
+   - Spring Security xác thực quyền ROLE_ADMIN trên server và mở ra Bảng điều khiển Quản trị viên (AdminNavigator).
+3. Lướt qua 3 phân hệ Quản trị:
+   - Tab Dashboard (Tổng quan): Xem thống kê thời gian thực (Tổng người dùng, Học viên hoạt động, Tài khoản bị khóa, Tổng 365 từ vựng).
+   - Tab Từ vựng (Words): Xem danh sách 365 từ vựng, tìm kiếm từ, bấm vào một từ để xem form chỉnh sửa IPA, nghĩa tiếng Việt, định nghĩa và cập nhật hình ảnh.
+   - Tab Người dùng (Users): Xem danh sách học viên và bấm nút Khóa / Mở khóa tài khoản thời gian thực.
+4. Bấm nút [Đăng xuất] trên góc màn hình Admin để hoàn tất buổi demo.
 
----
-
-### 📍 PHẦN 3: ÔN TẬP THEO THUẬT TOÁN SM-2 (2:00 – 3:15 | 75 giây)
-
-* **Hành động trên màn hình:**
-  1. Chuyển sang tab **"Sổ từ"** (icon nhiều lớp thẻ).
-  2. Màn hình hiển thị tổng quan:
-     - Số từ cần ôn hôm nay (Due cards) dựa trên điều kiện `nextReviewAt <= now`.
-     - Danh sách toàn bộ các từ đã lưu kèm trạng thái ghi nhớ.
-  3. Nhấn vào nút **"Bắt đầu ôn tập hôm nay"**:
-     - Thẻ Flashcard hiện ra với thiết kế tối giản, trực quan.
-     - Mặt trước: Từ vựng tiếng Anh, phiên âm IPA, nút nghe phát âm.
-     - Chạm vào thẻ để **lật sang mặt sau**: Hiển thị nghĩa tiếng Việt, câu ví dụ minh họa ngữ cảnh.
-  4. Phía dưới xuất hiện 3 nút đánh giá trí nhớ theo thuật toán SM-2:
-     - **Chưa thuộc (Again)**: Reset khoảng cách ôn tập về 1 ngày, giảm Easiness Factor.
-     - **Nhớ tốt (Good)**: Tăng khoảng thời gian ôn tập theo hệ số nhân.
-     - **Rất dễ (Easy)**: Tối ưu hóa chu kỳ ôn tập xa hơn cho từ vựng đã nhớ vững.
-  5. Bấm chọn mức đánh giá $\rightarrow$ Thẻ kế tiếp xuất hiện mượt mà.
-  6. Sau khi hoàn thành thẻ cuối cùng:
-     - Màn hình thông báo hoàn thành phiên ôn hôm nay!
-     - Mục "Cần ôn hôm nay" về 0 và các chỉ số học tập được cập nhật bền vững lên server.
-
-* **Lời thoại thuyết minh:**
-  > *"Để giải quyết hiện tượng 'đường cong lãng quên', Vocam tích hợp thuật toán lặp lại ngắt quãng SM-2 (Spaced Repetition System).*  
-  > *Hệ thống theo dõi các tham số gồm: số lần lặp lại, hệ số dễ nhớ Easiness Factor và mốc thời gian ôn tập tiếp theo nextReviewAt được lưu trực tiếp trong cơ sở dữ liệu PostgreSQL.*  
-  > *Tùy theo phản hồi của người học là Chưa thuộc, Nhớ tốt hay Rất dễ, thuật toán sẽ tự động phân bổ lại ngày ôn tập tối ưu nhất, giúp chuyển kiến thức từ trí nhớ ngắn hạn sang trí nhớ dài hạn mà không gây quá tải."*
-
----
-
-### 📍 PHẦN 4: 20 BÀI HỌC CHỦ ĐỀ & BÀI TẬP TRẮC NGHIỆM (3:15 – 4:15 | 60 giây)
-
-* **Hành động trên màn hình:**
-  1. Chuyển sang tab **"Bài học"** (icon quyển sách).
-  2. Bấm lướt qua các tab chủ đề thực tế ở phía trên:
-     - **Tất cả bài học** (20 bài học hiển thị trọn vẹn).
-     - **Giao tiếp hàng ngày** (4 bài học: Vật dụng cá nhân, Mua sắm, Đồ ăn thức uống, Phụ kiện dạo phố).
-     - **Đi làm & Công việc** (4 bài học: Thiết bị văn phòng, Phòng họp, Thiết bị liên lạc, Tài liệu).
-     - **Trường học & Học tập** (4 bài học: Dụng cụ học sinh, Thể thao, Lớp học, Ngoại khóa).
-     - **Đời sống & Gia đình** (4 bài học: Nấu ăn nhà bếp, Phòng khách, Bàn ăn, Đồ dùng cá nhân).
-     - **Du lịch & Giao thông** (4 bài học: Phương tiện thành phố, Chuyến đi xa, Biển báo đường bộ, Hành lý du lịch).
-     *(Lưu ý: Màn hình vừa vặn, không còn bất kỳ khoảng trắng thừa hay thanh lọc phụ nào).*
-  3. Chọn bài học: **"Thiết bị & Công nghệ văn phòng"**:
-     - Xem tóm tắt bài học và danh sách từ vựng chuẩn bị học.
-  4. Bấm **"VÀO HỌC" / "Làm bài tập Quiz"**:
-     - Màn hình trắc nghiệm 4 lựa chọn mở ra.
-     - Trả lời nhanh 3–4 câu hỏi trắc nghiệm sinh động (nghe phát âm, chọn nghĩa đúng).
-     - Bấm nộp bài $\rightarrow$ Hiển thị màn hình tổng kết điểm số `%` cùng lời khen ngợi.
-  5. Đóng Quiz quay lại danh sách bài học:
-     - Thanh tiến độ của bài học *"Thiết bị & Công nghệ văn phòng"* tự động nhảy lên `%` tương ứng, đồng bộ với backend `user_lesson_progress`.
-
-* **Lời thoại thuyết minh:**
-  > *"Ngoài việc quét ảnh tự do, Vocam cung cấp một hệ thống học tập có cấu trúc gồm 20 bài học được thiết kế sát với đời sống qua 5 nhóm chủ đề: Giao tiếp, Đi làm, Trường học, Gia đình và Du lịch.*  
-  > *Mỗi bài học đều được tích hợp bài tập Quiz trắc nghiệm tương tác giúp củng cố phản xạ nhận diện từ. Điểm số và tiến độ học tập được lưu trữ bền vững, cho phép người học theo dõi sát sao lộ trình tiến bộ của bản thân."*
-
----
-
-### 📍 PHẦN 5: TÌM KIẾM, THÔNG BÁO NHẮC NHỞ & TRANG CÁ NHÂN (4:15 – 4:45 | 30 giây)
-
-* **Hành động trên màn hình:**
-  1. Về Trang chủ hoặc thanh tìm kiếm: Gõ thử từ *"camera"* hoặc *"laptop"* $\rightarrow$ Kết quả hiện ra tức thì với phát âm và bài học chứa từ đó.
-  2. Chuyển sang tab **"Cá nhân"**:
-     - Xem các thống kê thời gian thực: **Số từ đã lưu**, **Số từ đã thuộc**, **Thẻ cần ôn**.
-     - Xuống phần **"Cài đặt & Nhắc nhở"**.
-  3. **Demo Thông báo đẩy (Push Notification) thời gian thực:**
-     - Bấm nút **"Thử nghiệm thông báo ngay (sau 3 giây)"** (hoặc bật công tắc "Thông báo Nhắc ôn tập" và chọn gửi thử).
-     - Hộp thoại báo đã lên lịch sau 3 giây.
-     - Giữ màn hình (hoặc vuốt nhẹ về Home Screen): Sau đúng 3 giây, **Banner thông báo iOS thả xuống từ đỉnh màn hình**:
-       > *Vocam: Đến giờ ôn từ vựng*  
-       > *Bạn có 1 thẻ từ đến hạn ôn tập theo thuật toán SM-2.*
-     - **Chạm trực tiếp vào banner thông báo** $\rightarrow$ Hệ thống tự động Deep-link kích hoạt app nhảy thẳng vào tab **"Sổ từ Flashcard"** để ôn tập!
-  4. Quay lại tab Cá nhân $\rightarrow$ Bấm **"Đăng xuất"** $\rightarrow$ Trở về màn hình Đăng nhập an toàn.
-
-* **Lời thoại thuyết minh:**
-  > *"Ứng dụng hỗ trợ tìm kiếm tức thời trong kho 365 từ vựng chuẩn hóa. Tab cá nhân tổng hợp trực quan mọi chỉ số tiến độ học tập.*  
-  > *Đặc biệt, hệ thống tích hợp tính năng Thông báo nhắc nhở thông minh theo chu kỳ SM-2. Khi có thẻ đến hạn hoặc tới khung giờ đã định, thông báo hệ thống sẽ gửi trực tiếp đến thiết bị. Khi chạm vào thông báo, ứng dụng sẽ tự động điều hướng thẳng vào màn hình ôn tập giúp người học không bỏ lỡ tiến độ học mỗi ngày."*
-
----
-
-### 📍 PHẦN 6: PHÂN QUYỀN & GIAO DIỆN QUẢN TRỊ ADMIN (4:30 – 4:50 | 20 giây)
-
-* **Hành động trên màn hình:**
-  1. Tại màn hình Đăng nhập: Bấm nút nhanh **"Admin (admin@vocam.app)"** (hoặc gõ email `admin@vocam.app`, mật khẩu `admin123`).
-  2. Bấm nút **"Đăng nhập"**:
-     - Spring Security xác thực JWT role `ADMIN` trên máy chủ và tự động điều hướng vào **Giao diện Quản trị viên (AdminNavigator)**.
-  3. Lướt qua 3 phân hệ quản trị trực quan:
-     - **Tab Tổng quan (Dashboard)**: Thống kê thời gian thực gồm Tổng số người dùng, Học viên hoạt động, Tài khoản bị khóa, và Tổng 365 từ vựng.
-     - **Tab Quản lý Từ vựng**: Xem danh sách 365 từ vựng chuẩn hóa Objects365, tìm kiếm từ, bấm sửa từ vựng (IPA, nghĩa tiếng Việt, định nghĩa, cập nhật ảnh minh họa).
-     - **Tab Quản lý Người dùng**: Xem danh sách học viên cùng tiến độ học, thao tác Khóa / Mở khóa tài khoản học viên trực tiếp.
-  4. Bấm **"Đăng xuất"** trên giao diện Admin $\rightarrow$ Trở về màn hình đăng nhập an toàn.
-
-* **Lời thoại thuyết minh:**
-  > *"Bên cạnh trải nghiệm của học viên, Vocam áp dụng cơ chế phân quyền bảo mật chặt chẽ Role-Based Access Control ở tầng máy chủ Spring Security.*  
-  > *Khi đăng nhập bằng tài khoản Quản trị viên, hệ thống sẽ mở ra giao diện Admin chuyên biệt, cho phép theo dõi số liệu toàn hệ thống, quản lý và chuẩn hóa 365 từ vựng, cũng như kiểm soát quyền truy cập của người dùng một cách minh bạch và an toàn."*
-
----
-
-### 📍 PHẦN 7: KẾT LUẬN & HOÀN TẤT (4:50 – 5:00 | 10 giây)
-
-* **Hành động trên màn hình:**
-  - Để app ở màn hình Đăng nhập hoặc Trang chủ gọn gàng.
-  - Hướng camera quay toàn cảnh ứng dụng hoạt động ổn định trên iPhone.
-
-* **Lời thoại thuyết minh:**
-  > *"Tóm lại, Vocam đã kết hợp thành công công nghệ AI thị giác máy tính và phương pháp ghi nhớ khoa học SM-2 để tạo ra một giải pháp học từ vựng tiếng Anh hiện đại, tương tác cao và thiết thực.*  
-  > *Em xin chân thành cảm ơn quý Thầy Cô trong Hội đồng đã lắng nghe. Em rất mong nhận được những nhận xét và góp ý từ Thầy Cô!"*
-
----
-
-## 💡 MẸO ĐỂ CÓ VIDEO DEMO HOÀN HẢO
-
-1. **Âm thanh:** Quay ở phòng yên tĩnh, bật âm lượng iPhone vừa đủ nghe để khi bấm icon loa thì mic thu âm thu được giọng phát âm tiếng Anh chuẩn.
-2. **Ánh sáng:** Đặt bàn làm việc đủ sáng để khi lia camera chụp ảnh vật thể, AI nhận diện nhanh và bounding box hiện lên sắc nét nhất.
-3. **Tốc độ thao tác:** Chạm dứt khoát, sau mỗi thao tác (như lật thẻ hoặc bấm nút AI) dừng lại 1-2 giây cho người xem kịp nhìn thấy kết quả trước khi chuyển sang bước tiếp theo.
-4. **Không cần tua nhanh:** Với kịch bản 5 phút trên, bạn có thể nói với tốc độ vừa phải, tự tin và giải thích cặn kẽ từng tính năng mà không bị hụt hơi.
+============================================================
+MẸO QUAY VIDEO:
+- Dừng ngón tay lại 1 giây sau mỗi thao tác (chụp ảnh, lật thẻ, thông báo).
+- Không cần tua nhanh, tốc độ thao tác vừa phải sẽ đúng 5 phút.
+============================================================

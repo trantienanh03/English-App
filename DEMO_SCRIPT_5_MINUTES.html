@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kịch Bản Thao Tác Quay Demo Vocam (5 Phút)</title>
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --primary-light: #EEF2FF;
+      --success: #10B981;
+      --success-light: #ECFDF5;
+      --warning: #F59E0B;
+      --warning-light: #FFFBEB;
+      --bg: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --text-main: #0F172A;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 24px 16px 80px;
+    }
+
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+    }
+
+    /* HEADER & TIMER STICKY BAR */
+    .header {
+      background: linear-gradient(135deg, #4338CA 0%, #6366F1 100%);
+      color: #FFFFFF;
+      padding: 24px 28px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.3);
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .timer-bar {
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .timer-display {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .timer-clock {
+      font-size: 28px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--primary);
+    }
+
+    .timer-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .timer-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-timer {
+      padding: 8px 16px;
+      border-radius: 10px;
+      border: none;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-start {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-start:hover {
+      background: #4338CA;
+    }
+
+    .btn-reset {
+      background: #F1F5F9;
+      color: var(--text-muted);
+    }
+
+    .btn-reset:hover {
+      background: #E2E8F0;
+    }
+
+    /* TIMELINE OVERVIEW */
+    .timeline-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+
+    .timeline-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge-time {
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 800;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .timeline-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    /* SECTION CARD */
+    .section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 14px;
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-num {
+      width: 28px;
+      height: 28px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .section-badge {
+      background: #F1F5F9;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    /* STEP LIST */
+    .step-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: #FAFAFC;
+      border-left: 3px solid transparent;
+      transition: all 0.15s ease;
+    }
+
+    .step-item:hover {
+      background: #F1F5F9;
+      border-left-color: var(--primary);
+    }
+
+    .step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #E2E8F0;
+      color: #475569;
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .step-content {
+      flex: 1;
+      font-size: 14.5px;
+      color: #1E293B;
+    }
+
+    /* UI HIGHLIGHT TAGS */
+    .tag-btn {
+      display: inline-block;
+      background: #EEF2FF;
+      color: #4F46E5;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 7px;
+      border: 1px solid #C7D2FE;
+      font-size: 13px;
+    }
+
+    .tag-result {
+      display: inline-block;
+      background: #ECFDF5;
+      color: #047857;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 7px;
+      border: 1px solid #A7F3D0;
+      font-size: 13px;
+    }
+
+    .tag-warning {
+      display: inline-block;
+      background: #FFFBEB;
+      color: #B45309;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 7px;
+      border: 1px solid #FDE68A;
+      font-size: 13px;
+    }
+
+    .sub-list {
+      margin-top: 8px;
+      margin-left: 8px;
+      padding-left: 12px;
+      border-left: 2px solid #E2E8F0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13.5px;
+      color: #475569;
+    }
+
+    /* FOOTER TIPS */
+    .tips-card {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 24px;
+    }
+
+    .tips-card h3 {
+      color: #1D4ED8;
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .tips-card ul {
+      margin-left: 20px;
+      font-size: 13.5px;
+      color: #1E40AF;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- HEADER -->
+    <div class="header">
+      <h1>Kịch Bản Thao Tác Quay Demo Vocam (5 Phút)</h1>
+      <p>Hướng dẫn từng bước bấm trên màn hình iPhone — Không có lời thoại, chỉ tập trung trình diễn các tính năng hệ thống</p>
+    </div>
+
+    <!-- STOPWATCH CONTROLLER -->
+    <div class="timer-bar">
+      <div class="timer-display">
+        <div class="timer-clock" id="stopwatch">00:00</div>
+        <div>
+          <div class="timer-label">Đồng hồ bấm giờ</div>
+          <div style="font-size: 12px; color: var(--text-muted);">Mục tiêu: 05:00 (300s)</div>
+        </div>
+      </div>
+      <div class="timer-controls">
+        <button class="btn-timer btn-start" id="startBtn" onclick="toggleTimer()">BẮT ĐẦU</button>
+        <button class="btn-timer btn-reset" onclick="resetTimer()">ĐẶT LẠI</button>
+      </div>
+    </div>
+
+    <!-- TIMELINE OVERVIEW -->
+    <div class="timeline-grid">
+      <div class="timeline-item">
+        <span class="badge-time">0:00 – 0:30</span>
+        <span class="timeline-title">1. Đăng nhập & Quên MK</span>
+      </div>
+      <div class="timeline-item">
+        <span class="badge-time">0:30 – 2:00</span>
+        <span class="timeline-title">2. Quét AI & Lưu Flashcard</span>
+      </div>
+      <div class="timeline-item">
+        <span class="badge-time">2:00 – 3:15</span>
+        <span class="timeline-title">3. Ôn tập SM-2 (3 mức)</span>
+      </div>
+      <div class="timeline-item">
+        <span class="badge-time">3:15 – 4:00</span>
+        <span class="timeline-title">4. 20 Bài học & Quiz</span>
+      </div>
+      <div class="timeline-item">
+        <span class="badge-time">4:00 – 4:30</span>
+        <span class="timeline-title">5. Thông báo 3s & Cá nhân</span>
+      </div>
+      <div class="timeline-item">
+        <span class="badge-time">4:30 – 5:00</span>
+        <span class="timeline-title">6. Quản trị Admin</span>
+      </div>
+    </div>
+
+    <!-- PHẦN 1 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-num">1</span>
+          Xác thực & Đăng nhập Học viên
+        </div>
+        <span class="section-badge">0:00 – 0:30 (30 giây)</span>
+      </div>
+      <ul class="step-list">
+        <li class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">Mở ứng dụng <strong>Vocam</strong> trên iPhone -> Màn hình đăng nhập xuất hiện.</div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            Bấm liên kết <span class="tag-btn">Quên mật khẩu?</span>:
+            <div class="sub-list">
+              <div>• Popup khôi phục mật khẩu mở ra (chứng minh hỗ trợ Deep-link).</div>
+              <div>• Bấm đóng popup để quay lại form.</div>
+            </div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            Tại hàng nút bấm nhanh, bấm vào nút: <span class="tag-btn">Học viên (learner@vocam.app)</span> -> Form tự động điền sẵn Email và Mật khẩu.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            Bấm nút <span class="tag-btn">Đăng nhập</span> -> Màn hình lập tức chuyển vào giao diện chính Học viên.
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- PHẦN 2 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-num">2</span>
+          Quét Đa Vật Thể AI & Bounding Box
+        </div>
+        <span class="section-badge" style="background: var(--warning-light); color: var(--warning);">0:30 – 2:00 (90 giây) — TÍNH NĂNG ĐINH</span>
+      </div>
+      <ul class="step-list">
+        <li class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">Chạm vào tab <strong>Quét AI</strong> ở thanh điều hướng dưới màn hình.</div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">Hướng camera vào góc bàn làm việc (chứa laptop, chuột, điện thoại, chai nước...).</div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">Bấm <strong>Nút chụp tròn màu trắng</strong> ở giữa -> Màn hình báo AI đang xử lý nhận diện.</div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <strong>Quan sát kết quả:</strong>
+            <div class="sub-list">
+              <div>• Ảnh chụp giữ đúng chiều dọc tự nhiên (Portrait).</div>
+              <div>• Các khung <strong>Bounding Box</strong> màu sắc chuẩn ôm khít từng vật thể kèm nhãn tên tiếng Anh.</div>
+            </div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <strong>Thao tác chạm trực tiếp:</strong> Dùng ngón tay chạm vào khung <strong>laptop</strong> trên ảnh -> Khung sáng viền vàng và chip bên dưới tự động cuộn đến từ laptop.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">6</div>
+          <div class="step-content">
+            Màn hình <strong>Chi tiết từ vựng</strong> mở lên:
+            <div class="sub-list">
+              <div>• Từ vựng: <strong>laptop</strong> | Phiên âm IPA: <strong>/ˈlæp.tɒp/</strong> | Nghĩa: <strong>máy tính xách tay</strong>.</div>
+              <div>• Định nghĩa tiếng Anh học thuật & câu ví dụ song ngữ Anh - Việt.</div>
+            </div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">7</div>
+          <div class="step-content">Bấm nút <strong>Loa (Audio)</strong> để phát âm chuẩn từ người bản xứ.</div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">8</div>
+          <div class="step-content">
+            Bấm nút <span class="tag-btn">Lưu vào Sổ từ Flashcard</span> -> <span class="tag-result">Toast xanh: Đã lưu vào sổ từ</span>.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">9</div>
+          <div class="step-content">
+            Thử bấm nút Lưu lại lần nữa -> <span class="tag-warning">Hệ thống chặn trùng lặp và báo từ này đã được lưu</span>.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">10</div>
+          <div class="step-content">Đóng popup chi tiết từ vựng.</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- PHẦN 3 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-num">3</span>
+          Ôn Tập Thẻ Flashcard Theo Thuật Toán SM-2
+        </div>
+        <span class="section-badge">2:00 – 3:15 (75 giây)</span>
+      </div>
+      <ul class="step-list">
+        <li class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            Bấm chuyển sang tab <strong>Sổ từ</strong> (Cards):
+            <div class="sub-list">
+              <div>• Xem số lượng <strong>"Cần ôn hôm nay"</strong> (lọc theo điều kiện thời gian đến hạn).</div>
+              <div>• Xem danh sách toàn bộ các từ đã lưu kèm thông số SM-2.</div>
+            </div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            Bấm nút <span class="tag-btn">Bắt đầu ôn tập hôm nay</span> -> Thẻ Flashcard xuất hiện.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <strong>Mặt trước:</strong> Từ vựng tiếng Anh, phiên âm IPA, nút loa phát âm.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <strong>Chạm vào thẻ để lật sang mặt sau:</strong> Xem nghĩa tiếng Việt và câu ví dụ ngữ cảnh.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <strong>Đánh giá trí nhớ theo 3 nút SM-2:</strong>
+            <div class="sub-list">
+              <div>• <span class="tag-btn" style="background:#FEE2E2; color:#B91C1C; border-color:#FCA5A5;">Chưa thuộc (Again)</span>: Reset chu kỳ về 1 ngày.</div>
+              <div>• <span class="tag-btn" style="background:#FEF3C7; color:#B45309; border-color:#FDE68A;">Nhớ tốt (Good)</span>: Nhân chu kỳ ôn theo hệ số nhân.</div>
+              <div>• <span class="tag-btn" style="background:#D1FAE5; color:#047857; border-color:#6EE7B7;">Rất dễ (Easy)</span>: Tối ưu chu kỳ xa hơn cho từ đã vững.</div>
+            </div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">6</div>
+          <div class="step-content">
+            Bấm chọn mức đánh giá -> Thẻ chuyển tiếp mượt mà. Hoàn thành thẻ cuối cùng:
+            <div class="sub-list">
+              <div>• <span class="tag-result">Màn hình thông báo hoàn tất phiên ôn tập hôm nay!</span></div>
+              <div>• Mục "Cần ôn hôm nay" trở về 0.</div>
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- PHẦN 4 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-num">4</span>
+          Khám Phá 20 Bài Học & Trắc Nghiệm Quiz
+        </div>
+        <span class="section-badge">3:15 – 4:00 (45 giây)</span>
+      </div>
+      <ul class="step-list">
+        <li class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">Bấm chuyển sang tab <strong>Bài học</strong> (Lessons).</div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            Lướt qua các tab chủ đề thực tế phía trên:
+            <div class="sub-list">
+              <div>• <strong>Tất cả bài học</strong> (20 bài học hiển thị cân đối, không khoảng trắng thừa).</div>
+              <div>• <strong>Giao tiếp hàng ngày</strong> (4 bài học).</div>
+              <div>• <strong>Đi làm & Công việc</strong> (4 bài học).</div>
+              <div>• <strong>Trường học & Học tập</strong> (4 bài học).</div>
+              <div>• <strong>Đời sống & Gia đình</strong> (4 bài học).</div>
+              <div>• <strong>Du lịch & Giao thông</strong> (4 bài học).</div>
+            </div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">Bấm chọn bài học <strong>"Thiết bị & Công nghệ văn phòng"</strong> -> Xem tóm tắt bài và từ vựng.</div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            Bấm nút <span class="tag-btn">VÀO HỌC / Làm bài tập Quiz</span>:
+            <div class="sub-list">
+              <div>• Màn hình câu hỏi trắc nghiệm 4 lựa chọn mở ra.</div>
+              <div>• Bấm chọn nhanh các đáp án đúng -> Bấm nộp bài.</div>
+              <div>• <span class="tag-result">Màn hình tổng kết điểm số % hiển thị rõ ràng.</span></div>
+            </div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">5</div>
+          <div class="step-content">Đóng Quiz quay lại danh sách bài học -> Thanh tiến độ của bài học nhảy tăng % tương ứng.</div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- PHẦN 5 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-num">5</span>
+          Tìm Kiếm, Thông Báo Nhắc Nhở 3s & Hồ Sơ Cá Nhân
+        </div>
+        <span class="section-badge">4:00 – 4:30 (30 giây)</span>
+      </div>
+      <ul class="step-list">
+        <li class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            Tại thanh tìm kiếm trên cùng: Gõ từ <strong>laptop</strong> hoặc <strong>camera</strong> -> Kết quả trả về tức thì kèm phát âm và bài học chứa từ.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            Bấm chuyển sang tab <strong>Cá nhân</strong> (Profile):
+            <div class="sub-list">
+              <div>• Xem các chỉ số: <strong>Số từ đã lưu</strong>, <strong>Số từ đã thuộc</strong>, <strong>Thẻ cần ôn</strong>.</div>
+              <div>• Cuộn xuống mục <strong>Cài đặt & Nhắc nhở</strong>.</div>
+            </div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <strong>BẮT ĐẦU DEMO THÔNG BÁO TỨC THÌ:</strong>
+            <div class="sub-list">
+              <div>• Bấm nút: <span class="tag-btn">Thử nghiệm thông báo ngay (sau 3 giây)</span>.</div>
+              <div>• Hộp thoại thông báo đã lên lịch -> Bấm <strong>Đã hiểu</strong>.</div>
+              <div>• Để nguyên màn hình hoặc vuốt nhẹ về Home: <strong>Sau đúng 3 giây, Banner thông báo iOS trượt xuống từ mép trên màn hình!</strong></div>
+              <div>• <span class="tag-result">Chạm tay vào banner -> App tự động Deep-link mở thẳng vào tab Sổ từ!</span></div>
+            </div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            Quay lại tab Cá nhân -> Bấm nút <span class="tag-btn" style="background:#FEE2E2; color:#B91C1C; border-color:#FCA5A5;">Đăng xuất khỏi ứng dụng</span> -> Trở về màn hình Đăng nhập.
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- PHẦN 6 -->
+    <div class="section-card">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-num">6</span>
+          Phân Quyền Bảo Mật & Quản Trị Hệ Thống Admin
+        </div>
+        <span class="section-badge">4:30 – 5:00 (30 giây)</span>
+      </div>
+      <ul class="step-list">
+        <li class="step-item">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            Tại màn hình Đăng nhập: Bấm nút nhanh: <span class="tag-btn">Admin (admin@vocam.app)</span> -> Tự động điền email và mật khẩu.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            Bấm nút <span class="tag-btn">Đăng nhập</span> -> Spring Security xác thực quyền ADMIN và mở ra <strong>Bảng điều khiển Quản trị viên</strong>.
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <strong>Trình diễn 3 phân hệ Quản trị:</strong>
+            <div class="sub-list">
+              <div>• <strong>Tab Dashboard (Tổng quan):</strong> Xem thống kê thời gian thực: Tổng người dùng, Học viên hoạt động, Tài khoản bị khóa, Tổng 365 từ vựng.</div>
+              <div>• <strong>Tab Từ vựng:</strong> Xem kho 365 từ vựng chuẩn hóa, tìm kiếm từ, bấm vào 1 từ để xem form chỉnh sửa IPA, nghĩa tiếng Việt, định nghĩa và cập nhật hình ảnh.</div>
+              <div>• <strong>Tab Người dùng:</strong> Xem danh sách học viên và bấm nút <strong>Khóa / Mở khóa tài khoản</strong> học viên thời gian thực.</div>
+            </div>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            Bấm nút <span class="tag-btn" style="background:#FEE2E2; color:#B91C1C; border-color:#FCA5A5;">Đăng xuất</span> trên góc màn hình Admin để hoàn tất buổi demo.
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- TIPS -->
+    <div class="tips-card">
+      <h3>Mẹo quay video demo chuyên nghiệp:</h3>
+      <ul>
+        <li>Bấm nút <strong>BẮT ĐẦU</strong> ở thanh đồng hồ phía trên khi bắt đầu bấm quay màn hình để theo dõi sát thời gian 5 phút.</li>
+        <li>Sau mỗi lần bấm (như chụp ảnh AI hoặc lật thẻ Flashcard), dừng ngón tay lại 1 giây cho người xem nhìn rõ kết quả hiển thị.</li>
+        <li>Ở đoạn thông báo (Phần 5), khi banner trượt xuống, dừng lại 1-2 giây rồi hãy bấm vào banner để hội đồng thấy rõ hiệu ứng Deep-link vào Sổ từ.</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <script>
+    let timerInterval = null;
+    let totalSeconds = 0;
+    let isRunning = false;
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+    }
+
+    function updateDisplay() {
+      const display = document.getElementById('stopwatch');
+      display.innerText = formatTime(totalSeconds);
+      if (totalSeconds > 300) {
+        display.style.color = '#EF4444';
+      } else {
+        display.style.color = '#4F46E5';
+      }
+    }
+
+    function toggleTimer() {
+      const btn = document.getElementById('startBtn');
+      if (!isRunning) {
+        isRunning = true;
+        btn.innerText = 'TẠM DỪNG';
+        btn.style.background = '#F59E0B';
+        timerInterval = setInterval(() => {
+          totalSeconds++;
+          updateDisplay();
+        }, 1000);
+      } else {
+        isRunning = false;
+        btn.innerText = 'TIẾP TỤC';
+        btn.style.background = '#4F46E5';
+        clearInterval(timerInterval);
+      }
+    }
+
+    function resetTimer() {
+      isRunning = false;
+      clearInterval(timerInterval);
+      totalSeconds = 0;
+      updateDisplay();
+      const btn = document.getElementById('startBtn');
+      btn.innerText = 'BẮT ĐẦU';
+      btn.style.background = '#4F46E5';
+    }
+  </script>
+</body>
+</html>
