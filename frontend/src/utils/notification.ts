@@ -45,8 +45,10 @@ export async function scheduleReviewNotification(dueCount: number, delaySeconds 
   
   const identifier = await Notifications.scheduleNotificationAsync({
     content: {
-      title: isTest ? 'Thông báo thử nghiệm Vocam 🔔' : 'Đến giờ ôn từ cùng Vocam',
-      body: isTest ? 'Hệ thống thông báo hoạt động bình thường!' : `Bạn có ${dueCount} thẻ từ đến hạn ôn tập.`,
+      title: isTest ? 'Vocam: Đến giờ ôn từ vựng' : 'Đến giờ ôn từ cùng Vocam',
+      body: dueCount > 0
+        ? `Bạn có ${dueCount} thẻ từ đến hạn ôn tập theo thuật toán SM-2.`
+        : 'Hệ thống nhắc nhở hoạt động bình thường! Chạm để bắt đầu ôn tập.',
       sound: true,
       data: { destination: 'cards' },
     },

@@ -141,17 +141,25 @@
 
 ---
 
-### 📍 PHẦN 5: TÌM KIẾM TOÀN CỤC & TRANG CÁ NHÂN (4:15 – 4:45 | 30 giây)
+### 📍 PHẦN 5: TÌM KIẾM, THÔNG BÁO NHẮC NHỞ & TRANG CÁ NHÂN (4:15 – 4:45 | 30 giây)
 
 * **Hành động trên màn hình:**
   1. Về Trang chủ hoặc thanh tìm kiếm: Gõ thử từ *"camera"* hoặc *"laptop"* $\rightarrow$ Kết quả hiện ra tức thì với phát âm và bài học chứa từ đó.
   2. Chuyển sang tab **"Cá nhân"**:
      - Xem các thống kê thời gian thực: **Số từ đã lưu**, **Số từ đã thuộc**, **Thẻ cần ôn**.
-     - Giới thiệu nhanh các thiết lập cài đặt.
-  3. Bấm **"Đăng xuất"** $\rightarrow$ Trở về màn hình Đăng nhập an toàn.
+     - Xuống phần **"Cài đặt & Nhắc nhở"**.
+  3. **Demo Thông báo đẩy (Push Notification) thời gian thực:**
+     - Bấm nút **"Thử nghiệm thông báo ngay (sau 3 giây)"** (hoặc bật công tắc "Thông báo Nhắc ôn tập" và chọn gửi thử).
+     - Hộp thoại báo đã lên lịch sau 3 giây.
+     - Giữ màn hình (hoặc vuốt nhẹ về Home Screen): Sau đúng 3 giây, **Banner thông báo iOS thả xuống từ đỉnh màn hình**:
+       > *Vocam: Đến giờ ôn từ vựng*  
+       > *Bạn có 1 thẻ từ đến hạn ôn tập theo thuật toán SM-2.*
+     - **Chạm trực tiếp vào banner thông báo** $\rightarrow$ Hệ thống tự động Deep-link kích hoạt app nhảy thẳng vào tab **"Sổ từ Flashcard"** để ôn tập!
+  4. Quay lại tab Cá nhân $\rightarrow$ Bấm **"Đăng xuất"** $\rightarrow$ Trở về màn hình Đăng nhập an toàn.
 
 * **Lời thoại thuyết minh:**
-  > *"Ứng dụng còn hỗ trợ tìm kiếm tức thời trong kho 365 từ vựng chuẩn hóa. Tab cá nhân tổng hợp trực quan mọi chỉ số tiến độ: từ số lượng flashcard đã lưu đến số từ đã thành thạo, tạo động lực duy trì thói quen học tập mỗi ngày."*
+  > *"Ứng dụng hỗ trợ tìm kiếm tức thời trong kho 365 từ vựng chuẩn hóa. Tab cá nhân tổng hợp trực quan mọi chỉ số tiến độ học tập.*  
+  > *Đặc biệt, hệ thống tích hợp tính năng Thông báo nhắc nhở thông minh theo chu kỳ SM-2. Khi có thẻ đến hạn hoặc tới khung giờ đã định, thông báo hệ thống sẽ gửi trực tiếp đến thiết bị. Khi chạm vào thông báo, ứng dụng sẽ tự động điều hướng thẳng vào màn hình ôn tập giúp người học không bỏ lỡ tiến độ học mỗi ngày."*
 
 ---
 
