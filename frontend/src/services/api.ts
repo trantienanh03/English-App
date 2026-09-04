@@ -1,6 +1,7 @@
 import Constants from 'expo-constants';
 import * as FileSystem from 'expo-file-system/legacy';
 import { Alert, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabase } from '@/lib/supabase';
 import { Lesson, VocabularyWord } from '@/types';
 
@@ -203,14 +204,39 @@ function generateDevJwt(userId: string, email: string, name: string): string {
   return `${dataToSign}.${encodedSignature}`;
 }
 
-async function apiClient<T>(endpoint: string, options: RequestInit = {}, retryUnauthorized = true): Promise<T> {
-  const session = (await supabase.auth.getSession()).data.session;
-  let token = session?.access_token;
+export const ADMIN_USER_UUID = '88888888-8888-4888-8888-888888888888';
+export const LEARNER_USER_UUID = '12345678-1234-4234-8234-123456789012';
 
-  if (!token) {
-    const devUserId = '12345678-1234-4234-8234-123456789012';
-    token = await generateDevJwt(devUserId, 'tienanhtran1003@gmail.com', 'Trần Tiến Anh');
-  }
+export async function resolveCurrentToken(): Promise<string> {
+  const session = (await supabase.auth.getSession()).data.session;
+  if (session?.access_token) return session.access_token;
+
+  try {
+    const raw = await AsyncStorage.getItem('@vocam/active_user');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed?.email && parsed.email.toLowerCase().includes('admin')) {
+        return await generateDevJwt(
+          ADMIN_USER_UUID,
+          parsed.email,
+          parsed.name || 'Quản Trị Viên Vocam'
+        );
+      }
+      if (parsed?.email) {
+        return await generateDevJwt(
+          LEARNER_USER_UUID,
+          parsed.email,
+          parsed.name || 'Trần Tiến Anh'
+        );
+      }
+    }
+  } catch {}
+
+  return await generateDevJwt(LEARNER_USER_UUID, 'tienanhtran1003@gmail.com', 'Trần Tiến Anh');
+}
+
+async function apiClient<T>(endpoint: string, options: RequestInit = {}, retryUnauthorized = true): Promise<T> {
+  const token = await resolveCurrentToken();
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -291,11 +317,7 @@ export const api = {
 
   async scanImage(fileUri: string): Promise<any> {
     let session = (await supabase.auth.getSession()).data.session;
-    let token = session?.access_token;
-    if (!token) {
-      const devUserId = '12345678-1234-4234-8234-123456789012';
-      token = await generateDevJwt(devUserId, 'tienanhtran1003@gmail.com', 'Trần Tiến Anh');
-    }
+    let token = await resolveCurrentToken();
     const send = async (accessToken: string) => {
       if (Platform.OS !== 'web') {
         try {

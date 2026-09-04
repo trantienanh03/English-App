@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import * as Linking from 'expo-linking';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import OnboardingScreen from '@/components/onboarding/onboarding-screen';
 import SignupScreen from '@/components/auth/signup-screen';
@@ -29,6 +30,16 @@ export default function HomeScreen() {
           setUserName(name);
           setUserEmail(email);
           setCurrentScreen('dashboard');
+        } else {
+          const savedUser = await AsyncStorage.getItem('@vocam/active_user');
+          if (savedUser) {
+            const parsed = JSON.parse(savedUser);
+            if (parsed?.email) {
+              setUserEmail(parsed.email);
+              setUserName(parsed.name || parsed.email.split('@')[0]);
+              setCurrentScreen('dashboard');
+            }
+          }
         }
       } catch (err) {
         console.warn('Session restore check error:', err);
@@ -82,6 +93,7 @@ export default function HomeScreen() {
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
+      await AsyncStorage.removeItem('@vocam/active_user');
     } catch (err) {
       console.warn('SignOut warning:', err);
     } finally {
@@ -124,9 +136,12 @@ export default function HomeScreen() {
     if (currentScreen === 'signup') {
       return (
         <SignupScreen
-          onSignupSuccess={(name, email) => {
-            setUserName(name || '');
-            setUserEmail(email || '');
+          onSignupSuccess={async (name, email) => {
+            const finalEmail = email || '';
+            const finalName = name || (finalEmail.toLowerCase().includes('admin') ? 'Quản Trị Viên Vocam' : 'Học Viên Vocam');
+            await AsyncStorage.setItem('@vocam/active_user', JSON.stringify({ email: finalEmail, name: finalName }));
+            setUserName(finalName);
+            setUserEmail(finalEmail);
             setCurrentScreen('dashboard');
           }}
           onLoginPress={() => setCurrentScreen('login')}
@@ -140,9 +155,12 @@ export default function HomeScreen() {
 
     return (
       <LoginScreen
-        onLoginSuccess={(name, email) => {
-          setUserName(name || '');
-          setUserEmail(email || '');
+        onLoginSuccess={async (name, email) => {
+          const finalEmail = email || '';
+          const finalName = name || (finalEmail.toLowerCase().includes('admin') ? 'Quản Trị Viên Vocam' : 'Học Viên Vocam');
+          await AsyncStorage.setItem('@vocam/active_user', JSON.stringify({ email: finalEmail, name: finalName }));
+          setUserName(finalName);
+          setUserEmail(finalEmail);
           setCurrentScreen('dashboard');
         }}
         onSignupPress={() => setCurrentScreen('signup')}

@@ -163,7 +163,25 @@
 
 ---
 
-### 📍 PHẦN 6: KẾT LUẬN & HOÀN TẤT (4:45 – 5:00 | 15 giây)
+### 📍 PHẦN 6: PHÂN QUYỀN & GIAO DIỆN QUẢN TRỊ ADMIN (4:30 – 4:50 | 20 giây)
+
+* **Hành động trên màn hình:**
+  1. Tại màn hình Đăng nhập: Bấm nút nhanh **"Admin (admin@vocam.app)"** (hoặc gõ email `admin@vocam.app`, mật khẩu `admin123`).
+  2. Bấm nút **"Đăng nhập"**:
+     - Spring Security xác thực JWT role `ADMIN` trên máy chủ và tự động điều hướng vào **Giao diện Quản trị viên (AdminNavigator)**.
+  3. Lướt qua 3 phân hệ quản trị trực quan:
+     - **Tab Tổng quan (Dashboard)**: Thống kê thời gian thực gồm Tổng số người dùng, Học viên hoạt động, Tài khoản bị khóa, và Tổng 365 từ vựng.
+     - **Tab Quản lý Từ vựng**: Xem danh sách 365 từ vựng chuẩn hóa Objects365, tìm kiếm từ, bấm sửa từ vựng (IPA, nghĩa tiếng Việt, định nghĩa, cập nhật ảnh minh họa).
+     - **Tab Quản lý Người dùng**: Xem danh sách học viên cùng tiến độ học, thao tác Khóa / Mở khóa tài khoản học viên trực tiếp.
+  4. Bấm **"Đăng xuất"** trên giao diện Admin $\rightarrow$ Trở về màn hình đăng nhập an toàn.
+
+* **Lời thoại thuyết minh:**
+  > *"Bên cạnh trải nghiệm của học viên, Vocam áp dụng cơ chế phân quyền bảo mật chặt chẽ Role-Based Access Control ở tầng máy chủ Spring Security.*  
+  > *Khi đăng nhập bằng tài khoản Quản trị viên, hệ thống sẽ mở ra giao diện Admin chuyên biệt, cho phép theo dõi số liệu toàn hệ thống, quản lý và chuẩn hóa 365 từ vựng, cũng như kiểm soát quyền truy cập của người dùng một cách minh bạch và an toàn."*
+
+---
+
+### 📍 PHẦN 7: KẾT LUẬN & HOÀN TẤT (4:50 – 5:00 | 10 giây)
 
 * **Hành động trên màn hình:**
   - Để app ở màn hình Đăng nhập hoặc Trang chủ gọn gàng.

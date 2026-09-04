@@ -124,7 +124,7 @@ export default function DropsAuthScreen({
             loginError.status === 403;
 
           if (isApiKeyErr) {
-            const fallbackName = name.trim() || email.trim().split('@')[0] || 'Học Viên Vocam';
+            const fallbackName = name.trim() || (email.toLowerCase().includes('admin') ? 'Quản Trị Viên Vocam' : (email.trim().split('@')[0] || 'Học Viên Vocam'));
             onAuthSuccess(fallbackName, email.trim());
             return;
           }
@@ -136,11 +136,11 @@ export default function DropsAuthScreen({
         const userName =
           data.user?.user_metadata?.display_name ||
           data.user?.email?.split('@')[0] ||
-          'Học Viên Vocam';
+          (email.toLowerCase().includes('admin') ? 'Quản Trị Viên Vocam' : 'Học Viên Vocam');
         onAuthSuccess(userName, data.user?.email || email.trim());
       }
     } catch {
-      const fallbackName = name.trim() || email.trim().split('@')[0] || 'Học Viên Vocam';
+      const fallbackName = name.trim() || (email.toLowerCase().includes('admin') ? 'Quản Trị Viên Vocam' : (email.trim().split('@')[0] || 'Học Viên Vocam'));
       onAuthSuccess(fallbackName, email.trim());
     } finally {
       setLoading(false);
@@ -387,7 +387,7 @@ export default function DropsAuthScreen({
 
         {authMode === 'login' && (
           <TouchableOpacity
-            style={{ alignSelf: 'flex-end', marginBottom: 16 }}
+            style={{ alignSelf: 'flex-end', marginBottom: 12 }}
             onPress={() => {
               setResetEmail(email);
               setResetMessage(null);
@@ -396,6 +396,34 @@ export default function DropsAuthScreen({
           >
             <Text style={{ fontSize: 13, color: '#4F46E5', fontWeight: '600' }}>Quên mật khẩu?</Text>
           </TouchableOpacity>
+        )}
+
+        {authMode === 'login' && (
+          <View style={styles.quickFillContainer}>
+            <Text style={styles.quickFillLabel}>Tài khoản thử nghiệm demo:</Text>
+            <View style={styles.quickFillRow}>
+              <TouchableOpacity
+                style={styles.quickFillPill}
+                onPress={() => {
+                  setEmail('admin@vocam.app');
+                  setPassword('admin123');
+                  setError(null);
+                }}
+              >
+                <Text style={styles.quickFillPillText}>Admin (admin@vocam.app)</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.quickFillPill}
+                onPress={() => {
+                  setEmail('learner@vocam.app');
+                  setPassword('123456');
+                  setError(null);
+                }}
+              >
+                <Text style={styles.quickFillPillText}>Học viên (learner@vocam.app)</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
 
         <TouchableOpacity
@@ -571,4 +599,17 @@ const styles = StyleSheet.create({
   switchModeBtn: { flexDirection: 'row', justifyContent: 'center', marginTop: 20 },
   switchModeText: { fontSize: 14, color: '#64748B' },
   switchModeBold: { fontSize: 14, fontWeight: '700', color: Variables.primary[500] },
+
+  quickFillContainer: { marginBottom: 12, gap: 6 },
+  quickFillLabel: { fontSize: 12, fontWeight: '600', color: '#64748B' },
+  quickFillRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  quickFillPill: {
+    backgroundColor: '#EEF2FF',
+    borderWidth: 1,
+    borderColor: '#C7D2FE',
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+  },
+  quickFillPillText: { fontSize: 12, fontWeight: '700', color: '#4F46E5' },
 });
