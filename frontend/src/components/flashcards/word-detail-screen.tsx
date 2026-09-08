@@ -1,0 +1,447 @@
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  Image,
+  Modal,
+  Alert,
+  Platform,
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Feather } from '@expo/vector-icons';
+import { Palette, Fonts, Spacing } from '@/constants/theme';
+import { VocabularyWord } from '@/types';
+import { playAudio } from '@/utils/audio';
+
+interface WordDetailScreenProps {
+  word: VocabularyWord;
+  onClose: () => void;
+  onSaveToFlashcards?: (word: VocabularyWord) => void | Promise<void>;
+  onUpdateDifficulty?: (id: string, difficulty: 'easy' | 'medium' | 'hard') => void;
+}
+
+const DIFFICULTY_CONFIG = {
+  easy: { label: 'Đã thuộc', bg: Palette.success.bg, text: Palette.success.text },
+  medium: { label: 'Cần ôn', bg: Palette.warning.bg, text: Palette.warning.text },
+  hard: { label: 'Khó nhớ', bg: Palette.error.bg, text: Palette.error.text },
+} as const;
+
+
+export default function WordDetailScreen({
+  word,
+  onClose,
+  onSaveToFlashcards,
+  onUpdateDifficulty,
+}: WordDetailScreenProps) {
+  const [showDifficultyPicker, setShowDifficultyPicker] = useState(false);
+  const [currentDifficulty, setCurrentDifficulty] = useState(word.difficulty);
+  const [saving, setSaving] = useState(false);
+
+  const diffCfg = DIFFICULTY_CONFIG[currentDifficulty] ?? DIFFICULTY_CONFIG.medium;
+
+  const handleSetDifficulty = (d: 'easy' | 'medium' | 'hard') => {
+    if (!onUpdateDifficulty) return;
+    setCurrentDifficulty(d);
+    onUpdateDifficulty(word.id, d);
+    setShowDifficultyPicker(false);
+  };
+
+  const handleSave = async () => {
+    if (!onSaveToFlashcards || saving) return;
+    setSaving(true);
+    try {
+      await onSaveToFlashcards(word);
+      Alert.alert('Đã lưu', `“${word.word}” đã được lưu vào Sổ từ.`);
+    } catch {
+      Alert.alert('Không thể lưu từ', 'Vui lòng kiểm tra kết nối rồi thử lại.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const insets = useSafeAreaInsets();
+  const topPadding = Math.max(insets.top, Platform.OS === 'ios' ? 48 : 20);
+  const bottomPadding = Math.max(insets.bottom, Platform.OS === 'ios' ? 24 : 16);
+
+  return (
+    <View style={[styles.safeArea, { paddingTop: topPadding, paddingBottom: bottomPadding }]}>
+      {/* HEADER */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.closeBtn}
+          onPress={onClose}
+          hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+          activeOpacity={0.7}
+        >
+          <Feather name="x" size={22} color={Palette.text.primary} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Chi tiết từ vựng</Text>
+        {onSaveToFlashcards && (
+          <TouchableOpacity
+            style={styles.saveBtn}
+            onPress={() => void handleSave()}
+            disabled={saving}
+            hitSlop={{ top: 14, bottom: 14, left: 14, right: 14 }}
+          >
+            <Feather name={saving ? 'clock' : 'bookmark'} size={20} color={Palette.primary[500]} />
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* WORD HERO */}
+        <View style={styles.heroCard}>
+          {word.imageUrl && (
+            <Image source={{ uri: word.imageUrl }} style={styles.heroImage} />
+          )}
+
+          <View style={styles.wordRow}>
+            <Text style={styles.wordText}>{word.word}</Text>
+            <View style={[styles.posBadge, { backgroundColor: Palette.secondary[100] }]}>
+              <Text style={[styles.posText, { color: Palette.secondary[600] }]}>{word.pos}</Text>
+            </View>
+          </View>
+
+          <View style={styles.phoneticRow}>
+            <Text style={styles.phoneticText}>{word.phonetic}</Text>
+            <TouchableOpacity style={styles.audioBtn} onPress={() => playAudio(word.word)}>
+              <Feather name="volume-2" size={18} color={Palette.primary[500]} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Difficulty is editable only when a real persistence callback is provided. */}
+          <TouchableOpacity
+            style={[styles.diffBadge, { backgroundColor: diffCfg.bg }]}
+            onPress={() => setShowDifficultyPicker(true)}
+            disabled={!onUpdateDifficulty}
+          >
+            <Text style={[styles.diffText, { color: diffCfg.text }]}>{diffCfg.label}</Text>
+            {onUpdateDifficulty && <Feather name="chevron-down" size={12} color={diffCfg.text} />}
+          </TouchableOpacity>
+        </View>
+
+        {/* MEANING CARD */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeaderRow}>
+            <Feather name="globe" size={15} color={Palette.primary[500]} />
+            <Text style={styles.sectionTitle}>Nghĩa tiếng Việt</Text>
+          </View>
+          <Text style={styles.meaningText}>{word.vn}</Text>
+        </View>
+
+        {/* EXAMPLE SENTENCE CARD */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeaderRow}>
+            <Feather name="message-square" size={15} color={Palette.primary[500]} />
+            <Text style={styles.sectionTitle}>Câu ví dụ</Text>
+          </View>
+          <View style={styles.sentenceBox}>
+            <Text style={styles.sentenceEn}>“{word.sentence}”</Text>
+            {word.sentenceVn && (
+              <Text style={styles.sentenceVn}>{word.sentenceVn}</Text>
+            )}
+          </View>
+        </View>
+
+        {/* MEMORY TIP CARD */}
+        <View style={[styles.sectionCard, styles.tipCard]}>
+          <View style={styles.sectionHeaderRow}>
+            <Feather name="zap" size={15} color={Palette.warning.text} />
+            <Text style={[styles.sectionTitle, { color: Palette.warning.text }]}>Mẹo ghi nhớ</Text>
+          </View>
+          <Text style={styles.tipText}>
+            Hãy liên kết từ “{word.word}” với một hình ảnh hoặc cảm xúc cụ thể. Đọc to phiên âm {word.phonetic} mỗi lần ôn tập giúp não bộ ghi nhớ lâu hơn.
+          </Text>
+        </View>
+
+        {/* SELF-RATE SECTION */}
+        {onUpdateDifficulty && (
+          <View style={styles.rateSection}>
+            <Text style={styles.rateLabel}>Bạn nhớ từ này ở mức nào?</Text>
+            <View style={styles.rateRow}>
+              {(['easy', 'medium', 'hard'] as const).map((d) => {
+                const cfg = DIFFICULTY_CONFIG[d];
+                const isActive = currentDifficulty === d;
+                return (
+                  <TouchableOpacity
+                    key={d}
+                    style={[styles.rateBtn, { backgroundColor: isActive ? cfg.bg : Palette.canvas, borderColor: isActive ? cfg.text : Palette.border }]}
+                    onPress={() => handleSetDifficulty(d)}
+                  >
+                    <Text style={[styles.rateBtnText, { color: isActive ? cfg.text : Palette.text.muted }]}>
+                      {cfg.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* DIFFICULTY PICKER MODAL */}
+      <Modal visible={showDifficultyPicker && Boolean(onUpdateDifficulty)} transparent animationType="fade">
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowDifficultyPicker(false)}>
+          <View style={styles.pickerCard}>
+            <Text style={styles.pickerTitle}>Đánh giá độ khó</Text>
+            {(['easy', 'medium', 'hard'] as const).map((d) => {
+              const cfg = DIFFICULTY_CONFIG[d];
+              return (
+                <TouchableOpacity
+                  key={d}
+                  style={[styles.pickerItem, { backgroundColor: cfg.bg }]}
+                  onPress={() => handleSetDifficulty(d)}
+                >
+                  <Text style={[styles.pickerItemText, { color: cfg.text }]}>{cfg.label}</Text>
+                  {currentDifficulty === d && <Feather name="check" size={16} color={cfg.text} />}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: Palette.canvas,
+  },
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.four,
+    paddingVertical: Spacing.two,
+    borderBottomWidth: 1,
+    borderBottomColor: Palette.border,
+    backgroundColor: Palette.surfaceWhite,
+  },
+  closeBtn: {
+    padding: 4,
+  },
+  headerTitle: {
+    flex: 1,
+    fontFamily: Fonts.sans,
+    fontSize: 16,
+    fontWeight: '700',
+    color: Palette.text.primary,
+    textAlign: 'center',
+  },
+  saveBtn: {
+    padding: 4,
+  },
+
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: Spacing.four,
+    paddingBottom: 40,
+    gap: Spacing.three,
+  },
+
+  // Hero card
+  heroCard: {
+    backgroundColor: Palette.surfaceWhite,
+    borderRadius: 24,
+    padding: Spacing.four,
+    borderWidth: 1,
+    borderColor: Palette.border,
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  heroImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 18,
+    marginBottom: Spacing.two,
+  },
+  wordRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  wordText: {
+    fontFamily: Fonts.sans,
+    fontSize: 28,
+    fontWeight: '900',
+    color: Palette.text.primary,
+  },
+  posBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  posText: {
+    fontFamily: Fonts.sans,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  phoneticRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
+  },
+  phoneticText: {
+    fontFamily: Fonts.sans,
+    fontSize: 16,
+    color: Palette.text.ipa,
+    letterSpacing: 0.5,
+  },
+  audioBtn: {
+    padding: 6,
+    backgroundColor: Palette.primary[100],
+    borderRadius: 12,
+  },
+  diffBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 20,
+    marginTop: Spacing.one,
+  },
+  diffText: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  // Section cards
+  sectionCard: {
+    backgroundColor: Palette.surfaceWhite,
+    borderRadius: 20,
+    padding: Spacing.three,
+    borderWidth: 1,
+    borderColor: Palette.border,
+    gap: Spacing.two,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  sectionTitle: {
+    fontFamily: Fonts.sans,
+    fontSize: 13,
+    fontWeight: '800',
+    color: Palette.text.primary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
+  meaningText: {
+    fontFamily: Fonts.sans,
+    fontSize: 16,
+    fontWeight: '700',
+    color: Palette.text.secondary,
+    lineHeight: 24,
+  },
+  sentenceBox: {
+    backgroundColor: Palette.canvas,
+    borderRadius: 12,
+    padding: Spacing.three,
+    borderLeftWidth: 3,
+    borderLeftColor: Palette.primary[400],
+    gap: 4,
+  },
+  sentenceBoxAlt: {
+    borderLeftColor: Palette.secondary[400],
+  },
+  sentenceEn: {
+    fontFamily: Fonts.sans,
+    fontSize: 13,
+    fontStyle: 'italic',
+    color: Palette.text.primary,
+    lineHeight: 20,
+  },
+  sentenceVn: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    color: Palette.text.secondary,
+  },
+
+  // Memory tip
+  tipCard: {
+    backgroundColor: Palette.warning.bg,
+    borderColor: Palette.border,
+  },
+  tipText: {
+    fontFamily: Fonts.sans,
+    fontSize: 13,
+    color: Palette.text.secondary,
+    lineHeight: 20,
+  },
+
+  // Self-rate
+  rateSection: {
+    gap: Spacing.two,
+  },
+  rateLabel: {
+    fontFamily: Fonts.sans,
+    fontSize: 13,
+    fontWeight: '700',
+    color: Palette.text.secondary,
+    textAlign: 'center',
+  },
+  rateRow: {
+    flexDirection: 'row',
+    gap: Spacing.two,
+  },
+  rateBtn: {
+    flex: 1,
+    paddingVertical: Spacing.two,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    alignItems: 'center',
+  },
+  rateBtnText: {
+    fontFamily: Fonts.sans,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+
+  // Difficulty modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+    paddingHorizontal: Spacing.four,
+    paddingBottom: 40,
+  },
+  pickerCard: {
+    backgroundColor: Palette.surfaceWhite,
+    borderRadius: 24,
+    padding: Spacing.four,
+    gap: Spacing.two,
+  },
+  pickerTitle: {
+    fontFamily: Fonts.sans,
+    fontSize: 15,
+    fontWeight: '800',
+    color: Palette.text.primary,
+    marginBottom: Spacing.one,
+  },
+  pickerItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.three,
+    borderRadius: 14,
+  },
+  pickerItemText: {
+    fontFamily: Fonts.sans,
+    fontSize: 14,
+    fontWeight: '700',
+  },
+});
