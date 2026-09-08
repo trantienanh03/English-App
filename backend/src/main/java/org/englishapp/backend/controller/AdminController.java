@@ -1,0 +1,54 @@
+package org.englishapp.backend.controller;
+
+import org.englishapp.backend.dto.WordDto;
+import org.englishapp.backend.service.UserService;
+import org.englishapp.backend.service.WordService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+
+import java.util.Map;
+import java.util.UUID;
+
+@RestController
+@RequestMapping("/api/admin")
+public class AdminController {
+
+    private final WordService wordService;
+    private final UserService userService;
+
+    public AdminController(WordService wordService, UserService userService) {
+        this.wordService = wordService;
+        this.userService = userService;
+    }
+
+    /** GET /api/admin/stats — returns total system stats for mobile admin dashboard */
+    @GetMapping("/stats")
+    public ResponseEntity<Map<String, Object>> getStats() {
+        return ResponseEntity.ok(Map.of(
+                "totalUsers", userService.countUsers(),
+                "activeUsers", userService.countActiveUsers(),
+                "lockedUsers", userService.countLockedUsers(),
+                "totalWords", wordService.count()
+        ));
+    }
+
+    /** PUT /api/admin/words/{id} — update canonical word content/image */
+    @PutMapping("/words/{id}")
+    public ResponseEntity<WordDto> updateWord(@PathVariable Long id, @Valid @RequestBody WordDto dto) {
+        return ResponseEntity.ok(wordService.updateWord(id, dto));
+    }
+
+    /** GET /api/admin/users — returns list of all users for mobile admin user management */
+    @GetMapping("/users")
+    public ResponseEntity<java.util.List<org.englishapp.backend.dto.UserEntryDto>> getUsers() {
+        return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    /** POST /api/admin/users/{userId}/toggle-lock — lock or unlock user account */
+    @PostMapping("/users/{userId}/toggle-lock")
+    public ResponseEntity<Map<String, String>> toggleUserLock(@PathVariable UUID userId) {
+        String newStatus = userService.toggleUserLock(userId);
+        return ResponseEntity.ok(Map.of("userId", userId.toString(), "status", newStatus));
+    }
+}
