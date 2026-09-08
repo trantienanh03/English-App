@@ -108,7 +108,7 @@ Dịch vụ backend xử lý nghiệp vụ từ vựng, flashcard, SM-2, kết n
    - Chuyển sang tab **Signing & Capabilities**.
    - Tích chọn **Automatically manage signing**.
    - Tại mục **Team**, chọn **Personal Team (Apple ID)** của bạn.
-   - Kiểm tra **Bundle Identifier** (ví dụ: `com.tanhtran.vocam`).
+   - Kiểm tra **Bundle Identifier** (ví dụ: `com.vocam.app`).
 
 4. **Build và Chạy Ứng Dụng**:
    - Đảm bảo iPhone và Mac đang bắt **cùng 1 mạng Wi-Fi**.

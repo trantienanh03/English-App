@@ -3,9 +3,6 @@
 Fine-tune YOLO Model for English Learning App
 Mã nguồn huấn luyện tinh chỉnh (Fine-tuning) mô hình YOLO nhận diện vật thể
 phục vụ ứng dụng học từ vựng tiếng Anh.
-
-Tác giả: Trần Tiến Anh - MSSV: 22130016
-Đề tài: Nghiên cứu và ứng dụng mô hình YOLO trong nhận diện vật thể hỗ trợ học từ vựng tiếng Anh
 """
 
 import argparse

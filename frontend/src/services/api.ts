@@ -168,7 +168,7 @@ function hmacSha256Pure(message: string, key: string): Uint8Array {
   return sha256Pure(outerMsgStr);
 }
 function generateDevJwt(userId: string, email: string, name: string): string {
-  const secret = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
+  const secret = process.env.EXPO_PUBLIC_SUPABASE_JWT_SECRET || '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef';
   const baseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
   const issuer = `${baseUrl.replace(/\/$/, '')}/auth/v1`;
 
@@ -226,13 +226,13 @@ export async function resolveCurrentToken(): Promise<string> {
         return await generateDevJwt(
           LEARNER_USER_UUID,
           parsed.email,
-          parsed.name || 'Trần Tiến Anh'
+          parsed.name || 'Học Viên Demo'
         );
       }
     }
   } catch {}
 
-  return await generateDevJwt(LEARNER_USER_UUID, 'tienanhtran1003@gmail.com', 'Trần Tiến Anh');
+  return await generateDevJwt(LEARNER_USER_UUID, 'learner@example.com', 'Học Viên Demo');
 }
 
 async function apiClient<T>(endpoint: string, options: RequestInit = {}, retryUnauthorized = true): Promise<T> {

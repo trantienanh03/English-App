@@ -1,26 +1,28 @@
-# 🤖 AI Object Detection Service — English Learning App
+# AI Object Detection Service — English Learning App
 
-> Dịch vụ AI microservice nhận diện vật thể từ ảnh camera di động cho ứng dụng học từ vựng tiếng Anh.  
-> Tác giả: Trần Tiến Anh - MSSV: 22130016 — Đề tài Tiểu luận tốt nghiệp KCNTT NLU.
+Dịch vụ AI microservice nhận diện vật thể từ ảnh camera di động cho ứng dụng học từ vựng tiếng Anh.
 
 ---
 
-## 📁 Cấu trúc Thư mục
+## Cấu trúc Thư mục
 
 ```text
 ai_service/
-├── models/             ← Chứa trọng số fine-tune best.pt nếu có
-├── yolov8m-worldv2.pt  ← Mô hình YOLO-World mặc định
-├── scripts/            ← Các kịch bản huấn luyện & xuất mô hình
-│   └── fine_tune.py    ← Script Fine-Tuning YOLO trên Google Colab / GPU
-├── main.py             ← Server FastAPI cung cấp REST API (/predict, /health)
-├── requirements.txt    ← Danh sách thư viện Python cần thiết
-└── README.md           ← Tài liệu hướng dẫn sử dụng (File này)
+├── models/             # Chứa trọng số fine-tune best.pt nếu có
+├── yolov8m-worldv2.pt  # Mô hình YOLO-World mặc định
+├── scripts/            # Các kịch bản huấn luyện & kiểm thử mô hình
+│   ├── fine_tune.py    # Script Fine-Tuning YOLO trên Google Colab / GPU
+│   ├── test_model.py   # Script kiểm thử mô hình với ảnh hoặc webcam
+│   └── webcam_demo.py  # Script chạy demo webcam laptop real-time
+├── main.py             # Server FastAPI cung cấp REST API (/predict-multi, /health)
+├── requirements.txt    # Danh sách thư viện Python cần thiết
+├── .env.example        # File mẫu cấu hình biến môi trường
+└── README.md           # Tài liệu hướng dẫn sử dụng
 ```
 
 ---
 
-## 🚀 1. Hướng dẫn Chạy AI Service Cục bộ (Local FastAPI Server)
+## 1. Hướng dẫn Chạy AI Service Cục bộ (Local FastAPI Server)
 
 ### Bước 1: Cài đặt môi trường Python
 Yêu cầu Python version `>= 3.9`. Nên tạo môi trường ảo (venv hoặc conda):
@@ -36,7 +38,14 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-### Bước 2: Khởi chạy FastAPI Server
+### Bước 2: Cấu hình biến môi trường
+Sao chép file `.env.example` thành `.env` và điền khóa API (nếu dùng tính năng tạo câu Gemini):
+
+```bash
+cp .env.example .env
+```
+
+### Bước 3: Khởi chạy FastAPI Server
 
 ```bash
 python main.py
@@ -45,15 +54,13 @@ python main.py
 ```
 
 Server sẽ lắng nghe tại `http://localhost:8000`.
-- 📖 Tài liệu API tương tác (Swagger UI): `http://localhost:8000/docs`
-- 🟢 Endpoint kiểm tra health check: `GET http://localhost:8000/health`
-- 🎯 Endpoint dự đoán ảnh: `POST http://localhost:8000/predict-multi`
+- Tài liệu API tương tác (Swagger UI): `http://localhost:8000/docs`
+- Endpoint kiểm tra health check: `GET http://localhost:8000/health`
+- Endpoint dự đoán ảnh: `POST http://localhost:8000/predict-multi`
 
 ---
 
-## 🎯 2. Hướng dẫn Fine-Tuning Mô hình YOLO trên Google Colab
-
-Để tự tay fine-tune mô hình YOLO riêng phục vụ bài báo cáo tiểu luận:
+## 2. Hướng dẫn Fine-Tuning Mô hình YOLO trên Google Colab
 
 ### Bước 1: Chuẩn bị Dataset (Bộ dữ liệu từ vựng)
 1. Chuẩn bị tập dữ liệu ảnh và nhãn theo chuẩn **YOLO Format**:
@@ -64,7 +71,7 @@ Server sẽ lắng nghe tại `http://localhost:8000`.
 
 ### Bước 2: Tải file lên Google Colab
 1. Mở [Google Colab](https://colab.research.google.com/) và chọn GPU (Runtime -> Change runtime type -> T4 GPU).
-2. Tải file `data.zip` và file script [scripts/fine_tune.py](file:///d:/HocTap/English-App/ai_service/scripts/fine_tune.py) lên session lưu trữ Colab.
+2. Tải file `data.zip` và file script `scripts/fine_tune.py` lên session lưu trữ Colab.
 
 ### Bước 3: Giải nén & Thực hiện Fine-Tuning
 Chạy các ô lệnh trong Colab:
@@ -83,12 +90,12 @@ Chạy các ô lệnh trong Colab:
 ### Bước 4: Tải file weights `best.pt` về dự án
 1. Sau khi train hoàn tất, file mô hình tốt nhất nằm tại `runs/detect/english_app_finetune/weights/best.pt`.
 2. Tải file `best.pt` này về máy cá nhân và chép vào thư mục:
-   `d:\HocTap\English-App\ai_service\models\best.pt`
-3. Khởi động lại FastAPI server (`python main.py`), server sẽ tự động chuyển sang dùng mô hình `best.pt` vừa mới fine-tune của bạn!
+   `ai_service/models/best.pt`
+3. Khởi động lại FastAPI server (`python main.py`), server sẽ tự động chuyển sang dùng mô hình `best.pt` vừa mới fine-tune của bạn.
 
 ---
 
-## 📡 3. Cấu trúc Trả về của API `/predict-multi`
+## 3. Cấu trúc Trả về của API `/predict-multi`
 
 Khi gửi ảnh dạng `multipart/form-data` tới `POST /predict-multi`, server trả về định dạng JSON:
 

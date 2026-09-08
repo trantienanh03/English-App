@@ -3,8 +3,6 @@
 Script Kiểm thử Mô hình YOLO AI — English Learning App
 Cho phép chạy thử nhận diện vật thể trên 1 hình ảnh hoặc từ webcam
 và in ra danh sách từ vựng tiếng Anh tìm thấy kèm độ tin cậy (Confidence %).
-
-Tác giả: Trần Tiến Anh - MSSV: 22130016
 """
 
 import argparse

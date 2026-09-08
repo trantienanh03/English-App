@@ -208,15 +208,6 @@ npm run dev
 
 ---
 
-## Tác Giả & Liên Hệ
-
-- **Tác giả:** Trần Tiến Anh
-- **Đề tài:** Ứng dụng học từ vựng tiếng Anh nhận diện vật thể thông qua mô hình YOLO (Vocam)
-- **GitHub:** [@trantienanh03](https://github.com/trantienanh03)
-- **Video Trình Chiếu:** [YouTube Demo](https://youtu.be/3741H7ud4rA)
-
----
-
 ## Bản Quyền (License)
 
 Dự án này được phát hành dưới giấy phép mã nguồn mở [MIT License](LICENSE).

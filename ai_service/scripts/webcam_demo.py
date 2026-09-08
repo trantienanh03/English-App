@@ -2,8 +2,6 @@
 """
 Script Quét Webcam Laptop Real-time — English Learning App
 Mở webcam laptop và thực hiện nhận diện từ vựng Tiếng Anh theo thời gian thực (Real-time Video Stream)
-
-Tác giả: Trần Tiến Anh - MSSV: 22130016
 """
 
 import os

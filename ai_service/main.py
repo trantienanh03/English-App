@@ -6,8 +6,6 @@ Cung cấp REST API nhận diện vật thể từ camera di động và trả v
 Bổ sung tính năng nâng cao:
 1. Multi-Object Bounding Box Detection (/predict-multi)
 2. Contextual Sentence Generation với Google Gemini API (/generate-context)
-
-Tác giả: Trần Tiến Anh - MSSV: 22130016
 """
 
 import io
@@ -538,4 +536,5 @@ async def predict_multi_objects(
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
